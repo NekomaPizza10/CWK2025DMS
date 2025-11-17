@@ -225,7 +225,6 @@ public class GuiController implements Initializable {
             case 7: return Color.RED;
             default: return Color.WHITE;
         }
-        return returnPaint;
     }
 
 
