@@ -5,6 +5,8 @@ import com.comp2042.logic.bricks.BrickGenerator;
 import com.comp2042.logic.bricks.RandomBrickGenerator;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SimpleBoard implements Board {
 
@@ -15,6 +17,10 @@ public class SimpleBoard implements Board {
     private int[][] currentGameMatrix;
     private Point currentOffset;
     private final Score score;
+    private Brick holdBrick;
+    private boolean canHold;
+    private int piecesPlaced;
+    private int linesCleared;
 
     public SimpleBoard(int width, int height) {
         this.width = width;
@@ -23,6 +29,10 @@ public class SimpleBoard implements Board {
         brickGenerator = new RandomBrickGenerator();
         brickRotator = new BrickRotator();
         score = new Score();
+        holdBrick = null;
+        canHold = true;
+        piecesPlaced = 0;
+        linesCleared = 0;
     }
 
     @Override
@@ -85,7 +95,9 @@ public class SimpleBoard implements Board {
     public boolean createNewBrick() {
         Brick currentBrick = brickGenerator.getBrick();
         brickRotator.setBrick(currentBrick);
-        currentOffset = new Point(4, 10);
+        currentOffset = new Point(4, 0);
+        canHold = true;
+        piecesPlaced++;
         return MatrixOperations.intersect(currentGameMatrix, brickRotator.getCurrentShape(), (int) currentOffset.getX(), (int) currentOffset.getY());
     }
 
@@ -96,7 +108,13 @@ public class SimpleBoard implements Board {
 
     @Override
     public ViewData getViewData() {
-        return new ViewData(brickRotator.getCurrentShape(), (int) currentOffset.getX(), (int) currentOffset.getY(), brickGenerator.getNextBrick().getShapeMatrix().get(0));
+        List<int[][]> nextBricks = getNextBricksData(5);
+        return new ViewData(
+                brickRotator.getCurrentShape(),
+                (int) currentOffset.getX(),
+                (int) currentOffset.getY(),
+                nextBricks.size() > 0 ? nextBricks.get(0) : new int[4][4]
+        );
     }
 
     @Override
@@ -108,6 +126,7 @@ public class SimpleBoard implements Board {
     public ClearRow clearRows() {
         ClearRow clearRow = MatrixOperations.checkRemoving(currentGameMatrix);
         currentGameMatrix = clearRow.getNewMatrix();
+        linesCleared += clearRow.getLinesRemoved();
         return clearRow;
 
     }
@@ -122,6 +141,70 @@ public class SimpleBoard implements Board {
     public void newGame() {
         currentGameMatrix = new int[width][height];
         score.reset();
+        holdBrick = null;
+        canHold = true;
+        piecesPlaced = 0;
+        linesCleared = 0;
         createNewBrick();
+    }
+
+    //Hold Function
+    @Override
+    public boolean holdCurrentBrick() {
+        if (!canHold) {
+            return false;
+        }
+
+        if (holdBrick == null) {
+            // First time holding
+            holdBrick = brickGenerator.getBrick();
+            brickRotator.setBrick(holdBrick);
+            createNewBrick();
+        } else {
+            // Swap current with hold
+            Brick temp = holdBrick;
+            // Get current brick before creating new one
+            holdBrick = brickGenerator.getBrick();
+            brickRotator.setBrick(holdBrick);
+            brickRotator.setBrick(temp);
+            holdBrick = temp;
+            currentOffset = new Point(4, 0);
+        }
+
+        canHold = false;
+        return true;
+    }
+
+    @Override
+    public int[][] getHoldBrickData() {
+        if (holdBrick == null) {
+            return new int[4][4];
+        }
+        return holdBrick.getShapeMatrix().get(0);
+    }
+
+    // NEXT BRICK function
+    @Override
+    public List<int[][]> getNextBricksData(int count) {
+        List<int[][]> nextBricks = new ArrayList<>();
+        // This is a simplified version - you may need to update RandomBrickGenerator
+        // to support peeking at multiple upcoming bricks
+        for (int i = 0; i < count && i < 5; i++) {
+            Brick nextBrick = brickGenerator.getNextBrick();
+            if (nextBrick != null) {
+                nextBricks.add(nextBrick.getShapeMatrix().get(0));
+            }
+        }
+        return nextBricks;
+    }
+
+    @Override
+    public int getPiecesPlaced() {
+        return piecesPlaced;
+    }
+
+    @Override
+    public int getLinesCleared() {
+        return linesCleared;
     }
 }

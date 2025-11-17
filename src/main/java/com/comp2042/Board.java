@@ -1,5 +1,7 @@
 package com.comp2042;
 
+import java.util.List;
+
 public interface Board {
 
     boolean moveBrickDown();
@@ -23,4 +25,15 @@ public interface Board {
     Score getScore();
 
     void newGame();
+
+    // New methods for HOLD and NEXT queue
+    boolean holdCurrentBrick();
+
+    int[][] getHoldBrickData();
+
+    List<int[][]> getNextBricksData(int count);
+
+    int getPiecesPlaced();
+
+    int getLinesCleared();
 }

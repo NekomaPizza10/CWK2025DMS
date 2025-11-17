@@ -1,8 +1,10 @@
 package com.comp2042;
 
+import java.util.List;
+
 public class GameController implements InputEventListener {
 
-    private Board board = new SimpleBoard(25, 10);
+    private Board board = new SimpleBoard(20, 10);
 
     private final GuiController viewGuiController;
 
@@ -12,6 +14,7 @@ public class GameController implements InputEventListener {
         viewGuiController.setEventListener(this);
         viewGuiController.initGameView(board.getBoardMatrix(), board.getViewData());
         viewGuiController.bindScore(board.getScore().scoreProperty());
+        viewGuiController.updateNextDisplay();
     }
 
     @Override
@@ -61,5 +64,28 @@ public class GameController implements InputEventListener {
     public void createNewGame() {
         board.newGame();
         viewGuiController.refreshGameBackground(board.getBoardMatrix());
+    }
+
+    //HOLD Function
+    public void holdBrick() {
+        board.holdCurrentBrick();
+        viewGuiController.refreshGameBackground(board.getBoardMatrix());
+    }
+
+    public int[][] getHoldBrickData() {
+        return board.getHoldBrickData();
+    }
+
+    //NEXT PREVIEW Function
+    public List<int[][]> getNextBricksData() {
+        return board.getNextBricksData(5);
+    }
+
+    public int getPiecesPlaced() {
+        return board.getPiecesPlaced();
+    }
+
+    public int getLinesCleared() {
+        return board.getLinesCleared();
     }
 }
