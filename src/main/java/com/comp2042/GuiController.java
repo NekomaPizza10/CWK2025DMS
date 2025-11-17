@@ -216,33 +216,15 @@ public class GuiController implements Initializable {
     private Paint getFillColor(int i) {
         Paint returnPaint;
         switch (i) {
-            case 0:
-                returnPaint = Color.TRANSPARENT;
-                break;
-            case 1:
-                returnPaint = Color.CYAN;
-                break;
-            case 2:
-                returnPaint = Color.BLUE;
-                break;
-            case 3:
-                returnPaint = Color.ORANGE;
-                break;
-            case 4:
-                returnPaint = Color.YELLOW;
-                break;
-            case 5:
-                returnPaint = Color.GREEN;
-                break;
-            case 6:
-                returnPaint = Color.PURPLE;
-                break;
-            case 7:
-                returnPaint = Color.RED;
-                break;
-            default:
-                returnPaint = Color.WHITE;
-                break;
+            case 0: return Color.TRANSPARENT;
+            case 1: return Color.CYAN;
+            case 2: return Color.BLUE;
+            case 3: return Color.ORANGE;
+            case 4: return Color.YELLOW;
+            case 5: return Color.GREEN;
+            case 6: return Color.PURPLE;
+            case 7: return Color.RED;
+            default: return Color.WHITE;
         }
         return returnPaint;
     }
