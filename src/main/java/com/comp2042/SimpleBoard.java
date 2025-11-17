@@ -36,6 +36,11 @@ public class SimpleBoard implements Board {
     }
 
     @Override
+    public Brick getCurrentBrick() {
+        return brickRotator.getBrick();
+    }
+
+    @Override
     public boolean moveBrickDown() {
         int[][] currentMatrix = MatrixOperations.copy(currentGameMatrix);
         Point p = new Point(currentOffset);
@@ -155,19 +160,16 @@ public class SimpleBoard implements Board {
             return false;
         }
 
+        Brick currentBrick = brickRotator.getBrick();
         if (holdBrick == null) {
-            // First time holding
-            holdBrick = brickGenerator.getBrick();
-            brickRotator.setBrick(holdBrick);
+            // First time holding - store current brick and get new one
+            holdBrick = currentBrick;
             createNewBrick();
         } else {
             // Swap current with hold
             Brick temp = holdBrick;
-            // Get current brick before creating new one
-            holdBrick = brickGenerator.getBrick();
-            brickRotator.setBrick(holdBrick);
+            holdBrick = currentBrick;
             brickRotator.setBrick(temp);
-            holdBrick = temp;
             currentOffset = new Point(4, 0);
         }
 
@@ -189,10 +191,10 @@ public class SimpleBoard implements Board {
         List<int[][]> nextBricks = new ArrayList<>();
         // This is a simplified version - you may need to update RandomBrickGenerator
         // to support peeking at multiple upcoming bricks
-        for (int i = 0; i < count && i < 5; i++) {
-            Brick nextBrick = brickGenerator.getNextBrick();
-            if (nextBrick != null) {
-                nextBricks.add(nextBrick.getShapeMatrix().get(0));
+        List<Brick> bricks = brickGenerator.getNextBricks(count);
+        for (Brick brick : bricks) {
+            if (brick != null && brick.getShapeMatrix() != null && brick.getShapeMatrix().size() > 0) {
+                nextBricks.add(brick.getShapeMatrix().get(0));
             }
         }
         return nextBricks;
@@ -207,4 +209,6 @@ public class SimpleBoard implements Board {
     public int getLinesCleared() {
         return linesCleared;
     }
+
+
 }

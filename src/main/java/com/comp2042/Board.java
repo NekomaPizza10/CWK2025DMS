@@ -1,4 +1,5 @@
 package com.comp2042;
+import com.comp2042.logic.bricks.Brick;
 
 import java.util.List;
 
@@ -36,4 +37,6 @@ public interface Board {
     int getPiecesPlaced();
 
     int getLinesCleared();
+    // Get current brick
+    Brick getCurrentBrick();
 }

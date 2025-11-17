@@ -41,10 +41,6 @@ public class RandomBrickGenerator implements BrickGenerator {
         return brick;
     }
 
-    @Override
-    public Brick getNextBrick() {
-        return nextBricks.peek();
-    }
 
     // Get multiple next bricks for preview
     public List<Brick> getNextBricks(int count) {
