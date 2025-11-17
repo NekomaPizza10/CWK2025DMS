@@ -214,7 +214,6 @@ public class GuiController implements Initializable {
     }
 
     private Paint getFillColor(int i) {
-        Paint returnPaint;
         switch (i) {
             case 0: return Color.TRANSPARENT;
             case 1: return Color.CYAN;
