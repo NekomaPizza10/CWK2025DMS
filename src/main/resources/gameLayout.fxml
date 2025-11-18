@@ -58,7 +58,7 @@
                 </VBox>
 
                 <!-- Center: Game Board -->
-                <StackPane>
+                <StackPane alignment="TOP_LEFT">
                     <!-- Background grid -->
                     <GridPane fx:id="gamePanel"
                               hgap="0" vgap="0"
@@ -66,8 +66,11 @@
 
                     <!-- Overlay pane for moving brick -->
                     <Pane fx:id="brickPaneContainer"
+                          prefWidth="250" prefHeight="675"
+                          minWidth="250" minHeight="675"
                           maxWidth="250" maxHeight="675"
-                          style="-fx-background-color: transparent;"
+                          translateX="6" translateY="3"
+                          style="-fx-background-color: transparent; -fx-padding: 3px;"
                           mouseTransparent="true">
                     <GridPane fx:id="brickPanel"
                               hgap="0" vgap="0"/>
