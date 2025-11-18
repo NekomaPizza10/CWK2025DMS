@@ -65,11 +65,8 @@
                               style="-fx-background-color: #000000; -fx-border-color: #ffffff; -fx-border-width: 3;"/>
 
                     <!-- Overlay pane for moving brick -->
-                    <!-- Prevents expanding the board -->
                     <Pane fx:id="brickPaneContainer"
-                          prefWidth="250" prefHeight="500"
-                          maxWidth="250" maxHeight="500"
-                          minWidth="250" minHeight="500"
+                          maxWidth="250" maxHeight="675"
                           style="-fx-background-color: transparent;"
                           mouseTransparent="true">
                     <GridPane fx:id="brickPanel"

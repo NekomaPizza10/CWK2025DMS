@@ -24,8 +24,8 @@ public class SimpleBoard implements Board {
 
     public SimpleBoard(int width, int height) {
         this.width = width;     // 10 (columns)
-        this.height = height;   // 20 (rows)
-        currentGameMatrix = new int[height][width]; // [20][10] = rows, columns
+        this.height = height;   // 27 (rows)
+        currentGameMatrix = new int[height][width]; // [27][10] = rows, columns
         brickGenerator = new RandomBrickGenerator();
         brickRotator = new BrickRotator();
         score = new Score();

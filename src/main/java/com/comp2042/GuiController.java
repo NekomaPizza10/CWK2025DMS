@@ -128,10 +128,12 @@ public class GuiController implements Initializable {
     }
 
     public void initGameView(int[][] boardMatrix, ViewData brick) {
+
         //Initialize game board
         int height = boardMatrix.length;
         int width = boardMatrix[0].length;
 
+        // Board of Grid lines
         displayMatrix = new Rectangle[height][width];
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
@@ -161,6 +163,7 @@ public class GuiController implements Initializable {
         // Position relative to Pane container (0,0), not gamePanel
         brickPanel.setLayoutX(brick.getxPosition() * BRICK_SIZE);
         brickPanel.setLayoutY(brick.getyPosition() * BRICK_SIZE);
+
 
         // Initialize HOLD panel
         initializePreviewPanel(holdPanel, PREVIEW_BRICK_SIZE);
@@ -283,8 +286,8 @@ public class GuiController implements Initializable {
         if (isPause.getValue() == Boolean.FALSE) {
 
             // Calculate exact position to align with grid
-            double xPos = gamePanel.getLayoutX() + (brick.getxPosition() * BRICK_SIZE);
-            double yPos = gamePanel.getLayoutY() + (brick.getyPosition() * BRICK_SIZE);
+            double xPos = brick.getxPosition() * BRICK_SIZE;
+            double yPos = brick.getyPosition() * BRICK_SIZE;
 
             brickPanel.setLayoutX(xPos);
             brickPanel.setLayoutY(yPos);
