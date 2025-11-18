@@ -48,6 +48,9 @@ public class GuiController implements Initializable {
     private GridPane brickPanel;
 
     @FXML
+    private Pane brickPaneContainer;
+
+    @FXML
     private GridPane holdPanel;
 
     @FXML
@@ -110,21 +113,32 @@ public class GuiController implements Initializable {
 
     private void handleHold() {
         if (eventListener instanceof GameController) {
-            ((GameController) eventListener).holdBrick();
+            GameController gc = (GameController) eventListener;
+            gc.holdBrick();
+
             updateHoldDisplay();
+
+            // Refresh the game view with new brick
+            Board board = gc.getBoard();
+            refreshGameBackground(board.getBoardMatrix());
+            refreshBrick(board.getViewData());
+
             updateNextDisplay();
         }
     }
 
     public void initGameView(int[][] boardMatrix, ViewData brick) {
-        //Initialize game baord
-        displayMatrix = new Rectangle[boardMatrix.length][boardMatrix[0].length];
-        for (int i = 0; i < boardMatrix.length; i++) {
-            for (int j = 0; j < boardMatrix[i].length; j++) {
+        //Initialize game board
+        int height = boardMatrix.length;
+        int width = boardMatrix[0].length;
+
+        displayMatrix = new Rectangle[height][width];
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
                 Rectangle rectangle = new Rectangle(BRICK_SIZE, BRICK_SIZE);
                 rectangle.setFill(Color.TRANSPARENT);
                 rectangle.setStroke(Color.rgb(40, 40, 40));
-                rectangle.setStrokeWidth(0.5);
+                rectangle.setStrokeWidth(0.25);
                 displayMatrix[i][j] = rectangle;
                 gamePanel.add(rectangle, j, i);     // column, row
             }
@@ -135,6 +149,7 @@ public class GuiController implements Initializable {
         for (int i = 0; i < brick.getBrickData().length; i++) {
             for (int j = 0; j < brick.getBrickData()[i].length; j++) {
                 Rectangle rectangle = new Rectangle(BRICK_SIZE, BRICK_SIZE);
+
                 rectangle.setFill(getFillColor(brick.getBrickData()[i][j]));
                 rectangles[i][j] = rectangle;
                 brickPanel.add(rectangle, j, i);
@@ -143,8 +158,9 @@ public class GuiController implements Initializable {
 
         brickPanel.toFront();  // Force brickPanel to render on top
 
-        brickPanel.setLayoutX(gamePanel.getLayoutX() + brick.getxPosition() * BRICK_SIZE);
-        brickPanel.setLayoutY(gamePanel.getLayoutY() + brick.getyPosition() * BRICK_SIZE);
+        // Position relative to Pane container (0,0), not gamePanel
+        brickPanel.setLayoutX(brick.getxPosition() * BRICK_SIZE);
+        brickPanel.setLayoutY(brick.getyPosition() * BRICK_SIZE);
 
         // Initialize HOLD panel
         initializePreviewPanel(holdPanel, PREVIEW_BRICK_SIZE);

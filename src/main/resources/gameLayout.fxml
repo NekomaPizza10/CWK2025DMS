@@ -62,13 +62,18 @@
                     <!-- Background grid -->
                     <GridPane fx:id="gamePanel"
                               hgap="0" vgap="0"
-                              style="-fx-background-color: #000000; -fx-border-color: #ffffff; -fx-border-width: 3; -fx-border-height: 20"/>
+                              style="-fx-background-color: #000000; -fx-border-color: #ffffff; -fx-border-width: 3;"/>
 
                     <!-- Overlay pane for moving brick -->
-                    <Pane fx:id="brickPaneContainer" style="-fx-background-color: transparent;">
+                    <!-- Prevents expanding the board -->
+                    <Pane fx:id="brickPaneContainer"
+                          prefWidth="250" prefHeight="500"
+                          maxWidth="250" maxHeight="500"
+                          minWidth="250" minHeight="500"
+                          style="-fx-background-color: transparent;"
+                          mouseTransparent="true">
                     <GridPane fx:id="brickPanel"
-                              hgap="0" vgap="0"
-                    />
+                              hgap="0" vgap="0"/>
                     </Pane>
 
                     <Group fx:id="groupNotification"/>

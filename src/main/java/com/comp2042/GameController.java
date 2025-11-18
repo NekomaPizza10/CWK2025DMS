@@ -4,7 +4,7 @@ import java.util.List;
 
 public class GameController implements InputEventListener {
 
-    private Board board = new SimpleBoard(10, 20);
+    private Board board = new SimpleBoard(10, 27);
 
     private final GuiController viewGuiController;
 
@@ -15,6 +15,11 @@ public class GameController implements InputEventListener {
         viewGuiController.initGameView(board.getBoardMatrix(), board.getViewData());
         viewGuiController.bindScore(board.getScore().scoreProperty());
         viewGuiController.updateNextDisplay();
+    }
+
+
+    public Board getBoard() {
+        return this.board;
     }
 
     @Override
