@@ -23,9 +23,9 @@ public class SimpleBoard implements Board {
     private int linesCleared;
 
     public SimpleBoard(int width, int height) {
-        this.width = width;
-        this.height = height;
-        currentGameMatrix = new int[width][height];
+        this.width = width;     // 10 (columns)
+        this.height = height;   // 20 (rows)
+        currentGameMatrix = new int[height][width]; // [20][10] = rows, columns
         brickGenerator = new RandomBrickGenerator();
         brickRotator = new BrickRotator();
         score = new Score();
@@ -100,7 +100,7 @@ public class SimpleBoard implements Board {
     public boolean createNewBrick() {
         Brick currentBrick = brickGenerator.getBrick();
         brickRotator.setBrick(currentBrick);
-        currentOffset = new Point(4, 0);
+        currentOffset = new Point(width / 2 - 2, 0);
         canHold = true;
         piecesPlaced++;
         return MatrixOperations.intersect(currentGameMatrix, brickRotator.getCurrentShape(), (int) currentOffset.getX(), (int) currentOffset.getY());
@@ -144,7 +144,7 @@ public class SimpleBoard implements Board {
 
     @Override
     public void newGame() {
-        currentGameMatrix = new int[width][height];
+        currentGameMatrix = new int[height][width];
         score.reset();
         holdBrick = null;
         canHold = true;
@@ -170,7 +170,7 @@ public class SimpleBoard implements Board {
             Brick temp = holdBrick;
             holdBrick = currentBrick;
             brickRotator.setBrick(temp);
-            currentOffset = new Point(4, 0);
+            currentOffset = new Point(height / 2 - 2, 0);
         }
 
         canHold = false;
