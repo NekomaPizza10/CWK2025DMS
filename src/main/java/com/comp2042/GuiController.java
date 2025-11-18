@@ -20,6 +20,7 @@ import javafx.scene.effect.Reflection;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
@@ -125,7 +126,7 @@ public class GuiController implements Initializable {
                 rectangle.setStroke(Color.rgb(40, 40, 40));
                 rectangle.setStrokeWidth(0.5);
                 displayMatrix[i][j] = rectangle;
-                gamePanel.add(rectangle, j, i);
+                gamePanel.add(rectangle, j, i);     // column, row
             }
         }
 
@@ -134,11 +135,16 @@ public class GuiController implements Initializable {
         for (int i = 0; i < brick.getBrickData().length; i++) {
             for (int j = 0; j < brick.getBrickData()[i].length; j++) {
                 Rectangle rectangle = new Rectangle(BRICK_SIZE, BRICK_SIZE);
+                rectangle.setFill(Color.MAGENTA);  // BRIGHT COLOR FOR TESTING!
+
                 rectangle.setFill(getFillColor(brick.getBrickData()[i][j]));
                 rectangles[i][j] = rectangle;
                 brickPanel.add(rectangle, j, i);
             }
         }
+
+        brickPanel.toFront();  // Force brickPanel to render on top
+
         brickPanel.setLayoutX(gamePanel.getLayoutX() + brick.getxPosition() * BRICK_SIZE);
         brickPanel.setLayoutY(gamePanel.getLayoutY() + brick.getyPosition() * BRICK_SIZE);
 
@@ -202,15 +208,46 @@ public class GuiController implements Initializable {
     }
 
     private void updatePreviewPanel(Rectangle[][] rects, int[][] brickData) {
+        // Clear all cells first
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
-                if (i < brickData.length && j < brickData[i].length) {
-                    rects[i][j].setFill(getFillColor(brickData[i][j]));
-                } else {
                     rects[i][j].setFill(Color.TRANSPARENT);
+
+            }
+        }
+
+        // Find the bounds of the actual brick shape
+        int minRow = 4, maxRow = -1, minCol = 4, maxCol = -1;
+        for (int i = 0; i < brickData.length; i++) {
+            for (int j = 0; j < brickData[i].length; j++) {
+                if (brickData[i][j] != 0) {
+                    minRow = Math.min(minRow, i);
+                    maxRow = Math.max(maxRow, i);
+                    minCol = Math.min(minCol, j);
+                    maxCol = Math.max(maxCol, j);
                 }
             }
         }
+
+        // Calculate centering offset
+        int brickHeight = maxRow - minRow + 1;
+        int brickWidth = maxCol - minCol + 1;
+        int offsetRow = (4 - brickHeight) / 2;
+        int offsetCol = (4 - brickWidth) / 2;
+
+        // Draw brick centered
+        for (int i = 0; i < brickData.length; i++) {
+            for (int j = 0; j < brickData[i].length; j++) {
+                if (brickData[i][j] != 0) {
+                    int targetRow = offsetRow + (i - minRow);
+                    int targetCol = offsetCol + (j - minCol);
+                    if (targetRow >= 0 && targetRow < 4 && targetCol >= 0 && targetCol < 4) {
+                        rects[targetRow][targetCol].setFill(getFillColor(brickData[i][j]));
+                    }
+                }
+            }
+        }
+
     }
 
     private Paint getFillColor(int i) {
@@ -230,13 +267,23 @@ public class GuiController implements Initializable {
 
     private void refreshBrick(ViewData brick) {
         if (isPause.getValue() == Boolean.FALSE) {
-            brickPanel.setLayoutX(gamePanel.getLayoutX() + brick.getxPosition() * BRICK_SIZE);
-            brickPanel.setLayoutY(gamePanel.getLayoutY() + brick.getyPosition() * BRICK_SIZE);
+
+            // Calculate exact position to align with grid
+            double xPos = gamePanel.getLayoutX() + (brick.getxPosition() * BRICK_SIZE);
+            double yPos = gamePanel.getLayoutY() + (brick.getyPosition() * BRICK_SIZE);
+
+            brickPanel.setLayoutX(xPos);
+            brickPanel.setLayoutY(yPos);
+
             for (int i = 0; i < brick.getBrickData().length; i++) {
                 for (int j = 0; j < brick.getBrickData()[i].length; j++) {
                     setRectangleData(brick.getBrickData()[i][j], rectangles[i][j]);
                 }
             }
+
+            brickPanel.layout();
+            brickPanel.requestLayout();
+
         }
     }
 

@@ -59,13 +59,17 @@
 
                 <!-- Center: Game Board -->
                 <StackPane>
+                    <!-- Background grid -->
                     <GridPane fx:id="gamePanel"
                               hgap="0" vgap="0"
-                              style="-fx-background-color: #000000; -fx-border-color: #ffffff; -fx-border-width: 3;"/>
+                              style="-fx-background-color: #000000; -fx-border-color: #ffffff; -fx-border-width: 3; -fx-border-height: 20"/>
 
+                    <!-- Overlay pane for moving brick -->
+                    <Pane fx:id="brickPaneContainer" style="-fx-background-color: transparent;">
                     <GridPane fx:id="brickPanel"
                               hgap="0" vgap="0"
-                              mouseTransparent="true"/>
+                    />
+                    </Pane>
 
                     <Group fx:id="groupNotification"/>
 
