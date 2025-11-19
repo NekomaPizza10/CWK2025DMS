@@ -62,7 +62,7 @@
                     <!-- Background grid -->
                     <GridPane fx:id="gamePanel"
                               hgap="0" vgap="0"
-                              style="-fx-background-color: #000000; -fx-border-color: #ffffff; -fx-border-width: 3;"/>
+                              style="-fx-background-color: #000000; -fx-border-color: #ffffff; -fx-border-width: 4;"/>
 
                     <!-- Overlay pane for moving brick -->
                     <Pane fx:id="brickPaneContainer"
