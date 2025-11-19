@@ -170,7 +170,9 @@ public class SimpleBoard implements Board {
             Brick temp = holdBrick;
             holdBrick = currentBrick;
             brickRotator.setBrick(temp);
-            currentOffset = new Point(height / 2 - 2, 0);
+            currentOffset = new Point(width/ 2 - 2, 0);
+            // new Point(3, 0)  "Column 3, top row"
+
         }
 
         canHold = false;
