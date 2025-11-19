@@ -24,36 +24,36 @@
                     </padding>
 
                     <!-- HOLD Panel -->
-                    <VBox style="-fx-background-color: #000000; -fx-border-color: #ffffff; -fx-border-width: 3;">
+                    <VBox style="-fx-background-color: #2a2a2a; -fx-border-color: #4a4a4a; -fx-border-width: 2; -fx-background-radius: 5; -fx-border-radius: 5;">
                         <padding>
-                            <Insets top="5" right="10" bottom="10" left="10"/>
+                            <Insets top="8" right="12" bottom="12" left="12"/>
                         </padding>
-                        <Label text="HOLD" style="-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;">
+                        <Label text="HOLD" style="-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-font-family: 'Arial';">
                             <padding>
-                                <Insets bottom="5"/>
+                                <Insets bottom="8"/>
                             </padding>
                         </Label>
                         <GridPane fx:id="holdPanel" hgap="0" vgap="0"
-                                  prefWidth="120" prefHeight="120"
-                                  style="-fx-background-color: #000000;"/>
+                                  prefWidth="100" prefHeight="80"
+                                  style="-fx-background-color: #1a1a1a; -fx-background-radius: 3;"/>
                     </VBox>
 
                     <!-- Stats Panel -->
                     <VBox alignment="TOP_LEFT" spacing="15" style="-fx-padding: 20;">
                         <Label fx:id="piecesLabel" text="PIECES"
-                               style="-fx-text-fill: white; -fx-font-size: 14px;"/>
+                               style="-fx-text-fill: #888888; -fx-font-size: 12px; -fx-font-weight: bold;"/>
                         <Label fx:id="piecesValue" text="0"
-                               style="-fx-text-fill: white; -fx-font-size: 32px; -fx-font-weight: bold;"/>
+                               style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold;"/>
 
                         <Label fx:id="linesLabel" text="LINES"
-                               style="-fx-text-fill: white; -fx-font-size: 14px;"/>
+                               style="-fx-text-fill: #888888; -fx-font-size: 12px; -fx-font-weight: bold;"/>
                         <Label fx:id="linesValue" text="0/40"
-                               style="-fx-text-fill: white; -fx-font-size: 32px; -fx-font-weight: bold;"/>
+                               style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold;"/>
 
                         <Label fx:id="timeLabel" text="TIME"
-                               style="-fx-text-fill: white; -fx-font-size: 14px;"/>
+                               style="-fx-text-fill: #888888; -fx-font-size: 12px; -fx-font-weight: bold;"/>
                         <Label fx:id="timeValue" text="0:00.000"
-                               style="-fx-text-fill: white; -fx-font-size: 32px; -fx-font-weight: bold;"/>
+                               style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold;"/>
                     </VBox>
                 </VBox>
 
@@ -89,56 +89,77 @@
                             <Insets top="50"/>
                         </padding>
 
-                        <VBox style="-fx-background-color: #000000; -fx-border-color: #ffffff; -fx-border-width: 3;">
+                        <VBox  spacing="0" style="-fx-background-color: #2a2a2a; -fx-border-color: #4a4a4a; -fx-border-width: 2; -fx-background-radius: 5; -fx-border-radius: 5;">
                             <padding>
-                                <Insets top="5" right="10" bottom="10" left="10"/>
+                                <Insets top="8" right="12" bottom="12" left="12"/>
                             </padding>
-                            <Label text="NEXT" style="-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;">
+                            <Label text="NEXT" style="-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-font-family: 'Arial';">
                                 <padding>
-                                    <Insets bottom="5"/>
+                                    <Insets bottom="10"/>
                                 </padding>
                             </Label>
 
                             <!-- Next Brick Preview 1 -->
+                            <VBox style="-fx-background-color: #1a1a1a; -fx-background-radius: 3;">
+                                <padding>
+                                    <Insets top="8" right="8" bottom="8" left="8"/>
+                                </padding>
                             <GridPane fx:id="nextPanel1" hgap="0" vgap="0"
                                       prefWidth="120" prefHeight="100"
-                                      style="-fx-background-color: #000000;">
-                                <padding>
-                                    <Insets bottom="10"/>
-                                </padding>
-                            </GridPane>
+                                      style="-fx-background-color: #000000;"/>
+                            </VBox>
+
+                            <!-- Separator -->
+                            <Region prefHeight="8"/>
 
                             <!-- Next Brick Preview 2 -->
-                            <GridPane fx:id="nextPanel2" hgap="0" vgap="0"
-                                      prefWidth="120" prefHeight="100"
-                                      style="-fx-background-color: #000000;">
+                            <VBox style="-fx-background-color: #1a1a1a; -fx-background-radius: 3;">
                                 <padding>
-                                    <Insets bottom="10"/>
+                                    <Insets top="8" right="8" bottom="8" left="8"/>
                                 </padding>
-                            </GridPane>
+                                <GridPane fx:id="nextPanel2" hgap="0" vgap="0"
+                                          prefWidth="120" prefHeight="100"
+                                          style="-fx-background-color: #000000;"/>
+                            </VBox>
+
+                            <!-- Separator -->
+                            <Region prefHeight="8"/>
 
                             <!-- Next Brick Preview 3 -->
-                            <GridPane fx:id="nextPanel3" hgap="0" vgap="0"
-                                      prefWidth="120" prefHeight="100"
-                                      style="-fx-background-color: #000000;">
+                            <VBox style="-fx-background-color: #1a1a1a; -fx-background-radius: 3;">
                                 <padding>
-                                    <Insets bottom="10"/>
+                                    <Insets top="8" right="8" bottom="8" left="8"/>
                                 </padding>
-                            </GridPane>
+                                <GridPane fx:id="nextPanel3" hgap="0" vgap="0"
+                                          prefWidth="120" prefHeight="100"
+                                          style="-fx-background-color: #000000;"/>
+                            </VBox>
+
+                            <!-- Separator -->
+                            <Region prefHeight="8"/>
 
                             <!-- Next Brick Preview 4 -->
-                            <GridPane fx:id="nextPanel4" hgap="0" vgap="0"
-                                      prefWidth="120" prefHeight="100"
-                                      style="-fx-background-color: #000000;">
+                            <VBox style="-fx-background-color: #1a1a1a; -fx-background-radius: 3;">
                                 <padding>
-                                    <Insets bottom="10"/>
+                                    <Insets top="8" right="8" bottom="8" left="8"/>
                                 </padding>
-                            </GridPane>
+                                <GridPane fx:id="nextPanel4" hgap="0" vgap="0"
+                                          prefWidth="120" prefHeight="100"
+                                          style="-fx-background-color: #000000;"/>
+                            </VBox>
+
+                            <!-- Separator -->
+                            <Region prefHeight="8"/>
 
                             <!-- Next Brick Preview 5 -->
-                            <GridPane fx:id="nextPanel5" hgap="0" vgap="0"
-                                      prefWidth="120" prefHeight="100"
-                                      style="-fx-background-color: #000000;"/>
+                            <VBox style="-fx-background-color: #1a1a1a; -fx-background-radius: 3;">
+                                <padding>
+                                    <Insets top="8" right="8" bottom="8" left="8"/>
+                                </padding>
+                                <GridPane fx:id="nextPanel5" hgap="0" vgap="0"
+                                          prefWidth="100" prefHeight="80"
+                                          style="-fx-background-color: #000000;"/>
+                            </VBox>
 
                         </VBox>
                     </VBox>

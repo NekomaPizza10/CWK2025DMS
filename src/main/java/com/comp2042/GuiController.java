@@ -26,6 +26,7 @@ import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.control.Label;
+import javafx.geometry.Pos;
 
 import javafx.util.Duration;
 
@@ -37,6 +38,7 @@ public class GuiController implements Initializable {
 
     private static final int BRICK_SIZE = 25;
     private static final int PREVIEW_BRICK_SIZE = 20;
+    private static final int PREVIEW_GRID_SIZE = 4;
 
     @FXML
     private GridPane gamePanel;
@@ -202,6 +204,7 @@ public class GuiController implements Initializable {
     }
 
     private void initializePreviewPanel(GridPane panel, int size) {
+        panel.setAlignment(Pos.CENTER);  // Center the grid content
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 Rectangle rectangle = new Rectangle(size, size);
@@ -212,9 +215,9 @@ public class GuiController implements Initializable {
     }
 
     private Rectangle[][] createPreviewRectangles(GridPane panel, int size) {
-        Rectangle[][] rects = new Rectangle[4][4];
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
+        Rectangle[][] rects = new Rectangle[PREVIEW_GRID_SIZE][PREVIEW_GRID_SIZE];
+        for (int i = 0; i <PREVIEW_GRID_SIZE ; i++) {
+            for (int j = 0; j < PREVIEW_GRID_SIZE; j++) {
                 Rectangle rectangle = new Rectangle(size, size);
                 rectangle.setFill(Color.TRANSPARENT);
                 rects[i][j] = rectangle;
@@ -226,15 +229,15 @@ public class GuiController implements Initializable {
 
     private void updatePreviewPanel(Rectangle[][] rects, int[][] brickData) {
         // Clear all cells first
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
+        for (int i = 0; i < PREVIEW_GRID_SIZE; i++) {
+            for (int j = 0; j < PREVIEW_GRID_SIZE; j++) {
                     rects[i][j].setFill(Color.TRANSPARENT);
 
             }
         }
 
         // Find the bounds of the actual brick shape
-        int minRow = 4, maxRow = -1, minCol = 4, maxCol = -1;
+        int minRow = PREVIEW_GRID_SIZE, maxRow = -1, minCol = PREVIEW_GRID_SIZE, maxCol = -1;
         for (int i = 0; i < brickData.length; i++) {
             for (int j = 0; j < brickData[i].length; j++) {
                 if (brickData[i][j] != 0) {
@@ -245,6 +248,9 @@ public class GuiController implements Initializable {
                 }
             }
         }
+
+        // If no brick data found, return
+        if (minRow > maxRow) return;
 
         // Calculate centering offset
         int brickHeight = maxRow - minRow + 1;
