@@ -217,6 +217,11 @@ public class GuiController implements Initializable {
             for (int j = 0; j < PREVIEW_GRID_SIZE; j++) {
                 Rectangle rectangle = new Rectangle(size, size);
                 rectangle.setFill(Color.TRANSPARENT);
+
+                // Add stroke for brick block outlines
+                rectangle.setStroke(Color.BLACK); // A darker color for better contrast
+                rectangle.setStrokeWidth(0.5); // A slightly visible border
+
                 rects[i][j] = rectangle;
                 panel.add(rectangle, j, i);
             }
