@@ -24,9 +24,8 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Font;
 import javafx.scene.control.Label;
-import javafx.geometry.Pos;
+
 
 import javafx.util.Duration;
 
@@ -142,7 +141,7 @@ public class GuiController implements Initializable {
                 Rectangle rectangle = new Rectangle(BRICK_SIZE, BRICK_SIZE);
                 rectangle.setFill(Color.TRANSPARENT);
                 rectangle.setStroke(Color.rgb(40, 40, 40));
-                rectangle.setStrokeWidth(0.25);
+                rectangle.setStrokeWidth(0.5);
                 displayMatrix[i][j] = rectangle;
                 gamePanel.add(rectangle, j, i);     // column, row
             }
@@ -152,8 +151,7 @@ public class GuiController implements Initializable {
         rectangles = new Rectangle[brick.getBrickData().length][brick.getBrickData()[0].length];
         for (int i = 0; i < brick.getBrickData().length; i++) {
             for (int j = 0; j < brick.getBrickData()[i].length; j++) {
-                Rectangle rectangle = new Rectangle(BRICK_SIZE, BRICK_SIZE);
-
+                Rectangle rectangle = new Rectangle(BRICK_SIZE + 1, BRICK_SIZE + 1);  // Slightly bigger
                 rectangle.setFill(getFillColor(brick.getBrickData()[i][j]));
                 rectangles[i][j] = rectangle;
                 brickPanel.add(rectangle, j, i);
@@ -204,7 +202,6 @@ public class GuiController implements Initializable {
     }
 
     private void initializePreviewPanel(GridPane panel, int size) {
-        panel.setAlignment(Pos.CENTER);  // Center the grid content
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 Rectangle rectangle = new Rectangle(size, size);
@@ -248,9 +245,6 @@ public class GuiController implements Initializable {
                 }
             }
         }
-
-        // If no brick data found, return
-        if (minRow > maxRow) return;
 
         // Calculate centering offset
         int brickHeight = maxRow - minRow + 1;
