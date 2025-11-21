@@ -10,13 +10,11 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 
 import javafx.scene.Group;
-import javafx.scene.effect.Reflection;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
@@ -52,6 +50,9 @@ public class GuiController implements Initializable {
     private Pane brickPaneContainer;
 
     @FXML
+    private GridPane shadowPanel;
+
+    @FXML
     private GridPane holdPanel;
 
     @FXML
@@ -66,8 +67,9 @@ public class GuiController implements Initializable {
     private Rectangle[][] displayMatrix;
     private InputEventListener eventListener;
     private Rectangle[][] rectangles;
-    private Rectangle[][] holdRectangles;
-    private Rectangle[][] nextRectangles1, nextRectangles2, nextRectangles3, nextRectangles4, nextRectangles5;
+    private Rectangle[][] shadowRectangles; // For shadow pieces
+    private Rectangle[][] holdRectangles;   // For Hold pieces
+    private Rectangle[][] nextRectangles1, nextRectangles2, nextRectangles3, nextRectangles4, nextRectangles5;  // For next preview pieces
     private Timeline timeLine;
 
     private final BooleanProperty isPause = new SimpleBooleanProperty();
@@ -163,6 +165,20 @@ public class GuiController implements Initializable {
         // Position relative to Pane container (0,0), not gamePanel
         brickPanel.setLayoutX(brick.getxPosition() * BRICK_SIZE);
         brickPanel.setLayoutY(brick.getyPosition() * BRICK_SIZE);
+
+        // Initialize shadow brick display
+        shadowRectangles = new Rectangle[brick.getBrickData().length][brick.getBrickData()[0].length];
+        for (int i = 0; i < brick.getBrickData().length; i++) {
+            for (int j = 0; j < brick.getBrickData()[i].length; j++) {
+                Rectangle rectangle = new Rectangle(BRICK_SIZE + 1, BRICK_SIZE + 1);
+                rectangle.setFill(Color.TRANSPARENT);
+                rectangle.setOpacity(0.3); // Make shadow semi-transparent
+                shadowRectangles[i][j] = rectangle;
+                shadowPanel.add(rectangle, j, i);
+            }
+        }
+
+        shadowPanel.toBack(); // Shadow should render behind the actual brick
 
 
         // Initialize HOLD panel
@@ -301,6 +317,8 @@ public class GuiController implements Initializable {
             brickPanel.layout();
             brickPanel.requestLayout();
 
+            updateShadow(brick);    // Update shadow position
+
         }
     }
 
@@ -365,6 +383,76 @@ public class GuiController implements Initializable {
             int millis = (int) (elapsed % 1000);
             timeValue.setText(String.format("%d:%02d.%03d", minutes, seconds, millis));
         }
+    }
+
+    private void updateShadow(ViewData brick) {
+        // Calculate where the brick would land
+        int shadowY = calculateShadowPosition(brick);
+
+        // Position shadow at landing spot
+        shadowPanel.setLayoutX(brick.getxPosition() * BRICK_SIZE);
+        shadowPanel.setLayoutY(shadowY * BRICK_SIZE);
+
+        // Update shadow appearance
+        for (int i = 0; i < brick.getBrickData().length; i++) {
+            for (int j = 0; j < brick.getBrickData()[i].length; j++) {
+                if (brick.getBrickData()[i][j] != 0) {
+                    shadowRectangles[i][j].setFill(getFillColor(brick.getBrickData()[i][j]));
+                } else {
+                    shadowRectangles[i][j].setFill(Color.TRANSPARENT);
+                }
+            }
+        }
+    }
+
+    private int calculateShadowPosition(ViewData brick) {
+        // Get current board state
+        if (!(eventListener instanceof GameController)) {
+            return brick.getyPosition();
+        }
+
+        GameController gc = (GameController) eventListener;
+        Board board = gc.getBoard();
+        int[][] boardMatrix = board.getBoardMatrix();
+        int[][] brickShape = brick.getBrickData();
+
+        int currentY = brick.getyPosition();
+        int currentX = brick.getxPosition();
+
+        // Move down until collision
+        int testY = currentY;
+        while (testY < boardMatrix.length) {
+            // Check if brick would collide at this position
+            boolean collision = checkCollision(boardMatrix, brickShape, currentX, testY + 1);
+            if (collision) {
+                return testY;
+            }
+            testY++;
+        }
+
+        return testY;
+    }
+
+    private boolean checkCollision(int[][] board, int[][] brick, int x, int y) {
+        for (int i = 0; i < brick.length; i++) {
+            for (int j = 0; j < brick[i].length; j++) {
+                if (brick[i][j] != 0) {
+                    int boardX = x + j;
+                    int boardY = y + i;
+
+                    // Check out of bounds
+                    if (boardY >= board.length || boardX < 0 || boardX >= board[0].length) {
+                        return true;
+                    }
+
+                    // Check collision with existing blocks
+                    if (boardY >= 0 && board[boardY][boardX] != 0) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     public void setEventListener(InputEventListener eventListener) {

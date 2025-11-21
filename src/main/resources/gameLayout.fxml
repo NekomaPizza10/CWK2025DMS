@@ -18,7 +18,7 @@
     <center>
         <HBox alignment="CENTER" spacing="20">
             <!-- Left Side: HOLD Box -->
-            <VBox alignment="CENTER" spacing="10" style="-fx-background-color: transparent;">
+            <VBox alignment="TOP_CENTER" spacing="10" style="-fx-background-color: transparent;">
                 <padding>
                     <Insets top="50"/>
                 </padding>
@@ -71,6 +71,10 @@
                       maxWidth="255" maxHeight="680"
                       style="-fx-background-color: transparent;"
                       mouseTransparent="true">
+                    <!-- Shadow panel (renders behind) -->
+                    <GridPane fx:id="shadowPanel"
+                              hgap="0" vgap="0"/>
+                    <!-- Main brick panel -->
                     <GridPane fx:id="brickPanel"
                               hgap="0" vgap="0"/>
                 </Pane>
