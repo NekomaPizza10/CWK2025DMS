@@ -50,9 +50,6 @@ public class GuiController implements Initializable {
     private Pane brickPaneContainer;
 
     @FXML
-    private GridPane shadowPanel;
-
-    @FXML
     private GridPane holdPanel;
 
     @FXML
@@ -67,7 +64,6 @@ public class GuiController implements Initializable {
     private Rectangle[][] displayMatrix;
     private InputEventListener eventListener;
     private Rectangle[][] rectangles;
-    private Rectangle[][] shadowRectangles; // For shadow pieces
     private Rectangle[][] holdRectangles;   // For Hold pieces
     private Rectangle[][] nextRectangles1, nextRectangles2, nextRectangles3, nextRectangles4, nextRectangles5;  // For next preview pieces
     private Timeline timeLine;
@@ -144,6 +140,8 @@ public class GuiController implements Initializable {
                 rectangle.setFill(Color.TRANSPARENT);
                 rectangle.setStroke(Color.rgb(40, 40, 40));
                 rectangle.setStrokeWidth(0.5);
+                brickPanel.setHgap(0.5);
+                brickPanel.setVgap(0.5);
                 displayMatrix[i][j] = rectangle;
                 gamePanel.add(rectangle, j, i);     // column, row
             }
@@ -153,7 +151,7 @@ public class GuiController implements Initializable {
         rectangles = new Rectangle[brick.getBrickData().length][brick.getBrickData()[0].length];
         for (int i = 0; i < brick.getBrickData().length; i++) {
             for (int j = 0; j < brick.getBrickData()[i].length; j++) {
-                Rectangle rectangle = new Rectangle(BRICK_SIZE + 1, BRICK_SIZE + 1);  // Slightly bigger
+                Rectangle rectangle = new Rectangle(BRICK_SIZE, BRICK_SIZE);  // Slightly bigger
                 rectangle.setFill(getFillColor(brick.getBrickData()[i][j]));
                 rectangles[i][j] = rectangle;
                 brickPanel.add(rectangle, j, i);
@@ -165,20 +163,6 @@ public class GuiController implements Initializable {
         // Position relative to Pane container (0,0), not gamePanel
         brickPanel.setLayoutX(brick.getxPosition() * BRICK_SIZE);
         brickPanel.setLayoutY(brick.getyPosition() * BRICK_SIZE);
-
-        // Initialize shadow brick display
-        shadowRectangles = new Rectangle[brick.getBrickData().length][brick.getBrickData()[0].length];
-        for (int i = 0; i < brick.getBrickData().length; i++) {
-            for (int j = 0; j < brick.getBrickData()[i].length; j++) {
-                Rectangle rectangle = new Rectangle(BRICK_SIZE + 1, BRICK_SIZE + 1);
-                rectangle.setFill(Color.TRANSPARENT);
-                rectangle.setOpacity(0.3); // Make shadow semi-transparent
-                shadowRectangles[i][j] = rectangle;
-                shadowPanel.add(rectangle, j, i);
-            }
-        }
-
-        shadowPanel.toBack(); // Shadow should render behind the actual brick
 
 
         // Initialize HOLD panel
@@ -301,6 +285,8 @@ public class GuiController implements Initializable {
     private void refreshBrick(ViewData brick) {
         if (isPause.getValue() == Boolean.FALSE) {
 
+            updateShadow(brick);    // Update shadow position on board
+
             // Calculate exact position to align with grid
             double xPos = brick.getxPosition() * BRICK_SIZE;
             double yPos = brick.getyPosition() * BRICK_SIZE;
@@ -316,8 +302,6 @@ public class GuiController implements Initializable {
 
             brickPanel.layout();
             brickPanel.requestLayout();
-
-            updateShadow(brick);    // Update shadow position
 
         }
     }
@@ -386,20 +370,40 @@ public class GuiController implements Initializable {
     }
 
     private void updateShadow(ViewData brick) {
+        if (!(eventListener instanceof GameController)) {
+            return;
+        }
+
+        GameController gc = (GameController) eventListener;
+        Board board = gc.getBoard();
+        int[][] boardMatrix = board.getBoardMatrix();
+
+        // First, refresh the background to clear old shadow
+        refreshGameBackground(boardMatrix);
+
         // Calculate where the brick would land
         int shadowY = calculateShadowPosition(brick);
+        int shadowX = brick.getxPosition();
+        int[][] brickData = brick.getBrickData();
 
-        // Position shadow at landing spot
-        shadowPanel.setLayoutX(brick.getxPosition() * BRICK_SIZE);
-        shadowPanel.setLayoutY(shadowY * BRICK_SIZE);
+        // Draw shadow directly on the board grid (displayMatrix)
+        for (int i = 0; i < brickData.length; i++) {
+            for (int j = 0; j < brickData[i].length; j++) {
+                if (brickData[i][j] != 0) {
+                    int boardRow = shadowY + i;
+                    int boardCol = shadowX + j;
 
-        // Update shadow appearance
-        for (int i = 0; i < brick.getBrickData().length; i++) {
-            for (int j = 0; j < brick.getBrickData()[i].length; j++) {
-                if (brick.getBrickData()[i][j] != 0) {
-                    shadowRectangles[i][j].setFill(getFillColor(brick.getBrickData()[i][j]));
-                } else {
-                    shadowRectangles[i][j].setFill(Color.TRANSPARENT);
+                    // Make sure it's within bounds
+                    if (boardRow >= 0 && boardRow < displayMatrix.length &&
+                            boardCol >= 0 && boardCol < displayMatrix[0].length) {
+
+                        // Only draw shadow if the cell is empty
+                        if (boardMatrix[boardRow][boardCol] == 0) {
+                            // Draw shadow with semi-transparent color
+                            Color shadowColor = Color.rgb(128, 128, 128, 0.3);
+                            displayMatrix[boardRow][boardCol].setFill(shadowColor);
+                        }
+                    }
                 }
             }
         }
@@ -416,37 +420,40 @@ public class GuiController implements Initializable {
         int[][] boardMatrix = board.getBoardMatrix();
         int[][] brickShape = brick.getBrickData();
 
-        int currentY = brick.getyPosition();
         int currentX = brick.getxPosition();
+        int currentY = brick.getyPosition();
 
-        // Move down until collision
-        int testY = currentY;
-        while (testY < boardMatrix.length) {
-            // Check if brick would collide at this position
-            boolean collision = checkCollision(boardMatrix, brickShape, currentX, testY + 1);
-            if (collision) {
-                return testY;
-            }
-            testY++;
+        // Start from current position and drop down
+        int dropY = currentY;
+
+        // Keep moving down while there's no collision
+        while (!checkCollision(boardMatrix, brickShape, currentX, dropY + 1)) {
+            dropY++;
         }
 
-        return testY;
+        // If we got here, return the last valid position
+        return dropY;
     }
 
     private boolean checkCollision(int[][] board, int[][] brick, int x, int y) {
         for (int i = 0; i < brick.length; i++) {
             for (int j = 0; j < brick[i].length; j++) {
-                if (brick[i][j] != 0) {
-                    int boardX = x + j;
-                    int boardY = y + i;
+                if (brick[i][j] != 0) {  // Only check filled cells
+                    int boardRow = y + i;
+                    int boardCol = x + j;
 
-                    // Check out of bounds
-                    if (boardY >= board.length || boardX < 0 || boardX >= board[0].length) {
+                    // Check bottom boundary
+                    if (boardRow >= board.length) {
                         return true;
                     }
 
-                    // Check collision with existing blocks
-                    if (boardY >= 0 && board[boardY][boardX] != 0) {
+                    // Check side boundaries
+                    if (boardCol < 0 || boardCol >= board[0].length) {
+                        return true;
+                    }
+
+                    // Check collision with placed blocks
+                    if (boardRow >= 0 && board[boardRow][boardCol] != 0) {
                         return true;
                     }
                 }
