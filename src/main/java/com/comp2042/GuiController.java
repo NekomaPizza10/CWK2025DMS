@@ -74,6 +74,12 @@ public class GuiController implements Initializable {
     private long gameStartTime;
     private AnimationTimer timer;
 
+    private Timeline lockDelayTimeline;
+    private boolean isLockDelayActive = false;
+    private static final int LOCK_DELAY_MS = 700; // 500ms delay before locking
+    private int lockDelayResetCount = 0;  // Track resets
+    private static final int MAX_LOCK_RESETS = 15; // Limit resets
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         gamePanel.setFocusTraversable(true);
@@ -86,14 +92,17 @@ public class GuiController implements Initializable {
             if (isPause.getValue() == Boolean.FALSE && isGameOver.getValue() == Boolean.FALSE) {
                 if (keyEvent.getCode() == KeyCode.LEFT || keyEvent.getCode() == KeyCode.A) {
                     refreshBrick(eventListener.onLeftEvent(new MoveEvent(EventType.LEFT, EventSource.USER)));
+                    if (isLockDelayActive) startLockDelay(); // Reset timer
                     keyEvent.consume();
                 }
                 if (keyEvent.getCode() == KeyCode.RIGHT || keyEvent.getCode() == KeyCode.D) {
                     refreshBrick(eventListener.onRightEvent(new MoveEvent(EventType.RIGHT, EventSource.USER)));
+                    if (isLockDelayActive) startLockDelay(); // Reset timer
                     keyEvent.consume();
                 }
                 if (keyEvent.getCode() == KeyCode.UP || keyEvent.getCode() == KeyCode.W) {
                     refreshBrick(eventListener.onRotateEvent(new MoveEvent(EventType.ROTATE, EventSource.USER)));
+                    if (isLockDelayActive) startLockDelay(); // Reset timer
                     keyEvent.consume();
                 }
                 if (keyEvent.getCode() == KeyCode.DOWN || keyEvent.getCode() == KeyCode.S) {
@@ -108,6 +117,7 @@ public class GuiController implements Initializable {
                     handleHardDrop();
                     keyEvent.consume();
                 }
+
             }
             if (keyEvent.getCode() == KeyCode.N) {
                 newGame(null);
@@ -233,15 +243,15 @@ public class GuiController implements Initializable {
         Rectangle[][] rects = new Rectangle[PREVIEW_GRID_SIZE][PREVIEW_GRID_SIZE];
         for (int i = 0; i <PREVIEW_GRID_SIZE ; i++) {
             for (int j = 0; j < PREVIEW_GRID_SIZE; j++) {
-                Rectangle rectangle = new Rectangle(size, size);
-                rectangle.setFill(Color.TRANSPARENT);
+                Rectangle rectangles = new Rectangle(size, size);
+                rectangles.setFill(Color.TRANSPARENT);
 
                 // Add stroke for brick block outlines
-                rectangle.setStroke(Color.BLACK); // A darker color for better contrast
-                rectangle.setStrokeWidth(0.5); // A slightly visible border
+                rectangles.setStroke(Color.BLACK); // A darker color for better contrast
+                rectangles.setStrokeWidth(0.5); // A slightly visible border
 
-                rects[i][j] = rectangle;
-                panel.add(rectangle, j, i);
+                rects[i][j] = rectangles;
+                panel.add(rectangles, j, i);
             }
         }
         return rects;
@@ -307,25 +317,34 @@ public class GuiController implements Initializable {
 
     private void refreshBrick(ViewData brick) {
         if (isPause.getValue() == Boolean.FALSE) {
-
-            updateShadow(brick);    // Update shadow position on board
-
-            // Calculate exact position to align with grid
-            double xPos = brick.getxPosition() * BRICK_SIZE;
-            double yPos = brick.getyPosition() * BRICK_SIZE;
-
-            brickPanel.setLayoutX(xPos);
-            brickPanel.setLayoutY(yPos);
-
-            for (int i = 0; i < brick.getBrickData().length; i++) {
-                for (int j = 0; j < brick.getBrickData()[i].length; j++) {
-                    setRectangleData(brick.getBrickData()[i][j], rectangles[i][j]);
+            // 1. Clear old brick from gamePanel
+            for (Rectangle[] row : rectangles) {
+                for (Rectangle r : row) {
+                    gamePanel.getChildren().remove(r);
                 }
             }
 
-            brickPanel.layout();
-            brickPanel.requestLayout();
+            // 2. Draw new brick at correct grid position
+            for (int i = 0; i < brick.getBrickData().length; i++) {
+                for (int j = 0; j < brick.getBrickData()[i].length; j++) {
+                    if (brick.getBrickData()[i][j] != 0) {
+                        int gridX = brick.getxPosition() + j;
+                        int gridY = brick.getyPosition() + i;
 
+                        // Draw the brick cell
+                        rectangles[i][j].setFill(getFillColor(brick.getBrickData()[i][j]));
+                        rectangles[i][j].setStroke(Color.BLACK); // A darker color for better contrast
+                        rectangles[i][j].setStrokeWidth(0.5); // A slightly visible border
+
+                        // Add to gamePanel at exact grid position
+                        gamePanel.add(rectangles[i][j], gridX, gridY);
+                    } else {
+                        rectangles[i][j].setFill(Color.TRANSPARENT);
+                    }
+                }
+            }
+
+            updateShadow(brick);
         }
     }
 
@@ -343,15 +362,31 @@ public class GuiController implements Initializable {
 
     private void moveDown(MoveEvent event) {
         if (isPause.getValue() == Boolean.FALSE) {
-            DownData downData = eventListener.onDownEvent(event);
-            if (downData.getClearRow() != null && downData.getClearRow().getLinesRemoved() > 0) {
-                NotificationPanel notificationPanel = new NotificationPanel("+" + downData.getClearRow().getScoreBonus());
-                groupNotification.getChildren().add(notificationPanel);
-                notificationPanel.showScore(groupNotification.getChildren());
-                updateStatsDisplay();
+            GameController gc = (GameController) eventListener;
+            Board board = gc.getBoard();
+
+            // Check if brick can move down
+            boolean canMove = board.moveBrickDown();
+
+            if (!canMove) {
+                // Brick hit the ground - start lock delay
+                if (!isLockDelayActive) {
+                    isLockDelayActive = true;
+                    lockDelayResetCount = 0;
+                    startLockDelay();
+                }
+                refreshBrick(board.getViewData());
+            } else {
+                // Brick moved successfully - cancel lock delay
+                cancelLockDelay();
+
+                // Add score for user movement
+                if (event.getEventSource() == EventSource.USER) {
+                    board.getScore().add(1);
+                }
+
+                refreshBrick(board.getViewData());
             }
-            refreshBrick(downData.getViewData());
-            updateNextDisplay();
         }
         gamePanel.requestFocus();
     }
@@ -485,6 +520,75 @@ public class GuiController implements Initializable {
         return false;
     }
 
+    private void startLockDelay() {
+
+        // Cancel any existing lock delay timer
+        if (lockDelayTimeline != null) {
+            lockDelayTimeline.stop();
+        }
+
+        // Create new lock delay timer
+        lockDelayTimeline = new Timeline(new KeyFrame(
+                Duration.millis(LOCK_DELAY_MS),
+                ae -> executeLock()
+        ));
+        lockDelayTimeline.setCycleCount(1);
+        lockDelayTimeline.play();
+    }
+
+    private void resetLockDelay() {
+        // Limit the number of resets (prevents infinite delay)
+        if (lockDelayResetCount < MAX_LOCK_RESETS) {
+            lockDelayResetCount++;
+            startLockDelay();
+        } else {
+            // Force lock if too many resets
+            executeLock();
+        }
+    }
+
+    private void cancelLockDelay() {
+        if (lockDelayTimeline != null) {
+            lockDelayTimeline.stop();
+        }
+        isLockDelayActive = false;
+    }
+
+    private void executeLock() {
+        if (eventListener instanceof GameController) {
+            GameController gc = (GameController) eventListener;
+            Board board = gc.getBoard();
+
+            // Lock the brick in place
+            board.mergeBrickToBackground();
+            ClearRow clearRow = board.clearRows();
+
+            if (clearRow != null && clearRow.getLinesRemoved() > 0) {
+                board.getScore().add(clearRow.getScoreBonus());
+
+                NotificationPanel notificationPanel = new NotificationPanel(
+                        "+" + clearRow.getScoreBonus()
+                );
+                groupNotification.getChildren().add(notificationPanel);
+                notificationPanel.showScore(groupNotification.getChildren());
+                updateStatsDisplay();
+            }
+
+            // Create new brick
+            if (board.createNewBrick()) {
+                gameOver();
+            }
+
+            refreshGameBackground(board.getBoardMatrix());
+            refreshBrick(board.getViewData());
+            updateNextDisplay();
+
+            isLockDelayActive = false;
+            lockDelayResetCount = 0;
+        }
+    }
+
+
     public void setEventListener(InputEventListener eventListener) {
         this.eventListener = eventListener;
     }
@@ -496,6 +600,7 @@ public class GuiController implements Initializable {
     public void gameOver() {
         timeLine.stop();
         if (timer != null) timer.stop(); //Stop the timer
+        cancelLockDelay();
         gameOverPanel.setVisible(true);
         isGameOver.setValue(Boolean.TRUE);
     }
@@ -503,6 +608,7 @@ public class GuiController implements Initializable {
     public void newGame(ActionEvent actionEvent) {
         timeLine.stop();
         if (timer != null) timer.stop();
+        cancelLockDelay();
         gameOverPanel.setVisible(false);
         eventListener.createNewGame();
         gamePanel.requestFocus();
