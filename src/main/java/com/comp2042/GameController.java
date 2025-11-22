@@ -93,4 +93,29 @@ public class GameController implements InputEventListener {
     public int getLinesCleared() {
         return board.getLinesCleared();
     }
+
+    // Hard Drop function
+    public boolean hardDrop() {
+        // Drop brick to bottom instantly
+        while (board.moveBrickDown()) {
+            // Keep moving down until it can't move anymore
+        }
+
+        // Lock the brick
+        board.mergeBrickToBackground();
+        ClearRow clearRow = board.clearRows();
+
+        if (clearRow.getLinesRemoved() > 0) {
+            board.getScore().add(clearRow.getScoreBonus());
+        }
+
+        // Spawn next brick
+        if (board.createNewBrick()) {
+            viewGuiController.gameOver();
+            return false;
+        }
+
+        viewGuiController.refreshGameBackground(board.getBoardMatrix());
+        return true;
+    }
 }

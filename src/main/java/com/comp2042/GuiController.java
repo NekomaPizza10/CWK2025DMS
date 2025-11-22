@@ -104,6 +104,10 @@ public class GuiController implements Initializable {
                     handleHold();
                     keyEvent.consume();
                 }
+                if (keyEvent.getCode() == KeyCode.SPACE) {
+                    handleHardDrop();
+                    keyEvent.consume();
+                }
             }
             if (keyEvent.getCode() == KeyCode.N) {
                 newGame(null);
@@ -123,6 +127,20 @@ public class GuiController implements Initializable {
             refreshBrick(board.getViewData());
 
             updateNextDisplay();
+        }
+    }
+
+    private void handleHardDrop() {
+        if (eventListener instanceof GameController) {
+            GameController gc = (GameController) eventListener;
+            gc.hardDrop();
+
+            // Update displays after hard drop
+            Board board = gc.getBoard();
+            refreshGameBackground(board.getBoardMatrix());
+            refreshBrick(board.getViewData());
+            updateNextDisplay();
+            updateStatsDisplay();
         }
     }
 
