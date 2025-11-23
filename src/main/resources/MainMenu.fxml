@@ -23,35 +23,81 @@
            style="-fx-font-size: 18px; -fx-text-fill: #888888;"/>
 
     <!-- Spacer -->
-    <Region prefHeight="20"/>
+    <Region prefHeight="10"/>
 
-    <!-- Play Button -->
-    <Button fx:id="playButton"
-            text="PLAY GAME"
-            onAction="#handlePlay"
-            prefWidth="250" prefHeight="50"
-            style="-fx-font-size: 20px; -fx-font-weight: bold;
-                   -fx-background-color: #00ff88; -fx-text-fill: black;
-                   -fx-cursor: hand;"/>
+    <!-- Select Mode Label -->
+    <Label text="SELECT GAME MODE"
+           style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #00ff88;"/>
+
+    <!-- Normal Mode Button -->
+    <VBox spacing="5" alignment="CENTER">
+        <Button fx:id="normalModeButton"
+                text="NORMAL MODE"
+                onAction="#handleNormalMode"
+                prefWidth="280" prefHeight="50"
+                style="-fx-font-size: 18px; -fx-font-weight: bold;
+                       -fx-background-color: #00ff88; -fx-text-fill: black;
+                       -fx-background-radius: 5;
+                       -fx-cursor: hand;"/>
+        <Label text="Practice with increasing speed"
+               style="-fx-font-size: 11px; -fx-text-fill: #666666;"/>
+    </VBox>
+
+    <!-- 40 Lines Mode Button -->
+    <VBox spacing="5" alignment="CENTER">
+        <Button fx:id="fortyLinesButton"
+                text="40 LINES CHALLENGE"
+                onAction="#handleFortyLinesMode"
+                prefWidth="280" prefHeight="50"
+                style="-fx-font-size: 18px; -fx-font-weight: bold;
+                       -fx-background-color: transparent;
+                       -fx-border-color: #ff9900; -fx-border-width: 2;
+                       -fx-text-fill: #ff9900;
+                       -fx-background-radius: 5; -fx-border-radius: 5;
+                       -fx-cursor: hand;"/>
+        <Label text="Clear 40 lines as fast as possible"
+               style="-fx-font-size: 11px; -fx-text-fill: #666666;"/>
+    </VBox>
+
+    <!-- 2 Minutes Mode Button -->
+    <VBox spacing="5" alignment="CENTER">
+        <Button fx:id="twoMinutesButton"
+                text="2 MINUTES CHALLENGE"
+                onAction="#handleTwoMinutesMode"
+                prefWidth="280" prefHeight="50"
+                style="-fx-font-size: 18px; -fx-font-weight: bold;
+                       -fx-background-color: transparent;
+                       -fx-border-color: #00aaff; -fx-border-width: 2;
+                       -fx-text-fill: #00aaff;
+                       -fx-background-radius: 5; -fx-border-radius: 5;
+                       -fx-cursor: hand;"/>
+        <Label text="Clear as many lines as you can"
+               style="-fx-font-size: 11px; -fx-text-fill: #666666;"/>
+    </VBox>
+
+    <!-- Spacer -->
+    <Region prefHeight="10"/>
 
     <!-- How to Play Button -->
     <Button text="HOW TO PLAY"
             onAction="#handleHowToPlay"
-            prefWidth="250" prefHeight="50"
-            style="-fx-font-size: 18px; -fx-font-weight: bold;
+            prefWidth="200" prefHeight="40"
+            style="-fx-font-size: 14px; -fx-font-weight: bold;
                    -fx-background-color: transparent;
                    -fx-border-color: #00aaff; -fx-border-width: 2;
                    -fx-text-fill: #00aaff;
+                   -fx-background-radius: 5; -fx-border-radius: 5;
                    -fx-cursor: hand;"/>
 
     <!-- Exit Button -->
     <Button text="EXIT"
             onAction="#handleExit"
-            prefWidth="250" prefHeight="50"
-            style="-fx-font-size: 18px; -fx-font-weight: bold;
+            prefWidth="200" prefHeight="40"
+            style="-fx-font-size: 14px; -fx-font-weight: bold;
                    -fx-background-color: transparent;
                    -fx-border-color: #ff4444; -fx-border-width: 2;
                    -fx-text-fill: #ff4444;
+                   -fx-background-radius: 5; -fx-border-radius: 5;
                    -fx-cursor: hand;"/>
 
 </VBox>
