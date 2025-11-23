@@ -35,6 +35,12 @@ import java.util.List;
 
 public class GuiController implements Initializable {
 
+    private GameMode currentGameMode = GameMode.NORMAL;
+    private int baseDropSpeed = 800; // Starting speed in ms
+    private int currentDropSpeed = 800;
+    private static final int MIN_DROP_SPEED = 200; // Fastest speed
+    private static final int SPEED_DECREASE_PER_LEVEL = 50; // Speed increases after each level
+
     private static final int BRICK_SIZE = 25;
     private static final int PREVIEW_BRICK_SIZE = 20;
     private static final int PREVIEW_GRID_SIZE = 4;
@@ -93,11 +99,21 @@ public class GuiController implements Initializable {
     private Timeline countdownTimeline;
     private boolean isCountdownActive = false;
 
+    private boolean rotateKeyPressed = false;
+    private boolean hardDropKeyPressed = false;
+
+
+    public void setGameMode(GameMode mode) {
+        this.currentGameMode = mode;
+        System.out.println("Game mode set to: " + mode.getDisplayName());
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         gamePanel.setFocusTraversable(true);
         gamePanel.requestFocus();
         gamePanel.setOnKeyPressed(this::handleKeyPress);
+        gamePanel.setOnKeyReleased(this::handleKeyRelease);
         gameOverPanel.setVisible(false);
     }
 
@@ -118,7 +134,8 @@ public class GuiController implements Initializable {
                     if (isLockDelayActive) startLockDelay(); // Reset timer
                     keyEvent.consume();
                 }
-                if (keyEvent.getCode() == KeyCode.UP || keyEvent.getCode() == KeyCode.W) {
+                if ((keyEvent.getCode() == KeyCode.UP || keyEvent.getCode() == KeyCode.W) && !rotateKeyPressed) {
+                    rotateKeyPressed = true;
                     refreshBrick(eventListener.onRotateEvent(new MoveEvent(EventType.ROTATE, EventSource.USER)));
                     if (isLockDelayActive) startLockDelay(); // Reset timer
                     keyEvent.consume();
@@ -131,16 +148,30 @@ public class GuiController implements Initializable {
                     handleHold();
                     keyEvent.consume();
                 }
-                if (keyEvent.getCode() == KeyCode.SPACE) {
+                if (keyEvent.getCode() == KeyCode.SPACE && !hardDropKeyPressed) {
+                    hardDropKeyPressed = true;
                     handleHardDrop();
                     keyEvent.consume();
                 }
 
             }
             if (keyEvent.getCode() == KeyCode.N) {
-                newGame(null);
+                restartGameInstantly();
+                keyEvent.consume();
             }
         }
+
+    public void handleKeyRelease(KeyEvent keyEvent) {
+        // Reset rotation key
+        if (keyEvent.getCode() == KeyCode.UP || keyEvent.getCode() == KeyCode.W) {
+            rotateKeyPressed = false;
+        }
+
+        // Reset hard drop key
+        if (keyEvent.getCode() == KeyCode.SPACE) {
+            hardDropKeyPressed = false;
+        }
+    }
 
     private void handleHold() {
         if (eventListener instanceof GameController) {
@@ -240,20 +271,17 @@ public class GuiController implements Initializable {
             }
         };
 
-        // DON'T start timer and timeline yet - wait for countdown
+        // Set initial drop speed based on mode
+        if (currentGameMode == GameMode.NORMAL) {
+            currentDropSpeed = baseDropSpeed;
+        } else if (currentGameMode == GameMode.FORTY_LINES) {
+            currentDropSpeed = 400;
+        } else if (currentGameMode == GameMode.TWO_MINUTES) {
+            currentDropSpeed = 400;
+        }
 
-        // Show countdown, then start game
-        showCountdown(() -> {
-            timer.start();
-
-            // Start game loop
-            timeLine = new Timeline(new KeyFrame(
-                    Duration.millis(400),
-                    ae -> moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD))
-            ));
-            timeLine.setCycleCount(Timeline.INDEFINITE);
-            timeLine.play();
-        });
+        // Start countdown when initial game start
+        startGameWithCountdown();
     }
 
     private void initializePreviewPanel(GridPane panel, int size) {
@@ -443,7 +471,7 @@ public class GuiController implements Initializable {
         if (eventListener instanceof GameController) {
             GameController gc = (GameController) eventListener;
             piecesValue.setText(String.valueOf(gc.getPiecesPlaced()));
-            linesValue.setText(gc.getLinesCleared() + "/40");
+            linesValue.setText(String.valueOf(gc.getLinesCleared()));
         }
     }
 
@@ -494,6 +522,30 @@ public class GuiController implements Initializable {
                     }
                 }
             }
+        }
+    }
+
+    private void updateGameSpeed() {
+        if (currentGameMode == GameMode.NORMAL && eventListener instanceof GameController) {
+            GameController gc = (GameController) eventListener;
+            int linesCleared = gc.getLinesCleared();
+
+            // Increase speed every 10 lines
+            int level = linesCleared / 10;
+            currentDropSpeed = Math.max(MIN_DROP_SPEED, baseDropSpeed - (level * SPEED_DECREASE_PER_LEVEL));
+
+            // Update the timeline with new speed
+            if (timeLine != null) {
+                timeLine.stop();
+                timeLine = new Timeline(new KeyFrame(
+                        Duration.millis(currentDropSpeed),
+                        ae -> moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD))
+                ));
+                timeLine.setCycleCount(Timeline.INDEFINITE);
+                timeLine.play();
+            }
+
+            System.out.println("Speed updated! Level: " + level + ", Speed: " + currentDropSpeed + "ms");
         }
     }
 
@@ -602,6 +654,7 @@ public class GuiController implements Initializable {
                 groupNotification.getChildren().add(notificationPanel);
                 notificationPanel.showScore(groupNotification.getChildren());
                 updateStatsDisplay();
+                updateGameSpeed();
             }
 
             // Create new brick
@@ -648,6 +701,138 @@ public class GuiController implements Initializable {
         countdownTimeline.play();
     }
 
+    private void restartGameWithCountdown() {
+        // Stop everything
+        if (timeLine != null) timeLine.stop();
+        if (timer != null) timer.stop();
+        if (countdownTimeline != null) countdownTimeline.stop();
+        cancelLockDelay();
+
+        gameOverPanel.setVisible(false);
+        countdownPanel.setVisible(false);
+        brickPanel.setVisible(false);
+
+        // Clear the entire board immediately
+        eventListener.createNewGame();
+
+        // Force immediate refresh of background to clear all blocks
+        if (eventListener instanceof GameController) {
+            GameController gc = (GameController) eventListener;
+            Board board = gc.getBoard();
+            refreshGameBackground(board.getBoardMatrix());
+        }
+
+        gamePanel.requestFocus();
+
+        // Reset ALL displays immediately
+        gameStartTime = System.currentTimeMillis();
+        piecesValue.setText("0");
+        linesValue.setText("0");
+        timeValue.setText("0:00.000");
+
+        // Clear hold and next displays
+        updateHoldDisplay();
+        updateNextDisplay();
+
+        isPause.setValue(Boolean.FALSE);
+        isGameOver.setValue(Boolean.FALSE);
+
+        // Reset speed for normal mode
+        if (currentGameMode == GameMode.NORMAL) {
+            currentDropSpeed = baseDropSpeed;
+        } else if (currentGameMode == GameMode.FORTY_LINES) {
+            currentDropSpeed = 400;
+        } else if (currentGameMode == GameMode.TWO_MINUTES) {
+            currentDropSpeed = 400;
+        }
+
+        // Show countdown before starting
+        showCountdown(() -> {
+            if (timer != null) timer.start();
+
+            timeLine = new Timeline(new KeyFrame(
+                    Duration.millis(currentDropSpeed),
+                    ae -> moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD))
+            ));
+            timeLine.setCycleCount(Timeline.INDEFINITE);
+            timeLine.play();
+        });
+    }
+
+    private void startGameWithCountdown() {
+        // This is ONLY called when starting from main menu
+        brickPanel.setVisible(false);  // Hide brick during countdown
+
+        if (timer != null) timer.start();
+
+        // Show countdown before starting
+        showCountdown(() -> {
+            timeLine = new Timeline(new KeyFrame(
+                    Duration.millis(currentDropSpeed),
+                    ae -> moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD))
+            ));
+            timeLine.setCycleCount(Timeline.INDEFINITE);
+            timeLine.play();
+        });
+    }
+
+    private void restartGameInstantly() {
+        // Stop everything
+        if (timeLine != null) timeLine.stop();
+        if (timer != null) timer.stop();
+        if (countdownTimeline != null) countdownTimeline.stop();
+        cancelLockDelay();
+
+        gameOverPanel.setVisible(false);
+        countdownPanel.setVisible(false);
+        brickPanel.setVisible(true);  // Keep brick visible - no countdown
+
+        // Clear the entire board immediately
+        eventListener.createNewGame();
+
+        // Force immediate refresh of background to clear all blocks
+        if (eventListener instanceof GameController) {
+            GameController gc = (GameController) eventListener;
+            Board board = gc.getBoard();
+            refreshGameBackground(board.getBoardMatrix());
+            refreshBrick(board.getViewData());  // Show new brick immediately
+        }
+
+        gamePanel.requestFocus();
+
+        // Reset ALL displays immediately
+        gameStartTime = System.currentTimeMillis();
+        piecesValue.setText("0");
+        linesValue.setText("0");
+        timeValue.setText("0:00.000");
+
+        // Clear hold and next displays
+        updateHoldDisplay();
+        updateNextDisplay();
+
+        isPause.setValue(Boolean.FALSE);
+        isGameOver.setValue(Boolean.FALSE);
+
+        // Reset speed for normal mode
+        if (currentGameMode == GameMode.NORMAL) {
+            currentDropSpeed = baseDropSpeed;
+        } else if (currentGameMode == GameMode.FORTY_LINES) {
+            currentDropSpeed = 400;
+        } else if (currentGameMode == GameMode.TWO_MINUTES) {
+            currentDropSpeed = 400;
+        }
+
+        // Start immediately - NO countdown
+        if (timer != null) timer.start();
+
+        timeLine = new Timeline(new KeyFrame(
+                Duration.millis(currentDropSpeed),
+                ae -> moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD))
+        ));
+        timeLine.setCycleCount(Timeline.INDEFINITE);
+        timeLine.play();
+    }
+
     public void setEventListener(InputEventListener eventListener) {
         this.eventListener = eventListener;
     }
@@ -665,36 +850,7 @@ public class GuiController implements Initializable {
     }
 
     public void newGame(ActionEvent actionEvent) {
-        if (timeLine != null) timeLine.stop();
-        if (timer != null) timer.stop();
-        if (countdownTimeline != null) countdownTimeline.stop();
-        cancelLockDelay();
-
-        gameOverPanel.setVisible(false);
-        countdownPanel.setVisible(false);
-        brickPanel.setVisible(false);  // Hide brick initially
-
-        eventListener.createNewGame();
-        gamePanel.requestFocus();
-
-        //Reset Display
-        gameStartTime = System.currentTimeMillis();
-        piecesValue.setText("0");
-        linesValue.setText("0/40");
-        timeValue.setText("0:00.000");
-        updateHoldDisplay();
-        updateNextDisplay();
-
-        if (timer != null) timer.start();   //Timer starts when new game starts
-        timeLine.play();
-        isPause.setValue(Boolean.FALSE);
-        isGameOver.setValue(Boolean.FALSE);
-
-        // Show countdown before starting
-        showCountdown(() -> {
-            if (timer != null) timer.start();
-            timeLine.play();
-        });
+        restartGameInstantly();
     }
 
     public void pauseGame(ActionEvent actionEvent) {
