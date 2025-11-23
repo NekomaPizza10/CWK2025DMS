@@ -18,6 +18,7 @@ import javafx.scene.Group;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
@@ -62,6 +63,12 @@ public class GuiController implements Initializable {
     @FXML
     private Label piecesLabel, piecesValue, linesLabel, linesValue, timeLabel, timeValue;
 
+    @FXML
+    private StackPane countdownPanel;
+
+    @FXML
+    private Label countdownLabel;
+
     private Rectangle[][] displayMatrix;
     private InputEventListener eventListener;
     private Rectangle[][] rectangles;
@@ -72,6 +79,7 @@ public class GuiController implements Initializable {
     private final BooleanProperty isPause = new SimpleBooleanProperty();
     private final BooleanProperty isGameOver = new SimpleBooleanProperty();
 
+    // Time
     private long gameStartTime;
     private AnimationTimer timer;
 
@@ -80,6 +88,10 @@ public class GuiController implements Initializable {
     private static final int LOCK_DELAY_MS = 700; // 500ms delay before locking
     private int lockDelayResetCount = 0;  // Track resets
     private static final int MAX_LOCK_RESETS = 15; // Limit resets
+
+    // For Countdown Function
+    private Timeline countdownTimeline;
+    private boolean isCountdownActive = false;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -90,6 +102,11 @@ public class GuiController implements Initializable {
     }
 
         public void handleKeyPress(KeyEvent keyEvent) {
+
+            if (isCountdownActive) {
+                return;
+            }
+
             if (isPause.getValue() == Boolean.FALSE && isGameOver.getValue() == Boolean.FALSE) {
                 if (keyEvent.getCode() == KeyCode.LEFT || keyEvent.getCode() == KeyCode.A) {
                     refreshBrick(eventListener.onLeftEvent(new MoveEvent(EventType.LEFT, EventSource.USER)));
@@ -211,6 +228,9 @@ public class GuiController implements Initializable {
         nextRectangles4 = createPreviewRectangles(nextPanel4, PREVIEW_BRICK_SIZE);
         nextRectangles5 = createPreviewRectangles(nextPanel5, PREVIEW_BRICK_SIZE);
 
+        // Hide brick initially
+        brickPanel.setVisible(false);
+
         // Start game timer
         gameStartTime = System.currentTimeMillis();
         timer = new AnimationTimer() {
@@ -219,15 +239,21 @@ public class GuiController implements Initializable {
                 updateTimeDisplay();
             }
         };
-        timer.start();
 
-        //Start game loop
-        timeLine = new Timeline(new KeyFrame(
-                Duration.millis(400),
-                ae -> moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD))
-        ));
-        timeLine.setCycleCount(Timeline.INDEFINITE);
-        timeLine.play();
+        // DON'T start timer and timeline yet - wait for countdown
+
+        // Show countdown, then start game
+        showCountdown(() -> {
+            timer.start();
+
+            // Start game loop
+            timeLine = new Timeline(new KeyFrame(
+                    Duration.millis(400),
+                    ae -> moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD))
+            ));
+            timeLine.setCycleCount(Timeline.INDEFINITE);
+            timeLine.play();
+        });
     }
 
     private void initializePreviewPanel(GridPane panel, int size) {
@@ -592,6 +618,35 @@ public class GuiController implements Initializable {
         }
     }
 
+    private void showCountdown(Runnable onComplete) {
+        isCountdownActive = true;
+        countdownPanel.setVisible(true);
+        brickPanel.setVisible(false);       //Hides the brick during countdown
+
+        final int[] count = {3};  // Start at 3
+
+        countdownTimeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
+            if (count[0] > 0) {
+                countdownLabel.setText(String.valueOf(count[0]));
+                count[0]--;
+            } else {
+                countdownLabel.setText("GO!");
+                countdownTimeline.stop();
+
+                // Hide after showing GO!
+                Timeline hideTimeline = new Timeline(new KeyFrame(Duration.millis(500), e -> {
+                    countdownPanel.setVisible(false);
+                    brickPanel.setVisible(true);  // Show the brick when game starts
+                    isCountdownActive = false;
+                    onComplete.run();  // Start the game
+                }));
+                hideTimeline.play();
+            }
+        }));
+
+        countdownTimeline.setCycleCount(4);  // 3, 2, 1, GO!
+        countdownTimeline.play();
+    }
 
     public void setEventListener(InputEventListener eventListener) {
         this.eventListener = eventListener;
@@ -610,10 +665,15 @@ public class GuiController implements Initializable {
     }
 
     public void newGame(ActionEvent actionEvent) {
-        timeLine.stop();
+        if (timeLine != null) timeLine.stop();
         if (timer != null) timer.stop();
+        if (countdownTimeline != null) countdownTimeline.stop();
         cancelLockDelay();
+
         gameOverPanel.setVisible(false);
+        countdownPanel.setVisible(false);
+        brickPanel.setVisible(false);  // Hide brick initially
+
         eventListener.createNewGame();
         gamePanel.requestFocus();
 
@@ -629,6 +689,12 @@ public class GuiController implements Initializable {
         timeLine.play();
         isPause.setValue(Boolean.FALSE);
         isGameOver.setValue(Boolean.FALSE);
+
+        // Show countdown before starting
+        showCountdown(() -> {
+            if (timer != null) timer.start();
+            timeLine.play();
+        });
     }
 
     public void pauseGame(ActionEvent actionEvent) {

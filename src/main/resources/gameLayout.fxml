@@ -95,6 +95,19 @@
 
                             <Group fx:id="groupNotification"/>
 
+                            <!-- Countdown Label -->
+                            <StackPane fx:id="countdownPanel"
+                                       visible="false"
+                                       style="-fx-background-color: rgba(0, 0, 0, 0.8);"
+                                       alignment="CENTER">
+
+                                <Label fx:id="countdownLabel"
+                                       style="-fx-text-fill: white;
+                                              -fx-font-size: 80px;
+                                              -fx-font-weight: bold;
+                                              -fx-effect: dropshadow(gaussian, black, 20, 0.5, 0, 0);"/>
+                            </StackPane>
+
                             <GameOverPanel fx:id="gameOverPanel"
                                            visible="false"
                                            style="-fx-background-color: rgba(0, 0, 0, 0.85);"/>
