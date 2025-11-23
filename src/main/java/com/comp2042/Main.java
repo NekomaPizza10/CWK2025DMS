@@ -13,13 +13,10 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        System.out.println("Loading main menu...");
 
         // Load from root of resources (no package path)
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/MainMenu.fxml"));
         Parent root = loader.load();
-
-        System.out.println("Main menu loaded successfully");
 
         Scene scene = new Scene(root, 900, 700);
         primaryStage.setTitle("Tetris - Main Menu");
