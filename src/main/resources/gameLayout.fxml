@@ -18,7 +18,7 @@
     <center>
         <HBox alignment="CENTER" spacing="20">
             <!-- Left Side: HOLD Box -->
-            <VBox alignment="TOP_CENTER" spacing="10" style="-fx-background-color: transparent;">
+            <VBox alignment="TOP_CENTER" spacing="15" style="-fx-background-color: transparent;">
                 <padding>
                     <Insets top="50"/>
                 </padding>
@@ -26,123 +26,142 @@
                 <!-- HOLD Panel -->
                 <VBox style="-fx-background-color: #000000; -fx-border-color: #ffffff; -fx-border-width: 3;">
                     <padding>
-                        <Insets top="5" right="10" bottom="10" left="10"/>
+                        <Insets top="5" right="5" bottom="1" left="5"/>
                     </padding>
-                    <Label text="HOLD" style="-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;">
+                    <Label text="HOLD" style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold; -fx-alignment: center;" maxWidth="Infinity">
                         <padding>
-                            <Insets bottom="5"/>
+                            <Insets bottom="1"/>
                         </padding>
                     </Label>
-                    <GridPane fx:id="holdPanel" hgap="0" vgap="0"
-                              prefWidth="120" prefHeight="120"
-                              style="-fx-background-color: #000000;"/>
+
+                    <!-- Thin separator -->
+                    <Region prefHeight="1" style="-fx-background-color: #333333;">
+                        <VBox.margin><Insets top="5" bottom="5"/></VBox.margin>
+                    </Region>
+
+                    <!-- Wrap GridPane in StackPane for centering -->
+                    <StackPane prefWidth="80" prefHeight="80" style="-fx-background-color: #000000;" alignment="CENTER">
+                        <GridPane fx:id="holdPanel" hgap="0" vgap="0" alignment="CENTER"/>
+                    </StackPane>
+
                 </VBox>
 
                 <!-- Stats Panel -->
-                <VBox alignment="TOP_LEFT" spacing="15" style="-fx-padding: 20;">
-                    <Label fx:id="piecesLabel" text="PIECES"
-                           style="-fx-text-fill: white; -fx-font-size: 14px;"/>
-                    <Label fx:id="piecesValue" text="0"
-                           style="-fx-text-fill: white; -fx-font-size: 32px; -fx-font-weight: bold;"/>
+                <VBox alignment="TOP_LEFT" spacing="15" style="-fx-padding: 20; -fx-background-color: rgba(0,0,0,0.5); -fx-background-radius: 5;">
+                    <VBox spacing="5">
+                        <Label fx:id="piecesLabel" text="PIECES"
+                               style="-fx-text-fill: #888888; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+                        <Label fx:id="piecesValue" text="0"
+                               style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold;"/>
+                    </VBox>
 
-                    <Label fx:id="linesLabel" text="LINES"
-                           style="-fx-text-fill: white; -fx-font-size: 14px;"/>
-                    <Label fx:id="linesValue" text="0/40"
-                           style="-fx-text-fill: white; -fx-font-size: 32px; -fx-font-weight: bold;"/>
+                    <VBox spacing="5">
+                        <Label fx:id="linesLabel" text="LINES"
+                               style="-fx-text-fill: #888888; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+                        <Label fx:id="linesValue" text="0/40"
+                               style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold;"/>
+                    </VBox>
 
-                    <Label fx:id="timeLabel" text="TIME"
-                           style="-fx-text-fill: white; -fx-font-size: 14px;"/>
-                    <Label fx:id="timeValue" text="0:00.000"
-                           style="-fx-text-fill: white; -fx-font-size: 32px; -fx-font-weight: bold;"/>
+                    <VBox spacing="5">
+                        <Label fx:id="timeLabel" text="TIME"
+                               style="-fx-text-fill: #888888; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+                        <Label fx:id="timeValue" text="0:00.000"
+                               style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold;"/>
+                    </VBox>
                 </VBox>
             </VBox>
 
             <!-- Center: Game Board -->
-            <StackPane alignment="CENTER">
-                <!-- Background grid -->
-                <GridPane fx:id="gamePanel"
-                          alignment="CENTER"
-                          style="-fx-background-color: #000000;"/>
+            <VBox alignment="CENTER">
+                <StackPane alignment="CENTER" style="-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.8), 20, 0, 0, 0);">
+                    <VBox style="-fx-border-color: #ffffff; -fx-border-width: 2; -fx-background-color: #000000; -fx-padding: 0;">
+                        <StackPane alignment="TOP_LEFT">
+                            <!-- Background grid -->
+                            <GridPane fx:id="gamePanel"
+                                      alignment="CENTER"
+                                      hgap="0" vgap="0"
+                                      style="-fx-background-color: #000000;"/>
 
-                <!-- Overlay pane for moving brick - must account for 3px border -->
-                <Pane fx:id="brickPaneContainer"
-                      prefWidth="255" prefHeight="680"
-                      minWidth="255" minHeight="680"
-                      maxWidth="255" maxHeight="680"
-                      style="-fx-background-color: transparent;"
-                      mouseTransparent="true">
-                    <!-- Shadow panel (renders behind) -->
-                    <GridPane fx:id="shadowPanel"
-                              hgap="0" vgap="0"/>
-                    <!-- Main brick panel -->
-                    <GridPane fx:id="brickPanel"
-                              hgap="0" vgap="0"/>
-                </Pane>
+                            <!-- Overlay pane for moving brick -->
+                            <Pane fx:id="brickPaneContainer"
+                                  prefWidth="200" prefHeight="675"
+                                  minWidth="200" minHeight="675"
+                                  maxWidth="200" maxHeight="675"
+                                  style="-fx-background-color: transparent;"
+                                  mouseTransparent="true">
+                                <GridPane fx:id="brickPanel"
+                                          hgap="0" vgap="0"/>
+                            </Pane>
 
-                <Group fx:id="groupNotification"/>
+                            <Group fx:id="groupNotification"/>
 
-                <GameOverPanel fx:id="gameOverPanel"
-                               visible="false"
-                               style="-fx-background-color: rgba(0, 0, 0, 0.8);"/>
-            </StackPane>
+                            <GameOverPanel fx:id="gameOverPanel"
+                                           visible="false"
+                                           style="-fx-background-color: rgba(0, 0, 0, 0.85);"/>
+                        </StackPane>
+                    </VBox>
+                </StackPane>
+            </VBox>
 
             <!-- Right Side: NEXT Box -->
-            <VBox alignment="TOP_CENTER" spacing="10" style="-fx-background-color: transparent;">
+            <VBox alignment="TOP_CENTER" spacing="0" style="-fx-background-color: transparent;">
                 <padding>
                     <Insets top="50"/>
                 </padding>
 
                 <VBox style="-fx-background-color: #000000; -fx-border-color: #ffffff; -fx-border-width: 3;">
                     <padding>
-                        <Insets top="5" right="10" bottom="10" left="10"/>
+                        <Insets top="5" right="10" bottom="5" left="10"/>
                     </padding>
-                    <Label text="NEXT" style="-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;">
+                    <Label text="NEXT" style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold; -fx-alignment: center;" maxWidth="Infinity">
                         <padding>
                             <Insets bottom="5"/>
                         </padding>
                     </Label>
 
+                    <!-- Thin separator -->
+                    <Region prefHeight="1" style="-fx-background-color: #333333;">
+                        <VBox.margin><Insets top="5" bottom="5"/></VBox.margin>
+                    </Region>
+
                     <!-- Next Brick Preview 1 -->
-                    <GridPane fx:id="nextPanel1" hgap="0" vgap="0"
-                              prefWidth="120" prefHeight="100"
-                              style="-fx-background-color: #000000;">
-                        <padding>
-                            <Insets bottom="10"/>
-                        </padding>
-                    </GridPane>
+                    <StackPane prefWidth="100" prefHeight="70" style="-fx-background-color: #000000;" alignment="CENTER">
+                        <GridPane fx:id="nextPanel1" hgap="0" vgap="0" alignment="CENTER"/>
+                    </StackPane>
+
+                    <!-- Thin separator -->
+                    <Region prefHeight="1" style="-fx-background-color: #333333;">
+                        <VBox.margin><Insets top="3" bottom="3"/></VBox.margin>
+                    </Region>
 
                     <!-- Next Brick Preview 2 -->
-                    <GridPane fx:id="nextPanel2" hgap="0" vgap="0"
-                              prefWidth="120" prefHeight="100"
-                              style="-fx-background-color: #000000;">
-                        <padding>
-                            <Insets bottom="10"/>
-                        </padding>
-                    </GridPane>
+                    <StackPane prefWidth="100" prefHeight="70" style="-fx-background-color: #000000;" alignment="CENTER">
+                        <GridPane fx:id="nextPanel2" hgap="0" vgap="0" alignment="CENTER"/>
+                    </StackPane>
+                    <Region prefHeight="1" style="-fx-background-color: #333333;">
+                        <VBox.margin><Insets top="3" bottom="3"/></VBox.margin>
+                    </Region>
 
                     <!-- Next Brick Preview 3 -->
-                    <GridPane fx:id="nextPanel3" hgap="0" vgap="0"
-                              prefWidth="120" prefHeight="100"
-                              style="-fx-background-color: #000000;">
-                        <padding>
-                            <Insets bottom="10"/>
-                        </padding>
-                    </GridPane>
+                    <StackPane prefWidth="100" prefHeight="70" style="-fx-background-color: #000000;" alignment="CENTER">
+                        <GridPane fx:id="nextPanel3" hgap="0" vgap="0" alignment="CENTER"/>
+                    </StackPane>
+                    <Region prefHeight="1" style="-fx-background-color: #333333;">
+                        <VBox.margin><Insets top="3" bottom="3"/></VBox.margin>
+                    </Region>
 
                     <!-- Next Brick Preview 4 -->
-                    <GridPane fx:id="nextPanel4" hgap="0" vgap="0"
-                              prefWidth="120" prefHeight="100"
-                              style="-fx-background-color: #000000;">
-                        <padding>
-                            <Insets bottom="10"/>
-                        </padding>
-                    </GridPane>
+                    <StackPane prefWidth="100" prefHeight="70" style="-fx-background-color: #000000;" alignment="CENTER">
+                        <GridPane fx:id="nextPanel4" hgap="0" vgap="0" alignment="CENTER"/>
+                    </StackPane>
+                    <Region prefHeight="1" style="-fx-background-color: #333333;">
+                        <VBox.margin><Insets top="3" bottom="3"/></VBox.margin>
+                    </Region>
 
                     <!-- Next Brick Preview 5 -->
-                    <GridPane fx:id="nextPanel5" hgap="0" vgap="0"
-                              prefWidth="120" prefHeight="100"
-                              style="-fx-background-color: #000000;"/>
-
+                    <StackPane prefWidth="100" prefHeight="70" style="-fx-background-color: #000000;" alignment="CENTER">
+                        <GridPane fx:id="nextPanel5" hgap="0" vgap="0" alignment="CENTER"/>
+                    </StackPane>
                 </VBox>
             </VBox>
         </HBox>

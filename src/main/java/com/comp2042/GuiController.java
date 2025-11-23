@@ -19,6 +19,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
@@ -230,6 +231,9 @@ public class GuiController implements Initializable {
     }
 
     private void initializePreviewPanel(GridPane panel, int size) {
+        // Set the GridPane to not grow larger than needed
+        panel.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 Rectangle rectangle = new Rectangle(size, size);
