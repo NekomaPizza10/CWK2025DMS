@@ -763,10 +763,14 @@ public class GuiController implements Initializable {
         // This is ONLY called when starting from main menu
         brickPanel.setVisible(false);  // Hide brick during countdown
 
-        if (timer != null) timer.start();
-
         // Show countdown before starting
         showCountdown(() -> {
+
+            // tart the timer (after countdown)
+            if (timer != null) timer.start();
+
+            gameStartTime = System.currentTimeMillis();
+
             timeLine = new Timeline(new KeyFrame(
                     Duration.millis(currentDropSpeed),
                     ae -> moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD))
