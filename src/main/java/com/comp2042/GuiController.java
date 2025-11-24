@@ -44,6 +44,10 @@ public class GuiController implements Initializable {
     private static final int BRICK_SIZE = 25;
     private static final int PREVIEW_BRICK_SIZE = 20;
     private static final int PREVIEW_GRID_SIZE = 4;
+    private static final int GOAL = 5;
+
+    private long fortyLinesBestTime = Long.MAX_VALUE; // for Best time in milliseconds
+    private boolean challengeCompleted = false;
 
     @FXML
     private GridPane gamePanel;
@@ -73,7 +77,13 @@ public class GuiController implements Initializable {
     private StackPane countdownPanel;
 
     @FXML
+    private StackPane gameBoardContainer;
+
+    @FXML
     private Label countdownLabel;
+
+    @FXML
+    private Label bestTimeLabel;
 
     private Rectangle[][] displayMatrix;
     private InputEventListener eventListener;
@@ -105,7 +115,30 @@ public class GuiController implements Initializable {
 
     public void setGameMode(GameMode mode) {
         this.currentGameMode = mode;
-        System.out.println("Game mode set to: " + mode.getDisplayName());
+        challengeCompleted = false;
+
+        // Show/hide best time based on mode
+        if (bestTimeLabel != null) {
+            if (mode == GameMode.FORTY_LINES) {
+                bestTimeLabel.setVisible(true);
+                bestTimeLabel.getParent().setVisible(true);
+                updateBestTimeDisplay();
+            } else {
+                bestTimeLabel.setVisible(false);
+                if (bestTimeLabel.getParent() != null) {
+                    bestTimeLabel.getParent().setVisible(false);
+                }
+            }
+        }
+
+        // Update lines label based on mode
+        if (linesLabel != null) {
+            if (mode == GameMode.FORTY_LINES) {
+                linesLabel.setText("LINES (Goal: )" + GOAL);
+            } else {
+                linesLabel.setText("LINES");
+            }
+        }
     }
 
     @Override
@@ -470,8 +503,18 @@ public class GuiController implements Initializable {
     private void updateStatsDisplay() {
         if (eventListener instanceof GameController) {
             GameController gc = (GameController) eventListener;
+            int linesCleared = gc.getLinesCleared();
+
             piecesValue.setText(String.valueOf(gc.getPiecesPlaced()));
-            linesValue.setText(String.valueOf(gc.getLinesCleared()));
+            linesValue.setText(String.valueOf(linesCleared));
+
+            // Check if 40 lines challenge is complete
+            if (currentGameMode == GameMode.FORTY_LINES &&
+                    linesCleared >= GOAL &&
+                    !challengeCompleted) {
+                challengeCompleted = true;
+                completeFortyLinesChallenge();
+            }
         }
     }
 
@@ -483,6 +526,83 @@ public class GuiController implements Initializable {
             int millis = (int) (elapsed % 1000);
             timeValue.setText(String.format("%d:%02d.%03d", minutes, seconds, millis));
         }
+    }
+
+    private void updateBestTimeDisplay() {
+        if (fortyLinesBestTime == Long.MAX_VALUE) {
+            bestTimeLabel.setText("--:--");
+        } else {
+            int minutes = (int) (fortyLinesBestTime / 60000);
+            int seconds = (int) ((fortyLinesBestTime % 60000) / 1000);
+            int millis = (int) (fortyLinesBestTime % 1000);
+            bestTimeLabel.setText(String.format("%d:%02d.%03d", minutes, seconds, millis));
+        }
+    }
+
+    private void completeFortyLinesChallenge() {
+        // Stop the game
+        if (timeLine != null) timeLine.stop();
+        if (timer != null) timer.stop();
+
+        // Calculate final time
+        long finalTime = System.currentTimeMillis() - gameStartTime;
+
+        // Check if it's a new best time
+        boolean isNewBest = finalTime < fortyLinesBestTime;
+        if (isNewBest) {
+            fortyLinesBestTime = finalTime;
+            updateBestTimeDisplay();
+        }
+
+        // Format the time
+        int minutes = (int) (finalTime / 60000);
+        int seconds = (int) ((finalTime % 60000) / 1000);
+        int millis = (int) (finalTime % 1000);
+        String timeString = String.format("%d:%02d.%03d", minutes, seconds, millis);
+
+        // Show completion message
+        showCompletionMessage(timeString, isNewBest);
+    }
+
+    private void showCompletionMessage(String timeString, boolean isNewBest) {
+        // Format previous best time
+        String previousBest = null;
+        if (fortyLinesBestTime != Long.MAX_VALUE && !isNewBest) {
+            int minutes = (int) (fortyLinesBestTime / 60000);
+            int seconds = (int) ((fortyLinesBestTime % 60000) / 1000);
+            int millis = (int) (fortyLinesBestTime % 1000);
+            previousBest = String.format("%d:%02d.%03d", minutes, seconds, millis);
+        }
+
+        // Show completion panel
+        CompletionPanel panel = new CompletionPanel(timeString, isNewBest, previousBest);
+
+        panel.setOnRetry(() -> {
+            // Find and remove the panel
+            javafx.scene.Parent parent = gamePanel.getParent();
+            if (parent instanceof javafx.scene.layout.Pane) {
+                ((javafx.scene.layout.Pane) parent).getChildren().remove(panel);
+            }
+            restartGameInstantly();
+        });
+
+        panel.setOnMainMenu(() -> {
+            try {
+                javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/MainMenu.fxml"));
+                javafx.scene.Parent menuRoot = loader.load();
+                javafx.stage.Stage stage = (javafx.stage.Stage) gamePanel.getScene().getWindow();
+                javafx.scene.Scene menuScene = new javafx.scene.Scene(menuRoot, 900, 700);
+                stage.setScene(menuScene);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
+
+        javafx.scene.Parent parent = gamePanel.getParent();
+        if (parent instanceof javafx.scene.layout.Pane) {
+            ((javafx.scene.layout.Pane) parent).getChildren().add(panel);
+        }
+
     }
 
     private void updateShadow(ViewData brick) {
@@ -653,6 +773,7 @@ public class GuiController implements Initializable {
                 );
                 groupNotification.getChildren().add(notificationPanel);
                 notificationPanel.showScore(groupNotification.getChildren());
+
                 updateStatsDisplay();
                 updateGameSpeed();
             }
@@ -766,7 +887,7 @@ public class GuiController implements Initializable {
         // Show countdown before starting
         showCountdown(() -> {
 
-            // tart the timer (after countdown)
+            // start the timer (after countdown)
             if (timer != null) timer.start();
 
             gameStartTime = System.currentTimeMillis();
@@ -786,6 +907,8 @@ public class GuiController implements Initializable {
         if (timer != null) timer.stop();
         if (countdownTimeline != null) countdownTimeline.stop();
         cancelLockDelay();
+
+        challengeCompleted = false;
 
         gameOverPanel.setVisible(false);
         countdownPanel.setVisible(false);
