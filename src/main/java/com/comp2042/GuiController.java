@@ -49,6 +49,18 @@ public class GuiController implements Initializable {
     private long fortyLinesBestTime = Long.MAX_VALUE; // for Best time in milliseconds
     private boolean challengeCompleted = false;
 
+    // For 2-Minute Challenge
+    private int currentScore = 0;
+    private int twoMinutesBestScore = 0;
+    private int currentCombo = 0;
+    private boolean lastClearWasTetris = false;
+
+    @FXML
+    private Label scoreLabel;
+
+    @FXML
+    private Label scoreValue;
+
     @FXML
     private GridPane gamePanel;
 
@@ -117,6 +129,13 @@ public class GuiController implements Initializable {
         this.currentGameMode = mode;
         challengeCompleted = false;
 
+        // Reset score tracking for 2-minute mode
+        currentScore = 0;
+        currentCombo = 0;
+        lastClearWasTetris = false;
+
+        System.out.println("Game mode set to: " + mode.getDisplayName());
+
         // Show/hide best time based on mode
         if (bestTimeLabel != null) {
             if (mode == GameMode.FORTY_LINES) {
@@ -131,12 +150,40 @@ public class GuiController implements Initializable {
             }
         }
 
-        // Update lines label based on mode
+        // Show/hide score based on mode
+        if (scoreLabel != null && scoreValue != null) {
+            if (mode == GameMode.TWO_MINUTES) {
+                scoreLabel.setVisible(true);
+                scoreValue.setVisible(true);
+                if (scoreLabel.getParent() != null) {
+                    scoreLabel.getParent().setVisible(true);
+                }
+                scoreValue.setText("0");
+                System.out.println("Score display initialized for 2-minute mode");
+            } else {
+                scoreLabel.setVisible(false);
+                scoreValue.setVisible(false);
+                if (scoreLabel.getParent() != null) {
+                    scoreLabel.getParent().setVisible(false);
+                }
+            }
+        }
+
+        // Update lines label for 40-lines challenge mode
         if (linesLabel != null) {
             if (mode == GameMode.FORTY_LINES) {
-                linesLabel.setText("LINES (Goal: )" + GOAL);
+                linesLabel.setText("LINES (Goal: " + GOAL + ")");
             } else {
                 linesLabel.setText("LINES");
+            }
+        }
+
+        // Update time label for 2-minute challenge mode
+        if (timeLabel != null) {
+            if (mode == GameMode.TWO_MINUTES) {
+                timeLabel.setText("TIME LEFT");
+            } else {
+                timeLabel.setText("TIME");
             }
         }
     }
@@ -225,10 +272,80 @@ public class GuiController implements Initializable {
     private void handleHardDrop() {
         if (eventListener instanceof GameController) {
             GameController gc = (GameController) eventListener;
-            gc.hardDrop();
-
-            // Update displays after hard drop
             Board board = gc.getBoard();
+
+            // Calculate drop distance for bonus points
+            ViewData currentBrickData = board.getViewData();
+            int currentY = currentBrickData.getyPosition();
+            int shadowY = calculateShadowPosition(currentBrickData);
+            int dropDistance = shadowY - currentY;
+
+            // Drop brick to bottom instantly
+            while (board.moveBrickDown()) {
+                // Keep moving down until it can't move anymore
+            }
+
+            // Add hard drop bonus BEFORE locking
+            if (currentGameMode == GameMode.TWO_MINUTES && dropDistance > 0) {
+                int hardDropBonus = dropDistance * 2;
+                currentScore += hardDropBonus;
+
+                if (scoreValue != null) {
+                    scoreValue.setText(String.valueOf(currentScore));
+                }
+
+                System.out.println("Hard drop bonus: +" + hardDropBonus + " points");
+            }
+
+            // Lock the brick
+            board.mergeBrickToBackground();
+            ClearRow clearRow = board.clearRows();
+
+            // Handle line clear scoring
+            if (clearRow != null && clearRow.getLinesRemoved() > 0) {
+                int linesCleared = clearRow.getLinesRemoved();
+
+                if (currentGameMode == GameMode.TWO_MINUTES) {
+                    // Use Tetris scoring for 2-minute mode
+                    int earnedScore = calculateTetrisScore(linesCleared);
+                    currentScore += earnedScore;
+
+                    System.out.println("Hard drop cleared " + linesCleared + " lines | Earned: " + earnedScore + " | Total: " + currentScore);
+
+                    // Update score display
+                    if (scoreValue != null) {
+                        scoreValue.setText(String.valueOf(currentScore));
+                    }
+
+                    // Show score notification
+                    NotificationPanel notificationPanel = new NotificationPanel("+" + earnedScore);
+                    groupNotification.getChildren().add(notificationPanel);
+                    notificationPanel.showScore(groupNotification.getChildren());
+                } else {
+                    board.getScore().add(clearRow.getScoreBonus());
+                    NotificationPanel notificationPanel = new NotificationPanel(
+                            "+" + clearRow.getScoreBonus()
+                    );
+                    groupNotification.getChildren().add(notificationPanel);
+                    notificationPanel.showScore(groupNotification.getChildren());
+                }
+
+                updateStatsDisplay();
+                updateGameSpeed();
+            } else {
+                // No lines cleared - reset combo
+                if (currentGameMode == GameMode.TWO_MINUTES) {
+                    currentCombo = 0;
+                    lastClearWasTetris = false;
+                }
+            }
+
+            // Spawn next brick
+            if (board.createNewBrick()) {
+                gameOver();
+            }
+
+            // Update displays
             refreshGameBackground(board.getBoardMatrix());
             refreshBrick(board.getViewData());
             updateNextDisplay();
@@ -471,9 +588,16 @@ public class GuiController implements Initializable {
                 // Brick moved successfully - cancel lock delay
                 cancelLockDelay();
 
-                // Add score for user movement
+                // Soft drop bonus (1 point per cell) for 2-minute mode
                 if (event.getEventSource() == EventSource.USER) {
-                    board.getScore().add(1);
+                    if (currentGameMode == GameMode.TWO_MINUTES) {
+                        currentScore += 1;
+                        if (scoreValue != null) {
+                            scoreValue.setText(String.valueOf(currentScore));
+                        }
+                    } else {
+                        board.getScore().add(1);
+                    }
                 }
 
                 refreshBrick(board.getViewData());
@@ -521,10 +645,25 @@ public class GuiController implements Initializable {
     private void updateTimeDisplay() {
         if (!isGameOver.getValue()) {
             long elapsed = System.currentTimeMillis() - gameStartTime;
-            int minutes = (int) (elapsed / 60000);
-            int seconds = (int) ((elapsed % 60000) / 1000);
-            int millis = (int) (elapsed % 1000);
-            timeValue.setText(String.format("%d:%02d.%03d", minutes, seconds, millis));
+
+            // Show countdown from 2:00 to 0:00
+            if (currentGameMode == GameMode.TWO_MINUTES) {
+                long remaining = 120000 - elapsed; // 2 minutes = 120,000ms
+                if (remaining < 0) remaining = 0;
+
+                int minutes = (int) (remaining / 60000);
+                int seconds = (int) ((remaining % 60000) / 1000);
+                int millis = (int) (remaining % 1000);
+                timeValue.setText(String.format("%d:%02d.%03d", minutes, seconds, millis));
+
+                checkTwoMinutesComplete();
+
+            } else {
+                int minutes = (int) (elapsed / 60000);
+                int seconds = (int) ((elapsed % 60000) / 1000);
+                int millis = (int) (elapsed % 1000);
+                timeValue.setText(String.format("%d:%02d.%03d", minutes, seconds, millis));
+            }
         }
     }
 
@@ -766,16 +905,44 @@ public class GuiController implements Initializable {
             ClearRow clearRow = board.clearRows();
 
             if (clearRow != null && clearRow.getLinesRemoved() > 0) {
-                board.getScore().add(clearRow.getScoreBonus());
+                int linesCleared = clearRow.getLinesRemoved();
 
-                NotificationPanel notificationPanel = new NotificationPanel(
-                        "+" + clearRow.getScoreBonus()
-                );
-                groupNotification.getChildren().add(notificationPanel);
-                notificationPanel.showScore(groupNotification.getChildren());
+                // Handle scoring for 2-minute mode
+                if (currentGameMode == GameMode.TWO_MINUTES) {
+                    // Use Tetris scoring system for 2-minute mode
+                    int earnedScore = calculateTetrisScore(linesCleared);
+                    currentScore += earnedScore;
+
+                    System.out.println("Lines: " + linesCleared + " | Earned: " + earnedScore + " | Total: " + currentScore);
+
+                    // Update score display
+                    if (scoreValue != null) {
+                        scoreValue.setText(String.valueOf(currentScore));
+                    }
+
+                    // Show score notification
+                    NotificationPanel notificationPanel = new NotificationPanel("+" + earnedScore);
+                    groupNotification.getChildren().add(notificationPanel);
+                    notificationPanel.showScore(groupNotification.getChildren());
+
+                } else {
+                    board.getScore().add(clearRow.getScoreBonus());
+                    NotificationPanel notificationPanel = new NotificationPanel(
+                            "+" + clearRow.getScoreBonus()
+                    );
+                    groupNotification.getChildren().add(notificationPanel);
+                    notificationPanel.showScore(groupNotification.getChildren());
+                }
 
                 updateStatsDisplay();
                 updateGameSpeed();
+
+            } else {
+                // No lines cleared - reset combo for 2-minute mode
+                if (currentGameMode == GameMode.TWO_MINUTES) {
+                    currentCombo = 0;
+                    lastClearWasTetris = false;
+                }
             }
 
             // Create new brick
@@ -910,9 +1077,20 @@ public class GuiController implements Initializable {
 
         challengeCompleted = false;
 
+        // Reset score for 2-minute mode
+        if (currentGameMode == GameMode.TWO_MINUTES) {
+            currentScore = 0;
+            currentCombo = 0;
+            lastClearWasTetris = false;
+            if (scoreValue != null) {
+                scoreValue.setText("0");
+            }
+            System.out.println("Score reset for new game");
+        }
+
         gameOverPanel.setVisible(false);
         countdownPanel.setVisible(false);
-        brickPanel.setVisible(true);  // Keep brick visible - no countdown
+        brickPanel.setVisible(true);
 
         // Clear the entire board immediately
         eventListener.createNewGame();
@@ -931,7 +1109,13 @@ public class GuiController implements Initializable {
         gameStartTime = System.currentTimeMillis();
         piecesValue.setText("0");
         linesValue.setText("0");
-        timeValue.setText("0:00.000");
+
+        // Set initial time display based on mode
+        if (currentGameMode == GameMode.TWO_MINUTES) {
+            timeValue.setText("2:00.000");
+        } else {
+            timeValue.setText("0:00.000");
+        }
 
         // Clear hold and next displays
         updateHoldDisplay();
@@ -958,10 +1142,133 @@ public class GuiController implements Initializable {
         ));
         timeLine.setCycleCount(Timeline.INDEFINITE);
         timeLine.play();
+
+        System.out.println("Game restarted in " + currentGameMode.getDisplayName());
     }
 
     public void setEventListener(InputEventListener eventListener) {
         this.eventListener = eventListener;
+    }
+
+    /**
+     * Calculate score based on official Tetris scoring system
+     * Includes: base line clear points, combo bonus, and back-to-back Tetris bonus
+     */
+    private int calculateTetrisScore(int linesCleared) {
+        if (linesCleared == 0) return 0;
+
+        // Base points for line clears (standard Tetris scoring)
+        int baseScore = 0;
+        switch (linesCleared) {
+            case 1:
+                baseScore = 100;  // Single
+                break;
+            case 2:
+                baseScore = 300;  // Double
+                break;
+            case 3:
+                baseScore = 500;  // Triple
+                break;
+            case 4:
+                baseScore = 800;  // 4 lines at once
+                break;
+            default:
+                // Clearing more than 4 lines
+                baseScore = 800 + (linesCleared - 4) * 200;
+                break;
+        }
+
+        // Combo bonus
+        int comboBonus = currentCombo * 50;
+
+        // Back-to-back Tetris bonus - big reward for consecutive 4-line clears
+        int backToBackBonus = 0;
+        if (linesCleared == 4 && lastClearWasTetris) {
+            backToBackBonus = 400; // 50% bonus for back-to-back Tetris
+        }
+
+        // Increases with each clear
+        currentCombo++;
+
+        // Track for back-to-back detection
+        lastClearWasTetris = (linesCleared == 4);
+
+        int totalScore = baseScore + comboBonus + backToBackBonus;
+
+        // Debug output
+        System.out.println("Score breakdown: Base=" + baseScore +
+                " | Combo=" + comboBonus +
+                " | B2B=" + backToBackBonus +
+                " | Total=" + totalScore);
+
+        return totalScore;
+    }
+
+    private void checkTwoMinutesComplete() {
+        if (currentGameMode == GameMode.TWO_MINUTES && !challengeCompleted) {
+            long elapsed = System.currentTimeMillis() - gameStartTime;
+            if (elapsed >= 120000) { // 2 minutes = 120,000ms
+                challengeCompleted = true;
+                completeTwoMinutesChallenge();
+            }
+        }
+    }
+
+    private void completeTwoMinutesChallenge() {
+        // Stop the game
+        if (timeLine != null) timeLine.stop();
+        if (timer != null) timer.stop();
+
+        // Check if it's a new best score
+        boolean isNewBest = currentScore > twoMinutesBestScore;
+        if (isNewBest) {
+            twoMinutesBestScore = currentScore;
+        }
+
+        int linesCleared = 0;
+        if (eventListener instanceof GameController) {
+            linesCleared = ((GameController) eventListener).getLinesCleared();
+        }
+
+        System.out.println("2-Minute Challenge Complete! Final Score: " + currentScore);
+
+        showTwoMinutesCompletion(currentScore, linesCleared, isNewBest);
+    }
+
+    private void showTwoMinutesCompletion(int finalScore, int linesCleared, boolean isNewBest) {
+        String previousBest = (twoMinutesBestScore > 0 && !isNewBest) ?
+                String.valueOf(twoMinutesBestScore) : null;
+
+        TwoMinutesCompletionPanel panel = new TwoMinutesCompletionPanel(
+                finalScore, linesCleared, isNewBest, previousBest
+        );
+
+        panel.setOnRetry(() -> {
+            javafx.scene.Parent parent = gamePanel.getParent();
+            if (parent instanceof javafx.scene.layout.Pane) {
+                ((javafx.scene.layout.Pane) parent).getChildren().remove(panel);
+            }
+            restartGameInstantly();
+        });
+
+        panel.setOnMainMenu(() -> {
+            try {
+                javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                        getClass().getResource("/MainMenu.fxml")
+                );
+                javafx.scene.Parent menuRoot = loader.load();
+                javafx.stage.Stage stage = (javafx.stage.Stage) gamePanel.getScene().getWindow();
+                javafx.scene.Scene menuScene = new javafx.scene.Scene(menuRoot, 900, 700);
+                stage.setScene(menuScene);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
+
+        javafx.scene.Parent parent = gamePanel.getParent();
+        if (parent instanceof javafx.scene.layout.Pane) {
+            ((javafx.scene.layout.Pane) parent).getChildren().add(panel);
+        }
     }
 
     public void bindScore(IntegerProperty integerProperty) {
