@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import com.comp2042.GameOverPanel?>
-<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.Group?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Text?>
 <?import java.net.URL?>
 <?import javafx.geometry.Insets?>
 
@@ -184,6 +181,33 @@
                         <GridPane fx:id="nextPanel5" hgap="0" vgap="0" alignment="CENTER"/>
                     </StackPane>
                 </VBox>
+
+                <!-- SCORE DISPLAY -->
+                <VBox alignment="CENTER" spacing="3"
+                      style="-fx-background-color: rgba(0,0,0,0.5);
+             -fx-padding: 0;
+             -fx-background-radius: 3;">
+                    <VBox.margin>
+                        <Insets top="5"/>
+                    </VBox.margin>
+
+                    <Label fx:id="scoreLabel" text="SCORE"
+                           style="-fx-text-fill: #00aaff; -fx-font-size: 14px; -fx-font-weight: bold;"/>
+                    <Label fx:id="scoreValue" text="0"
+                           style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold;"/>
+
+                    <!-- Separator line -->
+                    <Region prefHeight="1" style="-fx-background-color: #333333;">
+                        <VBox.margin><Insets top="3" bottom="3"/></VBox.margin>
+                    </Region>
+
+                    <!-- Best Score -->
+                    <Label fx:id="bestScoreLabel" text="BEST"
+                           style="-fx-text-fill: #ffaa00; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+                    <Label fx:id="bestScoreValue" text="--"
+                           style="-fx-text-fill: #ffaa00; -fx-font-size: 20px; -fx-font-weight: bold;"/>
+                </VBox>
+
             </VBox>
         </HBox>
     </center>

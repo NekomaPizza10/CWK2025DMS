@@ -181,7 +181,7 @@ public class SimpleBoard implements Board {
         canHold = true;
         piecesPlaced = 0;
         linesCleared = 0;
-        createNewBrick();
+        System.out.println("Board reset - waiting for brick creation");
     }
 
     //Hold Function

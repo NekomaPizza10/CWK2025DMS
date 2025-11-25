@@ -45,13 +45,14 @@ public class GuiController implements Initializable {
     private static final int PREVIEW_BRICK_SIZE = 20;
     private static final int PREVIEW_GRID_SIZE = 4;
     private static final int GOAL = 5;
+    private static final int TIME = 30000;     // 2 minutes = 120,000ms
 
     private long fortyLinesBestTime = Long.MAX_VALUE; // for Best time in milliseconds
     private boolean challengeCompleted = false;
 
     // For 2-Minute Challenge
     private int currentScore = 0;
-    private int twoMinutesBestScore = 0;
+    private static int twoMinutesBestScore = 0;
     private int currentCombo = 0;
     private boolean lastClearWasTetris = false;
 
@@ -60,6 +61,12 @@ public class GuiController implements Initializable {
 
     @FXML
     private Label scoreValue;
+
+    @FXML
+    private Label bestScoreLabel;
+
+    @FXML
+    private Label bestScoreValue;
 
     @FXML
     private GridPane gamePanel;
@@ -124,6 +131,8 @@ public class GuiController implements Initializable {
     private boolean rotateKeyPressed = false;
     private boolean hardDropKeyPressed = false;
 
+    private TwoMinutesCompletionPanel currentCompletionPanel;
+
 
     public void setGameMode(GameMode mode) {
         this.currentGameMode = mode;
@@ -159,13 +168,35 @@ public class GuiController implements Initializable {
                     scoreLabel.getParent().setVisible(true);
                 }
                 scoreValue.setText("0");
+
+                // Show best score
+                if (bestScoreLabel != null && bestScoreValue != null) {
+                    bestScoreLabel.setVisible(true);
+                    bestScoreValue.setVisible(true);
+                    if (bestScoreLabel.getParent() != null) {
+                        bestScoreLabel.getParent().setVisible(true);
+                    }
+                    updateBestScoreDisplay();
+                }
+
                 System.out.println("Score display initialized for 2-minute mode");
+
             } else {
                 scoreLabel.setVisible(false);
                 scoreValue.setVisible(false);
                 if (scoreLabel.getParent() != null) {
                     scoreLabel.getParent().setVisible(false);
                 }
+
+                // Hide best score for other modes
+                if (bestScoreLabel != null && bestScoreValue != null) {
+                    bestScoreLabel.setVisible(false);
+                    bestScoreValue.setVisible(false);
+                    if (bestScoreLabel.getParent() != null) {
+                        bestScoreLabel.getParent().setVisible(false);
+                    }
+                }
+
             }
         }
 
@@ -236,7 +267,14 @@ public class GuiController implements Initializable {
 
             }
             if (keyEvent.getCode() == KeyCode.N) {
-                restartGameInstantly();
+                if (challengeCompleted) {
+                    // After completion, N key acts like Retry button (with countdown)
+                    removeCompletionPanel();
+                    restartGameWithCountdown();
+                } else {
+                    // During game, instant restart (no countdown)
+                    restartGameInstantly();
+                }
                 keyEvent.consume();
             }
         }
@@ -648,7 +686,7 @@ public class GuiController implements Initializable {
 
             // Show countdown from 2:00 to 0:00
             if (currentGameMode == GameMode.TWO_MINUTES) {
-                long remaining = 120000 - elapsed; // 2 minutes = 120,000ms
+                long remaining = TIME - elapsed;
                 if (remaining < 0) remaining = 0;
 
                 int minutes = (int) (remaining / 60000);
@@ -675,6 +713,16 @@ public class GuiController implements Initializable {
             int seconds = (int) ((fortyLinesBestTime % 60000) / 1000);
             int millis = (int) (fortyLinesBestTime % 1000);
             bestTimeLabel.setText(String.format("%d:%02d.%03d", minutes, seconds, millis));
+        }
+    }
+
+    private void updateBestScoreDisplay() {
+        if (bestScoreValue != null) {
+            if (twoMinutesBestScore > 0) {
+                bestScoreValue.setText(String.valueOf(twoMinutesBestScore));
+            } else {
+                bestScoreValue.setText("--");
+            }
         }
     }
 
@@ -960,6 +1008,10 @@ public class GuiController implements Initializable {
     }
 
     private void showCountdown(Runnable onComplete) {
+        System.out.println("\n>>> showCountdown() called <<<");
+
+        removeCompletionPanel();
+
         isCountdownActive = true;
         countdownPanel.setVisible(true);
         brickPanel.setVisible(false);       //Hides the brick during countdown
@@ -996,27 +1048,49 @@ public class GuiController implements Initializable {
         if (countdownTimeline != null) countdownTimeline.stop();
         cancelLockDelay();
 
+        challengeCompleted = false;
+
+        // Reset score for 2-minute mode
+        if (currentGameMode == GameMode.TWO_MINUTES) {
+            currentScore = 0;
+            currentCombo = 0;
+            lastClearWasTetris = false;
+            if (scoreValue != null) {
+                scoreValue.setText("0");
+            }
+            System.out.println("Score reset for new game with countdown");
+        }
+
         gameOverPanel.setVisible(false);
         countdownPanel.setVisible(false);
-        brickPanel.setVisible(false);
+        brickPanel.setVisible(false);  // Hide brick during countdown
 
-        // Clear the entire board immediately
+        // Clear the board
         eventListener.createNewGame();
 
-        // Force immediate refresh of background to clear all blocks
+        // Force refresh
         if (eventListener instanceof GameController) {
             GameController gc = (GameController) eventListener;
             Board board = gc.getBoard();
+            board.newGame();    // Resets board
             refreshGameBackground(board.getBoardMatrix());
+
+            clearBrickDisplay();    // Clear brick display
         }
 
         gamePanel.requestFocus();
 
-        // Reset ALL displays immediately
+        // Reset displays
         gameStartTime = System.currentTimeMillis();
         piecesValue.setText("0");
         linesValue.setText("0");
-        timeValue.setText("0:00.000");
+
+        // Set initial time display based on mode
+        if (currentGameMode == GameMode.TWO_MINUTES) {
+            timeValue.setText("2:00.000");
+        } else {
+            timeValue.setText("0:00.000");
+        }
 
         // Clear hold and next displays
         updateHoldDisplay();
@@ -1025,7 +1099,7 @@ public class GuiController implements Initializable {
         isPause.setValue(Boolean.FALSE);
         isGameOver.setValue(Boolean.FALSE);
 
-        // Reset speed for normal mode
+        // Reset speed
         if (currentGameMode == GameMode.NORMAL) {
             currentDropSpeed = baseDropSpeed;
         } else if (currentGameMode == GameMode.FORTY_LINES) {
@@ -1036,6 +1110,15 @@ public class GuiController implements Initializable {
 
         // Show countdown before starting
         showCountdown(() -> {
+            // Create the first brick AFTER countdown
+            if (eventListener instanceof GameController) {
+                GameController gc = (GameController) eventListener;
+                Board board = gc.getBoard();
+                board.createNewBrick();  // ← BRICK CREATED HERE
+                refreshBrick(board.getViewData());
+                updateNextDisplay();
+            }
+
             if (timer != null) timer.start();
 
             timeLine = new Timeline(new KeyFrame(
@@ -1044,6 +1127,8 @@ public class GuiController implements Initializable {
             ));
             timeLine.setCycleCount(Timeline.INDEFINITE);
             timeLine.play();
+
+            System.out.println("Game started after countdown");
         });
     }
 
@@ -1076,6 +1161,7 @@ public class GuiController implements Initializable {
         cancelLockDelay();
 
         challengeCompleted = false;
+        removeCompletionPanel();
 
         // Reset score for 2-minute mode
         if (currentGameMode == GameMode.TWO_MINUTES) {
@@ -1207,7 +1293,7 @@ public class GuiController implements Initializable {
     private void checkTwoMinutesComplete() {
         if (currentGameMode == GameMode.TWO_MINUTES && !challengeCompleted) {
             long elapsed = System.currentTimeMillis() - gameStartTime;
-            if (elapsed >= 120000) { // 2 minutes = 120,000ms
+            if (elapsed >= TIME) { // 2 minutes = 120,000ms
                 challengeCompleted = true;
                 completeTwoMinutesChallenge();
             }
@@ -1223,7 +1309,12 @@ public class GuiController implements Initializable {
         boolean isNewBest = currentScore > twoMinutesBestScore;
         if (isNewBest) {
             twoMinutesBestScore = currentScore;
+            updateBestScoreDisplay();
+            System.out.println("NEW BEST SCORE: " + twoMinutesBestScore);
+        } else {
+            System.out.println("Current: " + currentScore + " | Best: " + twoMinutesBestScore + " - Not a new best");
         }
+
 
         int linesCleared = 0;
         if (eventListener instanceof GameController) {
@@ -1243,16 +1334,18 @@ public class GuiController implements Initializable {
                 finalScore, linesCleared, isNewBest, previousBest
         );
 
+        currentCompletionPanel = panel;
+
         panel.setOnRetry(() -> {
-            javafx.scene.Parent parent = gamePanel.getParent();
-            if (parent instanceof javafx.scene.layout.Pane) {
-                ((javafx.scene.layout.Pane) parent).getChildren().remove(panel);
-            }
-            restartGameInstantly();
+            removeCompletionPanel();
+            restartGameWithCountdown();
         });
 
         panel.setOnMainMenu(() -> {
             try {
+                // Best score persists because twoMinutesBestScore is static
+                System.out.println("Returning to main menu. Best score saved: " + twoMinutesBestScore);
+
                 javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                         getClass().getResource("/MainMenu.fxml")
                 );
@@ -1271,6 +1364,17 @@ public class GuiController implements Initializable {
         }
     }
 
+    private void removeCompletionPanel() {
+        if (currentCompletionPanel != null) {
+            javafx.scene.Parent parent = gamePanel.getParent();
+            if (parent instanceof javafx.scene.layout.Pane) {
+                ((javafx.scene.layout.Pane) parent).getChildren().remove(currentCompletionPanel);
+            }
+            currentCompletionPanel = null;
+            System.out.println("Completion panel removed");
+        }
+    }
+
     public void bindScore(IntegerProperty integerProperty) {
         //Score binding
     }
@@ -1281,6 +1385,18 @@ public class GuiController implements Initializable {
         cancelLockDelay();
         gameOverPanel.setVisible(true);
         isGameOver.setValue(Boolean.TRUE);
+    }
+
+    private void clearBrickDisplay() {
+        // Remove all brick rectangles from the game panel
+        if (rectangles != null) {
+            for (Rectangle[] row : rectangles) {
+                for (Rectangle r : row) {
+                    gamePanel.getChildren().remove(r);
+                }
+            }
+        }
+        System.out.println("✓ Brick display cleared");
     }
 
     public void newGame(ActionEvent actionEvent) {
