@@ -98,29 +98,33 @@ public class SimpleBoard implements Board {
         }
         // Wall kicks: one space left or right
         // Kick right (for left wall)
-        Point testOffset = new Point(currentOffset);
-        testOffset.translate(1, 0);
-        conflict = MatrixOperations.intersect(currentMatrix, nextShape.getShape(),
-                (int) testOffset.getX(),
-                (int) testOffset.getY());
+        for (int kickDistance = 1; kickDistance <= 3; kickDistance++) {
+            Point testOffset = new Point(currentOffset);
+            testOffset.translate(-kickDistance, 0);  // Move LEFT
+            conflict = MatrixOperations.intersect(currentMatrix, nextShape.getShape(),
+                    (int) testOffset.getX(),
+                    (int) testOffset.getY());
 
-        if (!conflict) {
-            currentOffset = testOffset;
-            brickRotator.setCurrentShape(nextShape.getPosition());
-            return true;
+            if (!conflict) {
+                currentOffset = testOffset;
+                brickRotator.setCurrentShape(nextShape.getPosition());
+                return true;
+            }
         }
 
         // Kick left (for right wall)
-        testOffset = new Point(currentOffset);
-        testOffset.translate(-1, 0);
-        conflict = MatrixOperations.intersect(currentMatrix, nextShape.getShape(),
-                (int) testOffset.getX(),
-                (int) testOffset.getY());
+        for (int kickDistance = 1; kickDistance <= 3; kickDistance++) {
+            Point testOffset = new Point(currentOffset);
+            testOffset.translate(kickDistance, 0);  // Move RIGHT
+            conflict = MatrixOperations.intersect(currentMatrix, nextShape.getShape(),
+                    (int) testOffset.getX(),
+                    (int) testOffset.getY());
 
-        if (!conflict) {
-            currentOffset = testOffset;
-            brickRotator.setCurrentShape(nextShape.getPosition());
-            return true;
+            if (!conflict) {
+                currentOffset = testOffset;
+                brickRotator.setCurrentShape(nextShape.getPosition());
+                return true;
+            }
         }
 
         // Rotation failed
