@@ -19,7 +19,7 @@ public class CompletionPanel extends StackPane{
         content.setMaxWidth(500);
 
         // Title
-        Label title = new Label("CHALLENGE COMPLETE!");
+        Label title = new Label("FINISH !!!");
         title.setStyle("-fx-text-fill: #00ff88; -fx-font-size: 48px; -fx-font-weight: bold;");
 
         // Time card
@@ -29,7 +29,7 @@ public class CompletionPanel extends StackPane{
                 "-fx-padding: 30; -fx-background-radius: 15; " +
                 "-fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 15; -fx-border-width: 2;");
 
-        Label timeLabel = new Label("YOUR TIME");
+        Label timeLabel = new Label("FINAL TIME");
         timeLabel.setStyle("-fx-text-fill: #888888; -fx-font-size: 14px; -fx-font-weight: bold;");
 
         Label timeValue = new Label(timeString);
@@ -38,9 +38,8 @@ public class CompletionPanel extends StackPane{
         timeCard.getChildren().addAll(timeLabel, timeValue);
 
         // New best badge
-        HBox bestBadge = null;
         if (isNewBest) {
-            bestBadge = new HBox(10);
+            HBox bestBadge = new HBox(10);
             bestBadge.setAlignment(Pos.CENTER);
             bestBadge.setStyle("-fx-background-color: rgba(255,170,0,0.2); -fx-padding: 10 20; " +
                     "-fx-background-radius: 20; -fx-border-color: #ffaa00; " +
@@ -75,7 +74,7 @@ public class CompletionPanel extends StackPane{
 
         buttons.getChildren().addAll(retryBtn, menuBtn);
 
-        Label hint = new Label("Press N to retry");
+        Label hint = new Label("Press N or click RETRY to play again");
         hint.setStyle("-fx-text-fill: #555555; -fx-font-size: 12px;");
 
         content.getChildren().addAll(title, timeCard, buttons, hint);
@@ -92,17 +91,9 @@ public class CompletionPanel extends StackPane{
     private Button createButton(String text, String bgColor, String textColor, boolean filled) {
         Button btn = new Button(text);
         btn.setPrefSize(170, 50);
-
-        String baseStyle = "-fx-font-size: 16px; -fx-font-weight: bold; " +
-                "-fx-background-radius: 10; -fx-cursor: hand; ";
-
-        if (filled) {
-            btn.setStyle(baseStyle + "-fx-background-color: " + bgColor + "; -fx-text-fill: " + textColor + ";");
-        } else {
-            btn.setStyle(baseStyle + "-fx-background-color: transparent; -fx-text-fill: " + textColor + "; " +
-                    "-fx-border-color: " + textColor + "; -fx-border-width: 2; -fx-border-radius: 10;");
-        }
-
+        btn.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; " +
+                "-fx-background-radius: 10; -fx-cursor: hand; " +
+                "-fx-background-color: " + bgColor + "; -fx-text-fill: " + textColor + ";");
         return btn;
     }
 

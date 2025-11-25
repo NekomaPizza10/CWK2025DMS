@@ -132,7 +132,7 @@ public class GuiController implements Initializable {
     private boolean hardDropKeyPressed = false;
 
     private TwoMinutesCompletionPanel currentCompletionPanel;
-
+    private CompletionPanel currentFortyLinesPanel;
 
     public void setGameMode(GameMode mode) {
         this.currentGameMode = mode;
@@ -735,8 +735,8 @@ public class GuiController implements Initializable {
         long finalTime = System.currentTimeMillis() - gameStartTime;
 
         // Check if it's a new best time
-        boolean isNewBest = finalTime < fortyLinesBestTime;
-        if (isNewBest) {
+        boolean NewBest = finalTime < fortyLinesBestTime;
+        if (NewBest) {
             fortyLinesBestTime = finalTime;
             updateBestTimeDisplay();
         }
@@ -748,13 +748,14 @@ public class GuiController implements Initializable {
         String timeString = String.format("%d:%02d.%03d", minutes, seconds, millis);
 
         // Show completion message
-        showCompletionMessage(timeString, isNewBest);
+        showCompletionMessage(timeString, NewBest);
     }
 
-    private void showCompletionMessage(String timeString, boolean isNewBest) {
+    private void showCompletionMessage(String timeString, boolean NewBest) {
         // Format previous best time
         String previousBest = null;
-        if (fortyLinesBestTime != Long.MAX_VALUE && !isNewBest) {
+
+        if (fortyLinesBestTime != Long.MAX_VALUE && !NewBest) {
             int minutes = (int) (fortyLinesBestTime / 60000);
             int seconds = (int) ((fortyLinesBestTime % 60000) / 1000);
             int millis = (int) (fortyLinesBestTime % 1000);
@@ -762,19 +763,22 @@ public class GuiController implements Initializable {
         }
 
         // Show completion panel
-        CompletionPanel panel = new CompletionPanel(timeString, isNewBest, previousBest);
+        CompletionPanel panel = new CompletionPanel(timeString, NewBest, previousBest);
+
+        // Store reference to current panel
+        currentFortyLinesPanel = panel;
 
         panel.setOnRetry(() -> {
-            // Find and remove the panel
-            javafx.scene.Parent parent = gamePanel.getParent();
-            if (parent instanceof javafx.scene.layout.Pane) {
-                ((javafx.scene.layout.Pane) parent).getChildren().remove(panel);
-            }
-            restartGameInstantly();
+            removeCompletionPanel();
+            restartGameWithCountdown();
         });
 
         panel.setOnMainMenu(() -> {
             try {
+                // Best score persists because  is static
+                System.out.println("Returning to main menu. Best time saved: " + fortyLinesBestTime);
+
+
                 javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/MainMenu.fxml"));
                 javafx.scene.Parent menuRoot = loader.load();
                 javafx.stage.Stage stage = (javafx.stage.Stage) gamePanel.getScene().getWindow();
@@ -790,6 +794,16 @@ public class GuiController implements Initializable {
             ((javafx.scene.layout.Pane) parent).getChildren().add(panel);
         }
 
+    }
+
+    private void removeFortyLinesPanel() {
+        if (currentFortyLinesPanel != null) {
+            javafx.scene.Parent parent = gamePanel.getParent();
+            if (parent instanceof javafx.scene.layout.Pane) {
+                ((javafx.scene.layout.Pane) parent).getChildren().remove(currentFortyLinesPanel);
+            }
+            currentFortyLinesPanel = null;
+        }
     }
 
     private void updateShadow(ViewData brick) {
@@ -1371,8 +1385,9 @@ public class GuiController implements Initializable {
                 ((javafx.scene.layout.Pane) parent).getChildren().remove(currentCompletionPanel);
             }
             currentCompletionPanel = null;
-            System.out.println("Completion panel removed");
+            System.out.println("2-minute completion panel removed");
         }
+        removeFortyLinesPanel();
     }
 
     public void bindScore(IntegerProperty integerProperty) {
