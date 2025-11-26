@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import com.comp2042.GameOverPanel?>
+<?import com.comp2042.PauseMenuPanel?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.Group?>
 <?import javafx.scene.layout.*?>
@@ -113,6 +114,8 @@
                                               -fx-font-weight: bold;
                                               -fx-effect: dropshadow(gaussian, black, 20, 0.5, 0, 0);"/>
                             </StackPane>
+
+                            <PauseMenuPanel fx:id="pauseMenuPanel" visible="false"/>
 
                             <GameOverPanel fx:id="gameOverPanel"
                                            visible="false"

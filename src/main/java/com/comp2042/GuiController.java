@@ -102,6 +102,9 @@ public class GuiController implements Initializable {
     @FXML
     private Label bestTimeLabel;
 
+    @FXML
+    private PauseMenuPanel pauseMenuPanel;
+
     private Rectangle[][] displayMatrix;
     private InputEventListener eventListener;
     private Rectangle[][] rectangles;
@@ -248,6 +251,30 @@ public class GuiController implements Initializable {
         gamePanel.setOnKeyPressed(this::handleKeyPress);
         gamePanel.setOnKeyReleased(this::handleKeyRelease);
         gameOverPanel.setVisible(false);
+
+        // --- NEW CODE START ---
+        if (pauseMenuPanel != null) {
+            pauseMenuPanel.setVisible(false);
+
+            // Define what happens when Resume is clicked
+            pauseMenuPanel.setOnResume(() -> {
+                togglePause();
+            });
+
+            // Define what happens when Main Menu is clicked
+            pauseMenuPanel.setOnMainMenu(() -> {
+                try {
+                    // Load Main Menu Scene
+                    javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/MainMenu.fxml"));
+                    javafx.scene.Parent menuRoot = loader.load();
+                    javafx.stage.Stage stage = (javafx.stage.Stage) gamePanel.getScene().getWindow();
+                    javafx.scene.Scene menuScene = new javafx.scene.Scene(menuRoot, 900, 700);
+                    stage.setScene(menuScene);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            });
+        }
     }
 
     public void handleKeyPress(KeyEvent keyEvent) {
@@ -305,7 +332,7 @@ public class GuiController implements Initializable {
         }
 
         if (keyEvent.getCode() == KeyCode.P || keyEvent.getCode() == KeyCode.ESCAPE) {
-            pauseGame(null);
+            togglePause(); // Call the new method
             keyEvent.consume();
         }
 
@@ -1250,6 +1277,8 @@ public class GuiController implements Initializable {
             timeLine.setCycleCount(Timeline.INDEFINITE);
             timeLine.play();
         });
+
+        pauseMenuPanel.setVisible(false);
     }
 
     private void startGameWithCountdown() {
@@ -1367,6 +1396,8 @@ public class GuiController implements Initializable {
         ));
         timeLine.setCycleCount(Timeline.INDEFINITE);
         timeLine.play();
+
+        pauseMenuPanel.setVisible(false);
     }
 
     public void setEventListener(InputEventListener eventListener) {
@@ -1539,6 +1570,41 @@ public class GuiController implements Initializable {
 
     public void pauseGame(ActionEvent actionEvent) {
         gamePanel.requestFocus();
+    }
+
+    private void togglePause() {
+        if (isGameOver.getValue()) return; // Cannot pause if game over
+        if (isCountdownActive) return;     // Cannot pause during countdown
+
+        if (isPause.getValue()) {
+            // RESUME GAME
+            isPause.setValue(false);
+            pauseMenuPanel.setVisible(false);
+
+            // Restart timers
+            if (timeLine != null) timeLine.play();
+            if (timer != null) timer.start();
+
+            // Focus back on game panel so keys work immediately
+            gamePanel.requestFocus();
+
+        } else {
+            // PAUSE GAME
+            isPause.setValue(true);
+            pauseMenuPanel.setVisible(true);
+
+            // Stop timers
+            if (timeLine != null) timeLine.stop(); // Stop the brick dropping
+            if (timer != null) timer.stop();       // Stop the clock
+
+            // Note: We intentionally do NOT stop lockDelayTimeline here because
+            // stopping it completely might reset the lock timer, making the game easier.
+            // If you want strict pausing, you can pause it, but standard Timeline.stop()
+            // resets position. Usually, for simple Tetris, pausing the drop loop is enough.
+            if (lockDelayTimeline != null) {
+                lockDelayTimeline.stop(); // Reset lock delay on pause prevents exploits
+            }
+        }
     }
 
 }
