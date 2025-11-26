@@ -370,7 +370,6 @@ public class GuiController implements Initializable {
                     if (scoreValue != null) {
                         scoreValue.setText(String.valueOf(normalModeScore));
                     }
-                    showScoreNotification("+" + earnedScore);
 
                 } else if (currentGameMode == GameMode.TWO_MINUTES) {
                     // Use Tetris scoring for 2-minute mode
@@ -379,11 +378,11 @@ public class GuiController implements Initializable {
                     if (scoreValue != null) {
                         scoreValue.setText(String.valueOf(currentScore));
                     }
-                    showScoreNotification("+" + earnedScore);
                 }
 
                 updateStatsDisplay();
                 updateGameSpeed();
+
             } else {
                 // No lines cleared - reset combo
                 if (currentGameMode == GameMode.NORMAL) {
@@ -663,25 +662,6 @@ public class GuiController implements Initializable {
         }
         gamePanel.requestFocus();
     }
-
-    private void showScoreNotification(String text) {
-        // CRITICAL FIX: Clear ALL old notifications before adding new one
-        groupNotification.getChildren().clear();
-
-        NotificationPanel notificationPanel = new NotificationPanel(text);
-
-        // Position in center of game board
-        double boardWidth = 10 * BRICK_SIZE;
-        double boardHeight = 27 * BRICK_SIZE;
-
-        // Center horizontally and vertically
-        notificationPanel.setLayoutX((boardWidth - notificationPanel.getMinWidth()) / 2);
-        notificationPanel.setLayoutY((boardHeight / 2) - 100);
-
-        groupNotification.getChildren().add(notificationPanel);
-        notificationPanel.showScore(groupNotification.getChildren());
-    }
-
 
     public void updateHoldDisplay() {
         if (eventListener instanceof GameController) {
@@ -1015,7 +995,6 @@ public class GuiController implements Initializable {
                     if (scoreValue != null) {
                         scoreValue.setText(String.valueOf(normalModeScore));
                     }
-                    showScoreNotification("+" + earnedScore);
 
                 } else if (currentGameMode == GameMode.TWO_MINUTES) {
                     // Use Tetris scoring for 2-minute mode
@@ -1024,7 +1003,6 @@ public class GuiController implements Initializable {
                     if (scoreValue != null) {
                         scoreValue.setText(String.valueOf(currentScore));
                     }
-                    showScoreNotification("+" + earnedScore);
                 }
 
                 updateStatsDisplay();
@@ -1097,9 +1075,6 @@ public class GuiController implements Initializable {
         cancelLockDelay();
 
         challengeCompleted = false;
-
-        // Clear all notifications to prevent lag
-        groupNotification.getChildren().clear();
 
         // Reset score tracking
         if (currentGameMode == GameMode.NORMAL) {
@@ -1222,9 +1197,6 @@ public class GuiController implements Initializable {
 
         challengeCompleted = false;
         removeCompletionPanel();
-
-        // Clear all notifications to prevent lag
-        groupNotification.getChildren().clear();
 
         // Reset score tracking
         if (currentGameMode == GameMode.NORMAL) {
@@ -1465,9 +1437,6 @@ public class GuiController implements Initializable {
         timeLine.stop();
         if (timer != null) timer.stop(); //Stop the timer
         cancelLockDelay();
-
-        //Clear notifications on game over
-        groupNotification.getChildren().clear();
 
         gameOverPanel.setVisible(true);
         isGameOver.setValue(Boolean.TRUE);

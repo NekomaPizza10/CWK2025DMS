@@ -101,8 +101,6 @@
                                           hgap="0" vgap="0"/>
                             </Pane>
 
-                            <Group fx:id="groupNotification"/>
-
                             <!-- Countdown Label -->
                             <StackPane fx:id="countdownPanel"
                                        visible="false"
