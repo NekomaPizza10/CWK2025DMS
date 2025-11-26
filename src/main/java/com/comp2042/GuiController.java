@@ -154,66 +154,80 @@ public class GuiController implements Initializable {
         System.out.println("Game mode set to: " + mode.getDisplayName());
 
         // Show/hide best time based on mode
-        if (bestTimeLabel != null) {
-            if (mode == GameMode.FORTY_LINES) {
-                bestTimeLabel.setVisible(true);
-                bestTimeLabel.getParent().setVisible(true);
-                updateBestTimeDisplay();
-            } else {
-                bestTimeLabel.setVisible(false);
-                if (bestTimeLabel.getParent() != null) {
-                    bestTimeLabel.getParent().setVisible(false);
-                }
-            }
-        }
-
-        // Show/hide score based on mode
         if (scoreLabel != null && scoreValue != null) {
             if (mode == GameMode.NORMAL || mode == GameMode.TWO_MINUTES) {
+                // Show score for both Normal and 2-Minute modes
                 scoreLabel.setVisible(true);
                 scoreValue.setVisible(true);
-                if (scoreLabel.getParent() != null) {
-                    scoreLabel.getParent().setVisible(true);
+
+                // Get the MAIN parent VBox that contains everything
+                javafx.scene.Parent mainParent = scoreLabel.getParent();
+                if (mainParent != null && mainParent.getParent() != null) {
+                    mainParent.getParent().setVisible(true); // Make the outer VBox visible
                 }
+
                 scoreValue.setText("0");
 
-                // Show best score ONLY for 2-minute mode
+                // Show best score ONLY for 2-minute mode, hide for Normal mode
                 if (bestScoreLabel != null && bestScoreValue != null) {
                     if (mode == GameMode.TWO_MINUTES) {
+                        // Two Minutes Mode: Show both score and best score
                         bestScoreLabel.setVisible(true);
                         bestScoreValue.setVisible(true);
-                        if (bestScoreLabel.getParent() != null) {
-                            bestScoreLabel.getParent().setVisible(true);
-                        }
                         updateBestScoreDisplay();
+                        System.out.println("Score display initialized for 2-minute mode with best score");
                     } else {
-                        // Hide best score for normal mode
+                        // Normal Mode: Show score but hide best score and separator
                         bestScoreLabel.setVisible(false);
                         bestScoreValue.setVisible(false);
-                        if (bestScoreLabel.getParent() != null) {
-                            bestScoreLabel.getParent().setVisible(false);
+
+                        // Also hide the separator line between score and best score
+                        if (bestScoreLabel.getParent() != null && bestScoreLabel.getParent() instanceof javafx.scene.layout.VBox) {
+                            javafx.scene.layout.VBox vbox = (javafx.scene.layout.VBox) bestScoreLabel.getParent();
+                            // Hide separator (it's the 3rd child - index 2)
+                            if (vbox.getChildren().size() > 2) {
+                                vbox.getChildren().get(2).setVisible(false); // Hide separator Region
+                            }
                         }
+
+                        System.out.println("Score display initialized for Normal mode without best score");
                     }
                 }
 
-                System.out.println("Score display initialized for 2-minute mode");
-
             } else {
+                // 40-Lines Mode: Hide entire score section
                 scoreLabel.setVisible(false);
                 scoreValue.setVisible(false);
-                if (scoreLabel.getParent() != null) {
-                    scoreLabel.getParent().setVisible(false);
+
+                // Hide the MAIN parent VBox
+                javafx.scene.Parent mainParent = scoreLabel.getParent();
+                if (mainParent != null && mainParent.getParent() != null) {
+                    mainParent.getParent().setVisible(false);
                 }
 
                 // Hide best score for other modes
                 if (bestScoreLabel != null && bestScoreValue != null) {
                     bestScoreLabel.setVisible(false);
                     bestScoreValue.setVisible(false);
-                    if (bestScoreLabel.getParent() != null) {
-                        bestScoreLabel.getParent().setVisible(false);
-                    }
                 }
+            }
+        }
 
+        // Update lines label for 40-lines challenge mode
+        if (linesLabel != null) {
+            if (mode == GameMode.FORTY_LINES) {
+                linesLabel.setText("LINES (Goal: " + GOAL + ")");
+            } else {
+                linesLabel.setText("LINES");
+            }
+        }
+
+        // Update time label for 2-minute challenge mode
+        if (timeLabel != null) {
+            if (mode == GameMode.TWO_MINUTES) {
+                timeLabel.setText("TIME LEFT");
+            } else {
+                timeLabel.setText("TIME");
             }
         }
 
