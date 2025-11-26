@@ -50,6 +50,11 @@ public class GuiController implements Initializable {
     private long fortyLinesBestTime = Long.MAX_VALUE; // for Best time in milliseconds
     private boolean challengeCompleted = false;
 
+    // For Normal Mode - NEW scoring system
+    private int normalModeScore = 0;
+    private int normalModeCombo = 0;
+    private boolean normalModeLastWasTetris = false;
+
     // For 2-Minute Challenge
     private int currentScore = 0;
     private static int twoMinutesBestScore = 0;
@@ -77,8 +82,7 @@ public class GuiController implements Initializable {
     @FXML
     private GridPane brickPanel;
 
-    @FXML
-    private Pane brickPaneContainer;
+
 
     @FXML
     private GridPane holdPanel;
@@ -95,8 +99,6 @@ public class GuiController implements Initializable {
     @FXML
     private StackPane countdownPanel;
 
-    @FXML
-    private StackPane gameBoardContainer;
 
     @FXML
     private Label countdownLabel;
@@ -138,10 +140,16 @@ public class GuiController implements Initializable {
         this.currentGameMode = mode;
         challengeCompleted = false;
 
-        // Reset score tracking for 2-minute mode
-        currentScore = 0;
-        currentCombo = 0;
-        lastClearWasTetris = false;
+        // Reset score tracking
+        if (mode == GameMode.NORMAL) {
+            normalModeScore = 0;
+            normalModeCombo = 0;
+            normalModeLastWasTetris = false;
+        } else if (mode == GameMode.TWO_MINUTES) {
+            currentScore = 0;
+            currentCombo = 0;
+            lastClearWasTetris = false;
+        }
 
         System.out.println("Game mode set to: " + mode.getDisplayName());
 
@@ -161,7 +169,7 @@ public class GuiController implements Initializable {
 
         // Show/hide score based on mode
         if (scoreLabel != null && scoreValue != null) {
-            if (mode == GameMode.TWO_MINUTES) {
+            if (mode == GameMode.NORMAL || mode == GameMode.TWO_MINUTES) {
                 scoreLabel.setVisible(true);
                 scoreValue.setVisible(true);
                 if (scoreLabel.getParent() != null) {
@@ -169,14 +177,23 @@ public class GuiController implements Initializable {
                 }
                 scoreValue.setText("0");
 
-                // Show best score
+                // Show best score ONLY for 2-minute mode
                 if (bestScoreLabel != null && bestScoreValue != null) {
-                    bestScoreLabel.setVisible(true);
-                    bestScoreValue.setVisible(true);
-                    if (bestScoreLabel.getParent() != null) {
-                        bestScoreLabel.getParent().setVisible(true);
+                    if (mode == GameMode.TWO_MINUTES) {
+                        bestScoreLabel.setVisible(true);
+                        bestScoreValue.setVisible(true);
+                        if (bestScoreLabel.getParent() != null) {
+                            bestScoreLabel.getParent().setVisible(true);
+                        }
+                        updateBestScoreDisplay();
+                    } else {
+                        // Hide best score for normal mode
+                        bestScoreLabel.setVisible(false);
+                        bestScoreValue.setVisible(false);
+                        if (bestScoreLabel.getParent() != null) {
+                            bestScoreLabel.getParent().setVisible(false);
+                        }
                     }
-                    updateBestScoreDisplay();
                 }
 
                 System.out.println("Score display initialized for 2-minute mode");
@@ -323,16 +340,19 @@ public class GuiController implements Initializable {
                 // Keep moving down until it can't move anymore
             }
 
-            // Add hard drop bonus BEFORE locking
-            if (currentGameMode == GameMode.TWO_MINUTES && dropDistance > 0) {
+            // Add hard drop bonus BEFORE locking (2 points per cell)
+            if (currentGameMode == GameMode.NORMAL && dropDistance > 0) {
+                int hardDropBonus = dropDistance * 2;
+                normalModeScore += hardDropBonus;
+                if (scoreValue != null) {
+                    scoreValue.setText(String.valueOf(normalModeScore));
+                }
+            } else if (currentGameMode == GameMode.TWO_MINUTES && dropDistance > 0) {
                 int hardDropBonus = dropDistance * 2;
                 currentScore += hardDropBonus;
-
                 if (scoreValue != null) {
                     scoreValue.setText(String.valueOf(currentScore));
                 }
-
-                System.out.println("Hard drop bonus: +" + hardDropBonus + " points");
             }
 
             // Lock the brick
@@ -343,36 +363,33 @@ public class GuiController implements Initializable {
             if (clearRow != null && clearRow.getLinesRemoved() > 0) {
                 int linesCleared = clearRow.getLinesRemoved();
 
-                if (currentGameMode == GameMode.TWO_MINUTES) {
+                if (currentGameMode == GameMode.NORMAL) {
+                    // Use Tetris scoring for Normal mode
+                    int earnedScore = calculateTetrisScore(linesCleared, true);
+                    normalModeScore += earnedScore;
+                    if (scoreValue != null) {
+                        scoreValue.setText(String.valueOf(normalModeScore));
+                    }
+                    showScoreNotification("+" + earnedScore);
+
+                } else if (currentGameMode == GameMode.TWO_MINUTES) {
                     // Use Tetris scoring for 2-minute mode
-                    int earnedScore = calculateTetrisScore(linesCleared);
+                    int earnedScore = calculateTetrisScore(linesCleared, false);
                     currentScore += earnedScore;
-
-                    System.out.println("Hard drop cleared " + linesCleared + " lines | Earned: " + earnedScore + " | Total: " + currentScore);
-
-                    // Update score display
                     if (scoreValue != null) {
                         scoreValue.setText(String.valueOf(currentScore));
                     }
-
-                    // Show score notification
-                    NotificationPanel notificationPanel = new NotificationPanel("+" + earnedScore);
-                    groupNotification.getChildren().add(notificationPanel);
-                    notificationPanel.showScore(groupNotification.getChildren());
-                } else {
-                    board.getScore().add(clearRow.getScoreBonus());
-                    NotificationPanel notificationPanel = new NotificationPanel(
-                            "+" + clearRow.getScoreBonus()
-                    );
-                    groupNotification.getChildren().add(notificationPanel);
-                    notificationPanel.showScore(groupNotification.getChildren());
+                    showScoreNotification("+" + earnedScore);
                 }
 
                 updateStatsDisplay();
                 updateGameSpeed();
             } else {
                 // No lines cleared - reset combo
-                if (currentGameMode == GameMode.TWO_MINUTES) {
+                if (currentGameMode == GameMode.NORMAL) {
+                    normalModeCombo = 0;
+                    normalModeLastWasTetris = false;
+                } else if (currentGameMode == GameMode.TWO_MINUTES) {
                     currentCombo = 0;
                     lastClearWasTetris = false;
                 }
@@ -626,15 +643,18 @@ public class GuiController implements Initializable {
                 // Brick moved successfully - cancel lock delay
                 cancelLockDelay();
 
-                // Soft drop bonus (1 point per cell) for 2-minute mode
+                // Soft drop bonus (1 point per cell)
                 if (event.getEventSource() == EventSource.USER) {
-                    if (currentGameMode == GameMode.TWO_MINUTES) {
+                    if (currentGameMode == GameMode.NORMAL) {
+                        normalModeScore += 1;
+                        if (scoreValue != null) {
+                            scoreValue.setText(String.valueOf(normalModeScore));
+                        }
+                    } else if (currentGameMode == GameMode.TWO_MINUTES) {
                         currentScore += 1;
                         if (scoreValue != null) {
                             scoreValue.setText(String.valueOf(currentScore));
                         }
-                    } else {
-                        board.getScore().add(1);
                     }
                 }
 
@@ -643,6 +663,25 @@ public class GuiController implements Initializable {
         }
         gamePanel.requestFocus();
     }
+
+    private void showScoreNotification(String text) {
+        // CRITICAL FIX: Clear ALL old notifications before adding new one
+        groupNotification.getChildren().clear();
+
+        NotificationPanel notificationPanel = new NotificationPanel(text);
+
+        // Position in center of game board
+        double boardWidth = 10 * BRICK_SIZE;
+        double boardHeight = 27 * BRICK_SIZE;
+
+        // Center horizontally and vertically
+        notificationPanel.setLayoutX((boardWidth - notificationPanel.getMinWidth()) / 2);
+        notificationPanel.setLayoutY((boardHeight / 2) - 100);
+
+        groupNotification.getChildren().add(notificationPanel);
+        notificationPanel.showScore(groupNotification.getChildren());
+    }
+
 
     public void updateHoldDisplay() {
         if (eventListener instanceof GameController) {
@@ -969,39 +1008,34 @@ public class GuiController implements Initializable {
             if (clearRow != null && clearRow.getLinesRemoved() > 0) {
                 int linesCleared = clearRow.getLinesRemoved();
 
-                // Handle scoring for 2-minute mode
-                if (currentGameMode == GameMode.TWO_MINUTES) {
-                    // Use Tetris scoring system for 2-minute mode
-                    int earnedScore = calculateTetrisScore(linesCleared);
+                if (currentGameMode == GameMode.NORMAL) {
+                    // Use Tetris scoring for Normal mode
+                    int earnedScore = calculateTetrisScore(linesCleared, true);
+                    normalModeScore += earnedScore;
+                    if (scoreValue != null) {
+                        scoreValue.setText(String.valueOf(normalModeScore));
+                    }
+                    showScoreNotification("+" + earnedScore);
+
+                } else if (currentGameMode == GameMode.TWO_MINUTES) {
+                    // Use Tetris scoring for 2-minute mode
+                    int earnedScore = calculateTetrisScore(linesCleared, false);
                     currentScore += earnedScore;
-
-                    System.out.println("Lines: " + linesCleared + " | Earned: " + earnedScore + " | Total: " + currentScore);
-
-                    // Update score display
                     if (scoreValue != null) {
                         scoreValue.setText(String.valueOf(currentScore));
                     }
-
-                    // Show score notification
-                    NotificationPanel notificationPanel = new NotificationPanel("+" + earnedScore);
-                    groupNotification.getChildren().add(notificationPanel);
-                    notificationPanel.showScore(groupNotification.getChildren());
-
-                } else {
-                    board.getScore().add(clearRow.getScoreBonus());
-                    NotificationPanel notificationPanel = new NotificationPanel(
-                            "+" + clearRow.getScoreBonus()
-                    );
-                    groupNotification.getChildren().add(notificationPanel);
-                    notificationPanel.showScore(groupNotification.getChildren());
+                    showScoreNotification("+" + earnedScore);
                 }
 
                 updateStatsDisplay();
                 updateGameSpeed();
 
             } else {
-                // No lines cleared - reset combo for 2-minute mode
-                if (currentGameMode == GameMode.TWO_MINUTES) {
+                // No lines cleared - reset combo
+                if (currentGameMode == GameMode.NORMAL) {
+                    normalModeCombo = 0;
+                    normalModeLastWasTetris = false;
+                } else if (currentGameMode == GameMode.TWO_MINUTES) {
                     currentCombo = 0;
                     lastClearWasTetris = false;
                 }
@@ -1064,8 +1098,19 @@ public class GuiController implements Initializable {
 
         challengeCompleted = false;
 
-        // Reset score for 2-minute mode
-        if (currentGameMode == GameMode.TWO_MINUTES) {
+        // Clear all notifications to prevent lag
+        groupNotification.getChildren().clear();
+
+        // Reset score tracking
+        if (currentGameMode == GameMode.NORMAL) {
+            normalModeScore = 0;
+            normalModeCombo = 0;
+            normalModeLastWasTetris = false;
+            if (scoreValue != null) {
+                scoreValue.setText("0");
+            }
+            System.out.println("Score reset for new game with countdown");
+        } else if (currentGameMode == GameMode.TWO_MINUTES) {
             currentScore = 0;
             currentCombo = 0;
             lastClearWasTetris = false;
@@ -1074,6 +1119,7 @@ public class GuiController implements Initializable {
             }
             System.out.println("Score reset for new game with countdown");
         }
+
 
         gameOverPanel.setVisible(false);
         countdownPanel.setVisible(false);
@@ -1128,7 +1174,7 @@ public class GuiController implements Initializable {
             if (eventListener instanceof GameController) {
                 GameController gc = (GameController) eventListener;
                 Board board = gc.getBoard();
-                board.createNewBrick();  // ← BRICK CREATED HERE
+                board.createNewBrick();
                 refreshBrick(board.getViewData());
                 updateNextDisplay();
             }
@@ -1177,14 +1223,26 @@ public class GuiController implements Initializable {
         challengeCompleted = false;
         removeCompletionPanel();
 
-        // Reset score for 2-minute mode
-        if (currentGameMode == GameMode.TWO_MINUTES) {
+        // Clear all notifications to prevent lag
+        groupNotification.getChildren().clear();
+
+        // Reset score tracking
+        if (currentGameMode == GameMode.NORMAL) {
+            normalModeScore = 0;
+            normalModeCombo = 0;
+            normalModeLastWasTetris = false;
+            if (scoreValue != null) {
+                scoreValue.setText("0");
+            }
+            System.out.println("Score reset for new game");
+        } else if (currentGameMode == GameMode.TWO_MINUTES) {
             currentScore = 0;
             currentCombo = 0;
             lastClearWasTetris = false;
             if (scoreValue != null) {
                 scoreValue.setText("0");
             }
+
             System.out.println("Score reset for new game");
         }
 
@@ -1254,7 +1312,7 @@ public class GuiController implements Initializable {
      * Calculate score based on official Tetris scoring system
      * Includes: base line clear points, combo bonus, and back-to-back Tetris bonus
      */
-    private int calculateTetrisScore(int linesCleared) {
+    private int calculateTetrisScore(int linesCleared, boolean isNormalMode) {
         if (linesCleared == 0) return 0;
 
         // Base points for line clears (standard Tetris scoring)
@@ -1278,20 +1336,28 @@ public class GuiController implements Initializable {
                 break;
         }
 
-        // Combo bonus
-        int comboBonus = currentCombo * 50;
+        // Combo bonus and back-to-back tracking
+        int comboBonus, backToBackBonus;
 
-        // Back-to-back Tetris bonus - big reward for consecutive 4-line clears
-        int backToBackBonus = 0;
-        if (linesCleared == 4 && lastClearWasTetris) {
-            backToBackBonus = 400; // 50% bonus for back-to-back Tetris
+        if (isNormalMode) {
+            // Use Normal mode's separate combo tracking
+            comboBonus = normalModeCombo * 50;
+            backToBackBonus = 0;
+            if (linesCleared == 4 && normalModeLastWasTetris) {
+                backToBackBonus = 400; // 50% bonus for back-to-back Tetris
+            }
+            normalModeCombo++;  // Increment combo counter
+            normalModeLastWasTetris = (linesCleared == 4);  // Track if this was a Tetris
+        } else {
+            // Use 2-minute mode's separate combo tracking
+            comboBonus = currentCombo * 50;
+            backToBackBonus = 0;
+            if (linesCleared == 4 && lastClearWasTetris) {
+                backToBackBonus = 400;
+            }
+            currentCombo++;
+            lastClearWasTetris = (linesCleared == 4);
         }
-
-        // Increases with each clear
-        currentCombo++;
-
-        // Track for back-to-back detection
-        lastClearWasTetris = (linesCleared == 4);
 
         int totalScore = baseScore + comboBonus + backToBackBonus;
 
@@ -1303,6 +1369,7 @@ public class GuiController implements Initializable {
 
         return totalScore;
     }
+
 
     private void checkTwoMinutesComplete() {
         if (currentGameMode == GameMode.TWO_MINUTES && !challengeCompleted) {
@@ -1398,6 +1465,10 @@ public class GuiController implements Initializable {
         timeLine.stop();
         if (timer != null) timer.stop(); //Stop the timer
         cancelLockDelay();
+
+        //Clear notifications on game over
+        groupNotification.getChildren().clear();
+
         gameOverPanel.setVisible(true);
         isGameOver.setValue(Boolean.TRUE);
     }
