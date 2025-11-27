@@ -16,10 +16,6 @@ import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
-/**
- * Main GUI Controller - handles display and user input
- * Refactored to delegate timing, scoring, and state management to separate classes
- */
 public class GuiController implements Initializable {
 
     private static final int BRICK_SIZE = 25;
@@ -54,7 +50,6 @@ public class GuiController implements Initializable {
     private TwoMinutesCompletionPanel currentCompletionPanel;
     private CompletionPanel currentFortyLinesPanel;
 
-    // Delegate classes
     private GameState gameState;
     private TimerManager timerManager;
     private ScoringManager scoringManager;
@@ -125,7 +120,6 @@ public class GuiController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Initialize delegate classes
         gameState = new GameState();
 
         gamePanel.setFocusTraversable(true);
@@ -146,19 +140,24 @@ public class GuiController implements Initializable {
             return;
         }
 
-        // CRITICAL FIX: Block ALL input if game is over
-        if (gameState.isGameOver()) {
-            // Only allow 'N' key to restart
-            if (keyEvent.getCode() == KeyCode.N) {
-                if (gameState.isChallengeCompleted()) {
-                    removeCompletionPanel();
-                    restartGameWithCountdown();
-                } else {
-                    restartGameInstantly();
-                }
+        // FIX: Handle 'N' key for restart
+        if (keyEvent.getCode() == KeyCode.N) {
+            if (gameState.isChallengeCompleted() || gameState.isGameOver()) {
+                // After challenge/game over - restart with countdown
+                removeCompletionPanel();
+                restartGameWithCountdown();
+            } else {
+                // During normal gameplay - instant restart
+                restartGameInstantly();
             }
             keyEvent.consume();
-            return; // Exit early - don't process any other keys
+            return;
+        }
+
+        // Block ALL input if game is over
+        if (gameState.isGameOver()) {
+            keyEvent.consume();
+            return;
         }
 
         if (!gameState.isPaused()) {
@@ -364,6 +363,11 @@ public class GuiController implements Initializable {
             gameState.setCurrentDropSpeed(400);
         }
 
+        javafx.application.Platform.runLater(() -> {
+            if (gamePanel.getScene() != null) {
+                gamePanel.getScene().addEventFilter(KeyEvent.KEY_PRESSED, this::handleSceneKeyPress);
+            }
+        });
         startGameWithCountdown();
     }
 
@@ -669,6 +673,8 @@ public class GuiController implements Initializable {
 
     private void completeFortyLinesChallenge() {
         timerManager.stopAllTimers();
+        gameState.setGameOver(true);
+
         long finalTime = timerManager.getElapsedTime();
 
         boolean isNewBest = finalTime < gameState.getFortyLinesBestTime();
@@ -712,6 +718,7 @@ public class GuiController implements Initializable {
 
     private void completeTwoMinutesChallenge() {
         timerManager.stopAllTimers();
+        gameState.setGameOver(true);
 
         int finalScore = gameState.getTwoMinutesScore();
         boolean isNewBest = finalScore > GameState.getTwoMinutesBestScore();
@@ -1073,5 +1080,24 @@ public class GuiController implements Initializable {
             }
         }
         return false;
+    }
+
+
+    private void handleSceneKeyPress(KeyEvent keyEvent) {
+        if (keyEvent.getCode() == KeyCode.N) {
+            if (gameState.isCountdownActive()) {
+                return;
+            }
+
+            if (gameState.isChallengeCompleted() || gameState.isGameOver()) {
+                // After challenge/game over - restart with countdown
+                removeCompletionPanel();
+                restartGameWithCountdown();
+            } else {
+                // During normal gameplay - instant restart
+                restartGameInstantly();
+            }
+            keyEvent.consume();
+        }
     }
 }
