@@ -87,28 +87,36 @@ public class SimpleBoard implements Board {
     public boolean rotateLeftBrick() {
         int[][] currentMatrix = MatrixOperations.copy(currentGameMatrix);
         NextShapeInfo nextShape = brickRotator.getNextShape();
-        boolean conflict = MatrixOperations.intersect(currentMatrix, nextShape.getShape(), (int) currentOffset.getX(), (int) currentOffset.getY());
+        int[][] nextShapeArray = nextShape.getShape();
 
-        if (!conflict) {
+        // FIX: Check if initial rotation would be within bounds
+        if (isRotationInBounds(nextShapeArray, (int) currentOffset.getX(), (int) currentOffset.getY())) {
+            boolean conflict = MatrixOperations.intersect(currentMatrix, nextShapeArray, (int) currentOffset.getX(), (int) currentOffset.getY());
 
-            // Rotation succeeded at current position
-            brickRotator.setCurrentShape(nextShape.getPosition());
-            return true;
-
+            if (!conflict) {
+                // Rotation succeeded at current position
+                brickRotator.setCurrentShape(nextShape.getPosition());
+                return true;
+            }
         }
+
         // Wall kicks: one space left or right
         // Kick right (for left wall)
         for (int kickDistance = 1; kickDistance <= 3; kickDistance++) {
             Point testOffset = new Point(currentOffset);
             testOffset.translate(-kickDistance, 0);  // Move LEFT
-            conflict = MatrixOperations.intersect(currentMatrix, nextShape.getShape(),
-                    (int) testOffset.getX(),
-                    (int) testOffset.getY());
 
-            if (!conflict) {
-                currentOffset = testOffset;
-                brickRotator.setCurrentShape(nextShape.getPosition());
-                return true;
+            // FIX: Check if the new position would be within bounds before testing collision
+            if (isRotationInBounds(nextShapeArray, (int) testOffset.getX(), (int) testOffset.getY())) {
+                boolean conflict = MatrixOperations.intersect(currentMatrix, nextShapeArray,
+                        (int) testOffset.getX(),
+                        (int) testOffset.getY());
+
+                if (!conflict) {
+                    currentOffset = testOffset;
+                    brickRotator.setCurrentShape(nextShape.getPosition());
+                    return true;
+                }
             }
         }
 
@@ -116,19 +124,44 @@ public class SimpleBoard implements Board {
         for (int kickDistance = 1; kickDistance <= 3; kickDistance++) {
             Point testOffset = new Point(currentOffset);
             testOffset.translate(kickDistance, 0);  // Move RIGHT
-            conflict = MatrixOperations.intersect(currentMatrix, nextShape.getShape(),
-                    (int) testOffset.getX(),
-                    (int) testOffset.getY());
 
-            if (!conflict) {
-                currentOffset = testOffset;
-                brickRotator.setCurrentShape(nextShape.getPosition());
-                return true;
+            // FIX: Check if the new position would be within bounds before testing collision
+            if (isRotationInBounds(nextShapeArray, (int) testOffset.getX(), (int) testOffset.getY())) {
+                boolean conflict = MatrixOperations.intersect(currentMatrix, nextShapeArray,
+                        (int) testOffset.getX(),
+                        (int) testOffset.getY());
+
+                if (!conflict) {
+                    currentOffset = testOffset;
+                    brickRotator.setCurrentShape(nextShape.getPosition());
+                    return true;
+                }
             }
         }
 
         // Rotation failed
         return false;
+    }
+
+    /**
+     * Helper method to check if a rotated shape would be within game board boundaries
+     */
+    private boolean isRotationInBounds(int[][] shape, int x, int y) {
+        for (int i = 0; i < shape.length; i++) {
+            for (int j = 0; j < shape[i].length; j++) {
+                if (shape[i][j] != 0) {
+                    int boardX = x + j;
+                    int boardY = y + i;
+
+                    // Check if this block would be out of bounds
+                    if (boardX < 0 || boardX >= width || boardY >= height) {
+                        return false;
+                    }
+                    // Note: boardY can be negative (above the board) during rotation, which is allowed
+                }
+            }
+        }
+        return true;
     }
 
     @Override

@@ -29,7 +29,8 @@ public class MatrixOperations {
 
     private static boolean checkOutOfBound(int[][] matrix, int targetX, int targetY) {
         boolean returnValue = true;
-        if (targetX >= 0 && targetY < matrix.length && targetX < matrix[targetY].length) {
+        // FIX: Added "targetY >= 0" to prevent accessing matrix[-1] when brick is at top
+        if (targetX >= 0 && targetY >= 0 && targetY < matrix.length && targetX < matrix[targetY].length) {
             returnValue = false;
         }
         return returnValue;
