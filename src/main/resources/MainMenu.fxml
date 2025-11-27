@@ -101,3 +101,162 @@
                    -fx-cursor: hand;"/>
 
 </VBox>
+        <?xml version="1.0" encoding="UTF-8"?>
+
+        <?import javafx.scene.control.Button?>
+        <?import javafx.scene.control.Label?>
+        <?import javafx.scene.layout.*?>
+        <?import javafx.geometry.Insets?>
+
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           style="-fx-background-color: rgba(0, 0, 0, 0.95);">
+
+<VBox alignment="CENTER" spacing="20" style="-fx-background-color: transparent;">
+    <padding>
+        <Insets top="40" right="60" bottom="40" left="60"/>
+    </padding>
+
+    <!-- Title -->
+    <Label text="HOW TO PLAY"
+           style="-fx-font-size: 42px; -fx-font-weight: bold; -fx-text-fill: #00aaff;"/>
+
+    <!-- Content Card -->
+    <VBox spacing="25" alignment="TOP_LEFT"
+          style="-fx-background-color: rgba(255,255,255,0.05);
+                     -fx-padding: 40;
+                     -fx-background-radius: 15;
+                     -fx-border-color: rgba(255,255,255,0.1);
+                     -fx-border-radius: 15;
+                     -fx-border-width: 2;"
+          maxWidth="700">
+
+        <!-- Objective Section -->
+        <VBox spacing="10">
+            <Label text="OBJECTIVE"
+                   style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #00ff88;"/>
+            <Label text="Arrange falling blocks to create complete horizontal lines. Completed lines will disappear, earning you points!"
+                   wrapText="true"
+                   style="-fx-font-size: 14px; -fx-text-fill: #cccccc; -fx-line-spacing: 3;"/>
+        </VBox>
+
+        <!-- Separator -->
+        <Region prefHeight="1" style="-fx-background-color: rgba(255,255,255,0.1);"/>
+
+        <!-- Controls Section -->
+        <VBox spacing="15">
+            <Label text="CONTROLS"
+                   style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #00ff88;"/>
+
+            <GridPane hgap="30" vgap="10">
+                <!-- Left column -->
+                <VBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                    <HBox spacing="15" alignment="CENTER_LEFT">
+                        <Label text="← / A" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #00aaff; -fx-min-width: 70;"/>
+                        <Label text="Move Left" style="-fx-font-size: 14px; -fx-text-fill: white;"/>
+                    </HBox>
+                    <HBox spacing="15" alignment="CENTER_LEFT">
+                        <Label text="→ / D" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #00aaff; -fx-min-width: 70;"/>
+                        <Label text="Move Right" style="-fx-font-size: 14px; -fx-text-fill: white;"/>
+                    </HBox>
+                    <HBox spacing="15" alignment="CENTER_LEFT">
+                        <Label text="↑ / W" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #00aaff; -fx-min-width: 70;"/>
+                        <Label text="Rotate" style="-fx-font-size: 14px; -fx-text-fill: white;"/>
+                    </HBox>
+                    <HBox spacing="15" alignment="CENTER_LEFT">
+                        <Label text="↓ / S" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #00aaff; -fx-min-width: 70;"/>
+                        <Label text="Soft Drop" style="-fx-font-size: 14px; -fx-text-fill: white;"/>
+                    </HBox>
+                </VBox>
+
+                <!-- Right column -->
+                <VBox spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                    <HBox spacing="15" alignment="CENTER_LEFT">
+                        <Label text="SPACE" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #00aaff; -fx-min-width: 90;"/>
+                        <Label text="Hard Drop" style="-fx-font-size: 14px; -fx-text-fill: white;"/>
+                    </HBox>
+                    <HBox spacing="15" alignment="CENTER_LEFT">
+                        <Label text="SHIFT / C" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #00aaff; -fx-min-width: 90;"/>
+                        <Label text="Hold Piece" style="-fx-font-size: 14px; -fx-text-fill: white;"/>
+                    </HBox>
+                    <HBox spacing="15" alignment="CENTER_LEFT">
+                        <Label text="P / ESC" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #00aaff; -fx-min-width: 90;"/>
+                        <Label text="Pause" style="-fx-font-size: 14px; -fx-text-fill: white;"/>
+                    </HBox>
+                    <HBox spacing="15" alignment="CENTER_LEFT">
+                        <Label text="N" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #00aaff; -fx-min-width: 90;"/>
+                        <Label text="New Game" style="-fx-font-size: 14px; -fx-text-fill: white;"/>
+                    </HBox>
+                </VBox>
+            </GridPane>
+        </VBox>
+
+        <!-- Separator -->
+        <Region prefHeight="1" style="-fx-background-color: rgba(255,255,255,0.1);"/>
+
+        <!-- Game Modes Section -->
+        <VBox spacing="12">
+            <Label text="GAME MODES"
+                   style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #00ff88;"/>
+
+            <VBox spacing="8">
+                <HBox spacing="10">
+                    <Label text="•" style="-fx-font-size: 16px; -fx-text-fill: #00ff88;"/>
+                    <VBox spacing="3">
+                        <Label text="Normal Mode" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                        <Label text="Practice mode with gradually increasing speed. No goals, just survive!"
+                               wrapText="true"
+                               style="-fx-font-size: 13px; -fx-text-fill: #aaaaaa; -fx-max-width: 550;"/>
+                    </VBox>
+                </HBox>
+
+                <HBox spacing="10">
+                    <Label text="•" style="-fx-font-size: 16px; -fx-text-fill: #ff9900;"/>
+                    <VBox spacing="3">
+                        <Label text="40 Lines Challenge" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                        <Label text="Clear 40 lines as fast as possible. Race against the clock!"
+                               wrapText="true"
+                               style="-fx-font-size: 13px; -fx-text-fill: #aaaaaa; -fx-max-width: 550;"/>
+                    </VBox>
+                </HBox>
+
+                <HBox spacing="10">
+                    <Label text="•" style="-fx-font-size: 16px; -fx-text-fill: #00aaff;"/>
+                    <VBox spacing="3">
+                        <Label text="2 Minutes Challenge" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                        <Label text="Score as many points as you can in exactly 2 minutes!"
+                               wrapText="true"
+                               style="-fx-font-size: 13px; -fx-text-fill: #aaaaaa; -fx-max-width: 550;"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+        </VBox>
+
+        <!-- Separator -->
+        <Region prefHeight="1" style="-fx-background-color: rgba(255,255,255,0.1);"/>
+
+        <!-- Scoring Tips -->
+        <VBox spacing="10">
+            <Label text="SCORING TIPS"
+                   style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #00ff88;"/>
+            <Label text="• Clear 4 lines at once (Tetris) for maximum points!"
+                   style="-fx-font-size: 13px; -fx-text-fill: #cccccc;"/>
+            <Label text="• Build combos by clearing lines consecutively"
+                   style="-fx-font-size: 13px; -fx-text-fill: #cccccc;"/>
+            <Label text="• Use soft drop (↓) and hard drop (SPACE) for bonus points"
+                   style="-fx-font-size: 13px; -fx-text-fill: #cccccc;"/>
+            <Label text="• Hold pieces strategically to save them for later!"
+                   style="-fx-font-size: 13px; -fx-text-fill: #cccccc;"/>
+        </VBox>
+    </VBox>
+
+    <!-- Close Button -->
+    <Button text="CLOSE"
+            onAction="#handleClose"
+            prefWidth="180" prefHeight="50"
+            style="-fx-font-size: 16px; -fx-font-weight: bold;
+                       -fx-background-color: #00aaff; -fx-text-fill: black;
+                       -fx-background-radius: 10;
+                       -fx-cursor: hand;"/>
+</VBox>
+</StackPane>

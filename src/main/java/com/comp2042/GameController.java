@@ -59,9 +59,10 @@ public class GameController implements InputEventListener {
     }
 
     //HOLD Function
-    public void holdBrick() {
+    public boolean holdBrick() {
         board.holdCurrentBrick();
         viewGuiController.refreshGameBackground(board.getBoardMatrix());
+        return true;
     }
 
     public int[][] getHoldBrickData() {

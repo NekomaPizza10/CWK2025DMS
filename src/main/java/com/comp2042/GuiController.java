@@ -105,6 +105,21 @@ public class GuiController implements Initializable {
     @FXML
     private PauseMenuPanel pauseMenuPanel;
 
+    @FXML
+    private VBox scoreDisplayContainer;
+
+    @FXML
+    private VBox scoreBox;
+
+    @FXML
+    private Region scoreSeparator;
+
+    @FXML
+    private VBox bestScoreBox;
+
+    @FXML
+    private VBox bestTimeBox;
+
     private Rectangle[][] displayMatrix;
     private InputEventListener eventListener;
     private Rectangle[][] rectangles;
@@ -121,7 +136,7 @@ public class GuiController implements Initializable {
 
     private Timeline lockDelayTimeline;
     private boolean isLockDelayActive = false;
-    private static final int LOCK_DELAY_MS = 700; // 500ms delay before locking
+    private static final int LOCK_DELAY_MS = 500; // 500ms delay before locking
     private int lockDelayResetCount = 0;  // Track resets
     private static final int MAX_LOCK_RESETS = 10; // Limit resets
 
@@ -150,64 +165,38 @@ public class GuiController implements Initializable {
             lastClearWasTetris = false;
         }
 
-        // Show/hide best time based on mode
-        if (scoreLabel != null && scoreValue != null) {
-            if (mode == GameMode.NORMAL || mode == GameMode.TWO_MINUTES) {
-                // Show score for both Normal and 2-Minute modes
-                scoreLabel.setVisible(true);
-                scoreValue.setVisible(true);
+        // Show/hide elements based on mode
+        if (scoreDisplayContainer != null) {
+            scoreDisplayContainer.setVisible(true);
 
-                // Get the MAIN parent VBox that contains everything
-                javafx.scene.Parent mainParent = scoreLabel.getParent();
-                if (mainParent != null && mainParent.getParent() != null) {
-                    mainParent.getParent().setVisible(true); // Make the outer VBox visible
-                }
-
+            if (mode == GameMode.NORMAL) {
+                // Normal: Show ONLY score
+                scoreBox.setVisible(true);
+                scoreSeparator.setVisible(false);
+                bestScoreBox.setVisible(false);
+                bestTimeBox.setVisible(false);
                 scoreValue.setText("0");
 
-                // Show best score ONLY for 2-minute mode, hide for Normal mode
-                if (bestScoreLabel != null && bestScoreValue != null) {
-                    if (mode == GameMode.TWO_MINUTES) {
-                        // Two Minutes Mode: Show both score and best score
-                        bestScoreLabel.setVisible(true);
-                        bestScoreValue.setVisible(true);
-                        updateBestScoreDisplay();
-                    } else {
-                        // Normal Mode: Show score but hide best score and separator
-                        bestScoreLabel.setVisible(false);
-                        bestScoreValue.setVisible(false);
+            } else if (mode == GameMode.FORTY_LINES) {
+                // 40 Lines: Show ONLY best time
+                scoreBox.setVisible(false);
+                scoreSeparator.setVisible(false);
+                bestScoreBox.setVisible(false);
+                bestTimeBox.setVisible(true);
+                updateBestTimeDisplay();
 
-                        // Also hide the separator line between score and best score
-                        if (bestScoreLabel.getParent() != null && bestScoreLabel.getParent() instanceof javafx.scene.layout.VBox) {
-                            javafx.scene.layout.VBox vbox = (javafx.scene.layout.VBox) bestScoreLabel.getParent();
-                            // Hide separator (it's the 3rd child - index 2)
-                            if (vbox.getChildren().size() > 2) {
-                                vbox.getChildren().get(2).setVisible(false); // Hide separator Region
-                            }
-                        }
-                    }
-                }
-
-            } else {
-                // 40-Lines Mode: Hide entire score section
-                scoreLabel.setVisible(false);
-                scoreValue.setVisible(false);
-
-                // Hide the MAIN parent VBox
-                javafx.scene.Parent mainParent = scoreLabel.getParent();
-                if (mainParent != null && mainParent.getParent() != null) {
-                    mainParent.getParent().setVisible(false);
-                }
-
-                // Hide best score for other modes
-                if (bestScoreLabel != null && bestScoreValue != null) {
-                    bestScoreLabel.setVisible(false);
-                    bestScoreValue.setVisible(false);
-                }
+            } else if (mode == GameMode.TWO_MINUTES) {
+                // 2 Minutes: Show score + best score
+                scoreBox.setVisible(true);
+                scoreSeparator.setVisible(true);
+                bestScoreBox.setVisible(true);
+                bestTimeBox.setVisible(false);
+                scoreValue.setText("0");
+                updateBestScoreDisplay();
             }
         }
 
-        // Update lines label for 40-lines challenge mode
+        // Update labels
         if (linesLabel != null) {
             if (mode == GameMode.FORTY_LINES) {
                 linesLabel.setText("LINES (Goal: " + GOAL + ")");
@@ -216,25 +205,6 @@ public class GuiController implements Initializable {
             }
         }
 
-        // Update time label for 2-minute challenge mode
-        if (timeLabel != null) {
-            if (mode == GameMode.TWO_MINUTES) {
-                timeLabel.setText("TIME LEFT");
-            } else {
-                timeLabel.setText("TIME");
-            }
-        }
-
-        // Update lines label for 40-lines challenge mode
-        if (linesLabel != null) {
-            if (mode == GameMode.FORTY_LINES) {
-                linesLabel.setText("LINES (Goal: " + GOAL + ")");
-            } else {
-                linesLabel.setText("LINES");
-            }
-        }
-
-        // Update time label for 2-minute challenge mode
         if (timeLabel != null) {
             if (mode == GameMode.TWO_MINUTES) {
                 timeLabel.setText("TIME LEFT");
@@ -262,18 +232,7 @@ public class GuiController implements Initializable {
             });
 
             // Define what happens when Main Menu is clicked
-            pauseMenuPanel.setOnMainMenu(() -> {
-                try {
-                    // Load Main Menu Scene
-                    javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/MainMenu.fxml"));
-                    javafx.scene.Parent menuRoot = loader.load();
-                    javafx.stage.Stage stage = (javafx.stage.Stage) gamePanel.getScene().getWindow();
-                    javafx.scene.Scene menuScene = new javafx.scene.Scene(menuRoot, 900, 700);
-                    stage.setScene(menuScene);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            });
+            pauseMenuPanel.setOnMainMenu(() -> goToMainMenu());
         }
     }
 
@@ -401,17 +360,22 @@ public class GuiController implements Initializable {
 
     private void handleHold() {
         if (eventListener instanceof GameController) {
+            // ADD THIS LINE FIRST - Cancel lock delay before holding
+            if (isLockDelayActive) {
+                cancelLockDelay();
+            }
+
             GameController gc = (GameController) eventListener;
-            gc.holdBrick();
+            boolean holdSuccess = gc.holdBrick();
 
-            updateHoldDisplay();
-
-            // Refresh the game view with new brick
-            Board board = gc.getBoard();
-            refreshGameBackground(board.getBoardMatrix());
-            refreshBrick(board.getViewData());
-
-            updateNextDisplay();
+            // Only update display if hold was successful
+            if (holdSuccess) {
+                updateHoldDisplay();
+                Board board = gc.getBoard();
+                refreshGameBackground(board.getBoardMatrix());
+                refreshBrick(board.getViewData());
+                updateNextDisplay();
+            }
         }
     }
 
@@ -900,18 +864,7 @@ public class GuiController implements Initializable {
             restartGameWithCountdown();
         });
 
-        panel.setOnMainMenu(() -> {
-            try {
-                // Best score persists because  is static
-                javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/MainMenu.fxml"));
-                javafx.scene.Parent menuRoot = loader.load();
-                javafx.stage.Stage stage = (javafx.stage.Stage) gamePanel.getScene().getWindow();
-                javafx.scene.Scene menuScene = new javafx.scene.Scene(menuRoot, 900, 700);
-                stage.setScene(menuScene);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        });
+        panel.setOnMainMenu(() -> goToMainMenu());
 
         javafx.scene.Parent parent = gamePanel.getParent();
         if (parent instanceof javafx.scene.layout.Pane) {
@@ -1151,35 +1104,35 @@ public class GuiController implements Initializable {
     }
 
     private void showCountdown(Runnable onComplete) {
-
         removeCompletionPanel();
 
         isCountdownActive = true;
         countdownPanel.setVisible(true);
-        brickPanel.setVisible(false);       //Hides the brick during countdown
+        brickPanel.setVisible(false);
 
-        final int[] count = {3};  // Start at 3
+        final int[] count = {3};
+
+        // ADD THIS LINE - Set initial text immediately
+        countdownLabel.setText("3");
 
         countdownTimeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
+            count[0]--;
             if (count[0] > 0) {
                 countdownLabel.setText(String.valueOf(count[0]));
-                count[0]--;
             } else {
                 countdownLabel.setText("GO!");
-                countdownTimeline.stop();
 
-                // Hide after showing GO!
                 Timeline hideTimeline = new Timeline(new KeyFrame(Duration.millis(500), e -> {
                     countdownPanel.setVisible(false);
-                    brickPanel.setVisible(true);  // Show the brick when game starts
+                    brickPanel.setVisible(true);
                     isCountdownActive = false;
-                    onComplete.run();  // Start the game
+                    onComplete.run();
                 }));
                 hideTimeline.play();
             }
         }));
 
-        countdownTimeline.setCycleCount(4);  // 3, 2, 1, GO!
+        countdownTimeline.setCycleCount(4);
         countdownTimeline.play();
     }
 
@@ -1545,10 +1498,37 @@ public class GuiController implements Initializable {
 
     public void gameOver() {
         timeLine.stop();
-        if (timer != null) timer.stop(); //Stop the timer
+        if (timer != null) timer.stop();
         cancelLockDelay();
 
-        gameOverPanel.setVisible(true);
+        // Calculate final time
+        long finalTime = System.currentTimeMillis() - gameStartTime;
+        int minutes = (int) (finalTime / 60000);
+        int seconds = (int) ((finalTime % 60000) / 1000);
+        int millis = (int) (finalTime % 1000);
+        String timeStr = String.format("%d:%02d.%03d", minutes, seconds, millis);
+
+        // Get stats
+        int pieces = 0, lines = 0, score = 0;
+        if (eventListener instanceof GameController) {
+            GameController gc = (GameController) eventListener;
+            pieces = gc.getPiecesPlaced();
+            lines = gc.getLinesCleared();
+        }
+
+        if (currentGameMode == GameMode.NORMAL) {
+            score = normalModeScore;
+        } else if (currentGameMode == GameMode.TWO_MINUTES) {
+            score = currentScore;
+        }
+
+        // Show full-screen game over with stats
+        gameOverPanel.showGameOver(pieces, lines, finalTime, timeStr, score, currentGameMode);
+
+        // Set button actions
+        gameOverPanel.setOnRetry(() -> restartGameWithCountdown());
+        gameOverPanel.setOnMainMenu(() -> goToMainMenu());
+
         isGameOver.setValue(Boolean.TRUE);
     }
 
@@ -1604,6 +1584,20 @@ public class GuiController implements Initializable {
             if (lockDelayTimeline != null) {
                 lockDelayTimeline.stop(); // Reset lock delay on pause prevents exploits
             }
+        }
+    }
+
+    private void goToMainMenu() {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/MainMenu.fxml")
+            );
+            javafx.scene.Parent menuRoot = loader.load();
+            javafx.stage.Stage stage = (javafx.stage.Stage) gamePanel.getScene().getWindow();
+            javafx.scene.Scene menuScene = new javafx.scene.Scene(menuRoot, 900, 700);
+            stage.setScene(menuScene);
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 

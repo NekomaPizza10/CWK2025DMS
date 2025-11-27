@@ -140,31 +140,20 @@ public class MainMenuController {
 
     @FXML
     private void handleHowToPlay(ActionEvent event) {
-        Stage helpStage = new Stage();
-        helpStage.setTitle("How to Play");
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/HowToPlay.fxml")
+            );
+            javafx.scene.Parent root = loader.load();
 
-        javafx.scene.control.Label helpText = new javafx.scene.control.Label(
-                "OBJECTIVE:\n" +
-                        "Arrange falling blocks to create complete horizontal lines.\n\n" +
-                        "CONTROLS:\n" +
-                        "← / A : Move Left\n" +
-                        "→ / D : Move Right\n" +
-                        "↑ / W : Rotate\n" +
-                        "↓ / S : Soft Drop\n" +
-                        "SPACE : Hard Drop\n" +
-                        "SHIFT / C : Hold piece\n" +
-                        "N : New Game\n\n" +
-                        "Clear 40 lines to win!"
-        );
-        helpText.setStyle("-fx-font-size: 14px; -fx-text-fill: white; -fx-padding: 20;");
-
-        javafx.scene.layout.VBox helpLayout = new javafx.scene.layout.VBox(helpText);
-        helpLayout.setStyle("-fx-background-color: #1a1a1a;");
-        helpLayout.setAlignment(javafx.geometry.Pos.CENTER);
-
-        Scene helpScene = new Scene(helpLayout, 400, 400);
-        helpStage.setScene(helpScene);
-        helpStage.show();
+            javafx.stage.Stage helpStage = new javafx.stage.Stage();
+            helpStage.setTitle("How to Play - Tetris");
+            helpStage.setScene(new javafx.scene.Scene(root, 800, 600));
+            helpStage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            helpStage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
