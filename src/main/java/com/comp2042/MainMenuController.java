@@ -8,6 +8,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.scene.control.Button;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.animation.ScaleTransition;
 import javafx.util.Duration;
 
@@ -30,8 +32,14 @@ public class MainMenuController {
     private Button exitButton;
 
     @FXML
+    private StackPane howToPlayPanel;
+
+    @FXML
+    private VBox mainMenuBox;
+
+    @FXML
     public void initialize() {
-        // Add hover effects for each buttons
+        // Add hover effects for each button
         if (normalModeButton != null) {
             addButtonEffects(normalModeButton, "#00ff88", "#00dd77", "#00bb66");
         }
@@ -140,19 +148,18 @@ public class MainMenuController {
 
     @FXML
     private void handleHowToPlay(ActionEvent event) {
-        try {
-            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-                    getClass().getResource("/HowToPlay.fxml")
-            );
-            javafx.scene.Parent root = loader.load();
+        // Show the how to play overlay
+        if (howToPlayPanel != null) {
+            howToPlayPanel.setVisible(true);
+            howToPlayPanel.toFront();
+        }
+    }
 
-            javafx.stage.Stage helpStage = new javafx.stage.Stage();
-            helpStage.setTitle("How to Play - Tetris");
-            helpStage.setScene(new javafx.scene.Scene(root, 800, 600));
-            helpStage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
-            helpStage.show();
-        } catch (Exception e) {
-            e.printStackTrace();
+    @FXML
+    private void handleCloseHowToPlay(ActionEvent event) {
+        // Hide the how to play overlay
+        if (howToPlayPanel != null) {
+            howToPlayPanel.setVisible(false);
         }
     }
 

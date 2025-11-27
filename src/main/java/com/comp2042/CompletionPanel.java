@@ -37,7 +37,10 @@ public class CompletionPanel extends StackPane{
 
         timeCard.getChildren().addAll(timeLabel, timeValue);
 
-        // New best badge
+        // Add timeCard to content first
+        content.getChildren().addAll(title, timeCard);
+
+        // New best badge or previous best - ADD TO CONTENT, NOT TIMECARD
         if (isNewBest) {
             HBox bestBadge = new HBox(10);
             bestBadge.setAlignment(Pos.CENTER);
@@ -55,11 +58,11 @@ public class CompletionPanel extends StackPane{
             star2.setStyle("-fx-text-fill: #ffaa00; -fx-font-size: 20px;");
 
             bestBadge.getChildren().addAll(star1, bestText, star2);
-            timeCard.getChildren().add(bestBadge);
+            content.getChildren().add(bestBadge); // Add to content, not timeCard
         } else if (previousBest != null) {
             Label prevBest = new Label("Previous Best: " + previousBest);
             prevBest.setStyle("-fx-text-fill: #ffaa00; -fx-font-size: 14px;");
-            timeCard.getChildren().add(prevBest);
+            content.getChildren().add(prevBest); // Add to content, not timeCard
         }
 
         // Buttons
@@ -77,7 +80,7 @@ public class CompletionPanel extends StackPane{
         Label hint = new Label("Press N or click RETRY to play again");
         hint.setStyle("-fx-text-fill: #555555; -fx-font-size: 12px;");
 
-        content.getChildren().addAll(title, timeCard, buttons, hint);
+        content.getChildren().addAll(buttons, hint);
         getChildren().add(content);
 
         // Fade in

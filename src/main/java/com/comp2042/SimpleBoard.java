@@ -138,7 +138,34 @@ public class SimpleBoard implements Board {
         currentOffset = new Point(width / 2 - 2, -1);
         canHold = true;
         piecesPlaced++;
-        return MatrixOperations.intersect(currentGameMatrix, brickRotator.getCurrentShape(), (int) currentOffset.getX(), (int) currentOffset.getY());
+
+        // Check if spawn position is blocked
+        boolean spawnBlocked = MatrixOperations.intersect(
+                currentGameMatrix,
+                brickRotator.getCurrentShape(),
+                (int) currentOffset.getX(),
+                (int) currentOffset.getY()
+        );
+
+        // Only game over if blocks have reached the top visible edge
+        if (spawnBlocked) {
+            return isTopEdgeReached();
+        }
+
+        return false;
+    }
+
+    private boolean isTopEdgeReached() {
+        int dangerZone = Math.max(2, height / 5);  // Top 20% or at least 2 rows
+
+        for (int row = 0; row < dangerZone; row++) {
+            for (int col = 0; col < width; col++) {
+                if (currentGameMatrix[row][col] != 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override

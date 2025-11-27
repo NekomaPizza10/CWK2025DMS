@@ -1,20 +1,9 @@
 package com.comp2042;
 
-import com.comp2042.logic.bricks.RandomBrickGenerator;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
-import javafx.animation.AnimationTimer;
-
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-
 import javafx.event.ActionEvent;
-
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-
-import javafx.scene.Group;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
@@ -23,126 +12,41 @@ import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.control.Label;
 
-
-import javafx.util.Duration;
-
 import java.net.URL;
-import java.util.ResourceBundle;
 import java.util.List;
+import java.util.ResourceBundle;
 
+/**
+ * Main GUI Controller - handles display and user input
+ * Refactored to delegate timing, scoring, and state management to separate classes
+ */
 public class GuiController implements Initializable {
-
-    private GameMode currentGameMode = GameMode.NORMAL;
-    private int baseDropSpeed = 800; // Starting speed in ms
-    private int currentDropSpeed = 800;
-    private static final int MIN_DROP_SPEED = 200; // Fastest speed
-    private static final int SPEED_DECREASE_PER_LEVEL = 50; // Speed increases after each level
 
     private static final int BRICK_SIZE = 25;
     private static final int PREVIEW_BRICK_SIZE = 20;
     private static final int PREVIEW_GRID_SIZE = 4;
-    private static final int GOAL = 5;
-    private static final int TIME = 30000;     // 2 minutes = 120,000ms
+    private static final int FORTY_LINES_GOAL = 3;
+    private static final int TWO_MIN_GOAL = 30000;
 
-    private long fortyLinesBestTime = Long.MAX_VALUE; // for Best time in milliseconds
-    private boolean challengeCompleted = false;
-
-    // For Normal Mode - NEW scoring system
-    private int normalModeScore = 0;
-    private int normalModeCombo = 0;
-    private boolean normalModeLastWasTetris = false;
-
-    // For 2-Minute Challenge
-    private int currentScore = 0;
-    private static int twoMinutesBestScore = 0;
-    private int currentCombo = 0;
-    private boolean lastClearWasTetris = false;
-
-    @FXML
-    private Label scoreLabel;
-
-    @FXML
-    private Label scoreValue;
-
-    @FXML
-    private Label bestScoreLabel;
-
-    @FXML
-    private Label bestScoreValue;
-
-    @FXML
-    private GridPane gamePanel;
-
-    @FXML
-    private Group groupNotification;
-
-    @FXML
-    private GridPane brickPanel;
-
-
-    @FXML
-    private GridPane holdPanel;
-
-    @FXML
-    private GridPane nextPanel1, nextPanel2, nextPanel3, nextPanel4, nextPanel5;
-
-    @FXML
-    private GameOverPanel gameOverPanel;
-
-    @FXML
-    private Label piecesLabel, piecesValue, linesLabel, linesValue, timeLabel, timeValue;
-
-    @FXML
-    private StackPane countdownPanel;
-
-
-    @FXML
-    private Label countdownLabel;
-
-    @FXML
-    private Label bestTimeLabel;
-
-    @FXML
-    private PauseMenuPanel pauseMenuPanel;
-
-    @FXML
-    private VBox scoreDisplayContainer;
-
-    @FXML
-    private VBox scoreBox;
-
-    @FXML
-    private Region scoreSeparator;
-
-    @FXML
-    private VBox bestScoreBox;
-
-    @FXML
-    private VBox bestTimeBox;
+    @FXML private Label scoreLabel, scoreValue;
+    @FXML private Label bestScoreLabel, bestScoreValue;
+    @FXML private GridPane gamePanel, brickPanel;
+    @FXML private GridPane holdPanel;
+    @FXML private GridPane nextPanel1, nextPanel2, nextPanel3, nextPanel4, nextPanel5;
+    @FXML private GameOverPanel gameOverPanel;
+    @FXML private Label piecesLabel, piecesValue, linesLabel, linesValue, timeLabel, timeValue;
+    @FXML private StackPane countdownPanel;
+    @FXML private Label countdownLabel;
+    @FXML private Label bestTimeLabel;
+    @FXML private PauseMenuPanel pauseMenuPanel;
+    @FXML private VBox scoreDisplayContainer, scoreBox, bestScoreBox, bestTimeBox;
+    @FXML private Region scoreSeparator;
 
     private Rectangle[][] displayMatrix;
     private InputEventListener eventListener;
     private Rectangle[][] rectangles;
-    private Rectangle[][] holdRectangles;   // For Hold pieces
-    private Rectangle[][] nextRectangles1, nextRectangles2, nextRectangles3, nextRectangles4, nextRectangles5;  // For next preview pieces
-    private Timeline timeLine;
-
-    private final BooleanProperty isPause = new SimpleBooleanProperty();
-    private final BooleanProperty isGameOver = new SimpleBooleanProperty();
-
-    // Time
-    private long gameStartTime;
-    private AnimationTimer timer;
-
-    private Timeline lockDelayTimeline;
-    private boolean isLockDelayActive = false;
-    private static final int LOCK_DELAY_MS = 500; // 500ms delay before locking
-    private int lockDelayResetCount = 0;  // Track resets
-    private static final int MAX_LOCK_RESETS = 10; // Limit resets
-
-    // For Countdown Function
-    private Timeline countdownTimeline;
-    private boolean isCountdownActive = false;
+    private Rectangle[][] holdRectangles;
+    private Rectangle[][] nextRectangles1, nextRectangles2, nextRectangles3, nextRectangles4, nextRectangles5;
 
     private boolean rotateKeyPressed = false;
     private boolean hardDropKeyPressed = false;
@@ -150,56 +54,61 @@ public class GuiController implements Initializable {
     private TwoMinutesCompletionPanel currentCompletionPanel;
     private CompletionPanel currentFortyLinesPanel;
 
+    // Delegate classes
+    private GameState gameState;
+    private TimerManager timerManager;
+    private ScoringManager scoringManager;
+
     public void setGameMode(GameMode mode) {
-        this.currentGameMode = mode;
-        challengeCompleted = false;
+        gameState.setCurrentGameMode(mode);
+        gameState.setChallengeCompleted(false);
+        gameState.resetScores();
 
-        // Reset score tracking
-        if (mode == GameMode.NORMAL) {
-            normalModeScore = 0;
-            normalModeCombo = 0;
-            normalModeLastWasTetris = false;
-        } else if (mode == GameMode.TWO_MINUTES) {
-            currentScore = 0;
-            currentCombo = 0;
-            lastClearWasTetris = false;
-        }
-
-        // Show/hide elements based on mode
         if (scoreDisplayContainer != null) {
             scoreDisplayContainer.setVisible(true);
 
             if (mode == GameMode.NORMAL) {
                 // Normal: Show ONLY score
                 scoreBox.setVisible(true);
+                scoreBox.setManaged(true);
                 scoreSeparator.setVisible(false);
+                scoreSeparator.setManaged(false);
                 bestScoreBox.setVisible(false);
+                bestScoreBox.setManaged(false);
                 bestTimeBox.setVisible(false);
+                bestTimeBox.setManaged(false);
                 scoreValue.setText("0");
 
             } else if (mode == GameMode.FORTY_LINES) {
                 // 40 Lines: Show ONLY best time
                 scoreBox.setVisible(false);
+                scoreBox.setManaged(false);
                 scoreSeparator.setVisible(false);
+                scoreSeparator.setManaged(false);
                 bestScoreBox.setVisible(false);
+                bestScoreBox.setManaged(false);
                 bestTimeBox.setVisible(true);
+                bestTimeBox.setManaged(true);
                 updateBestTimeDisplay();
 
             } else if (mode == GameMode.TWO_MINUTES) {
-                // 2 Minutes: Show score + best score
+                // 2 Minutes: Show score + separator + best score
                 scoreBox.setVisible(true);
+                scoreBox.setManaged(true);
                 scoreSeparator.setVisible(true);
+                scoreSeparator.setManaged(true);
                 bestScoreBox.setVisible(true);
+                bestScoreBox.setManaged(true);
                 bestTimeBox.setVisible(false);
+                bestTimeBox.setManaged(false);
                 scoreValue.setText("0");
                 updateBestScoreDisplay();
             }
         }
 
-        // Update labels
         if (linesLabel != null) {
             if (mode == GameMode.FORTY_LINES) {
-                linesLabel.setText("LINES (Goal: " + GOAL + ")");
+                linesLabel.setText("LINES (Goal: " + FORTY_LINES_GOAL + ")");
             } else {
                 linesLabel.setText("LINES");
             }
@@ -216,43 +125,53 @@ public class GuiController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // Initialize delegate classes
+        gameState = new GameState();
+
         gamePanel.setFocusTraversable(true);
         gamePanel.requestFocus();
         gamePanel.setOnKeyPressed(this::handleKeyPress);
         gamePanel.setOnKeyReleased(this::handleKeyRelease);
         gameOverPanel.setVisible(false);
 
-        // --- NEW CODE START ---
         if (pauseMenuPanel != null) {
             pauseMenuPanel.setVisible(false);
-
-            // Define what happens when Resume is clicked
-            pauseMenuPanel.setOnResume(() -> {
-                togglePause();
-            });
-
-            // Define what happens when Main Menu is clicked
-            pauseMenuPanel.setOnMainMenu(() -> goToMainMenu());
+            pauseMenuPanel.setOnResume(this::togglePause);
+            pauseMenuPanel.setOnMainMenu(this::goToMainMenu);
         }
     }
 
     public void handleKeyPress(KeyEvent keyEvent) {
-
-        if (isCountdownActive) {
+        if (gameState.isCountdownActive()) {
             return;
         }
 
-        if (isPause.getValue() == Boolean.FALSE && isGameOver.getValue() == Boolean.FALSE) {
+        // CRITICAL FIX: Block ALL input if game is over
+        if (gameState.isGameOver()) {
+            // Only allow 'N' key to restart
+            if (keyEvent.getCode() == KeyCode.N) {
+                if (gameState.isChallengeCompleted()) {
+                    removeCompletionPanel();
+                    restartGameWithCountdown();
+                } else {
+                    restartGameInstantly();
+                }
+            }
+            keyEvent.consume();
+            return; // Exit early - don't process any other keys
+        }
+
+        if (!gameState.isPaused()) {
             if (keyEvent.getCode() == KeyCode.LEFT || keyEvent.getCode() == KeyCode.A) {
                 boolean moved = moveBrickHorizontally(-1);
-                if (moved && isLockDelayActive) {
+                if (moved && gameState.isLockDelayActive()) {
                     resetLockDelay();
                 }
                 keyEvent.consume();
             }
             if (keyEvent.getCode() == KeyCode.RIGHT || keyEvent.getCode() == KeyCode.D) {
                 boolean moved = moveBrickHorizontally(1);
-                if (moved && isLockDelayActive) {
+                if (moved && gameState.isLockDelayActive()) {
                     resetLockDelay();
                 }
                 keyEvent.consume();
@@ -260,7 +179,7 @@ public class GuiController implements Initializable {
             if ((keyEvent.getCode() == KeyCode.UP || keyEvent.getCode() == KeyCode.W) && !rotateKeyPressed) {
                 rotateKeyPressed = true;
                 boolean rotated = attemptRotation();
-                if (rotated && isLockDelayActive) {
+                if (rotated && gameState.isLockDelayActive()) {
                     resetLockDelay();
                 }
                 keyEvent.consume();
@@ -280,37 +199,19 @@ public class GuiController implements Initializable {
             }
         }
 
-        if (keyEvent.getCode() == KeyCode.N) {
-            if (challengeCompleted) {
-                removeCompletionPanel();
-                restartGameWithCountdown();
-            } else {
-                restartGameInstantly();
-            }
-            keyEvent.consume();
-        }
-
         if (keyEvent.getCode() == KeyCode.P || keyEvent.getCode() == KeyCode.ESCAPE) {
-            togglePause(); // Call the new method
+            togglePause();
             keyEvent.consume();
         }
-
     }
 
     private boolean moveBrickHorizontally(int direction) {
-        if (!(eventListener instanceof GameController)) {
-            return false;
-        }
+        if (!(eventListener instanceof GameController)) return false;
 
         GameController gc = (GameController) eventListener;
         Board board = gc.getBoard();
 
-        boolean moved;
-        if (direction < 0) {
-            moved = board.moveBrickLeft();
-        } else {
-            moved = board.moveBrickRight();
-        }
+        boolean moved = direction < 0 ? board.moveBrickLeft() : board.moveBrickRight();
 
         if (moved) {
             refreshBrick(board.getViewData());
@@ -320,39 +221,27 @@ public class GuiController implements Initializable {
     }
 
     private boolean attemptRotation() {
-        if (!(eventListener instanceof GameController)) {
-            return false;
-        }
+        if (!(eventListener instanceof GameController)) return false;
 
         GameController gc = (GameController) eventListener;
         Board board = gc.getBoard();
 
-        // Simply attempt rotation without moving the brick
         boolean rotated = board.rotateLeftBrick();
 
         if (rotated) {
-            // Rotation succeeded - just refresh display
             refreshBrick(board.getViewData());
-
-            // Only reset lock delay if currently active
-            // This prevents speed issues
-            if (isLockDelayActive) {
+            if (gameState.isLockDelayActive()) {
                 resetLockDelay();
             }
             return true;
-        } else {
-            // Rotation failed - brick would collide
-            return false;
         }
+        return false;
     }
 
     public void handleKeyRelease(KeyEvent keyEvent) {
-        // Reset rotation key
         if (keyEvent.getCode() == KeyCode.UP || keyEvent.getCode() == KeyCode.W) {
             rotateKeyPressed = false;
         }
-
-        // Reset hard drop key
         if (keyEvent.getCode() == KeyCode.SPACE) {
             hardDropKeyPressed = false;
         }
@@ -360,15 +249,13 @@ public class GuiController implements Initializable {
 
     private void handleHold() {
         if (eventListener instanceof GameController) {
-            // ADD THIS LINE FIRST - Cancel lock delay before holding
-            if (isLockDelayActive) {
+            if (gameState.isLockDelayActive()) {
                 cancelLockDelay();
             }
 
             GameController gc = (GameController) eventListener;
             boolean holdSuccess = gc.holdBrick();
 
-            // Only update display if hold was successful
             if (holdSuccess) {
                 updateHoldDisplay();
                 Board board = gc.getBoard();
@@ -386,81 +273,32 @@ public class GuiController implements Initializable {
             GameController gc = (GameController) eventListener;
             Board board = gc.getBoard();
 
-            // Calculate drop distance for bonus points
             ViewData currentBrickData = board.getViewData();
             int currentY = currentBrickData.getyPosition();
             int shadowY = calculateShadowPosition(currentBrickData);
             int dropDistance = shadowY - currentY;
 
-            // Drop brick to bottom instantly
-            while (board.moveBrickDown()) {
-                // Keep moving down until it can't move anymore
+            while (board.moveBrickDown()) {}
+
+            if (dropDistance > 0) {
+                scoringManager.addHardDropBonus(dropDistance);
+                updateScoreDisplay();
             }
 
-            // Add hard drop bonus BEFORE locking (2 points per cell)
-            if (currentGameMode == GameMode.NORMAL && dropDistance > 0) {
-                int hardDropBonus = dropDistance * 2;
-                normalModeScore += hardDropBonus;
-                if (scoreValue != null) {
-                    scoreValue.setText(String.valueOf(normalModeScore));
-                }
-            } else if (currentGameMode == GameMode.TWO_MINUTES && dropDistance > 0) {
-                int hardDropBonus = dropDistance * 2;
-                currentScore += hardDropBonus;
-                if (scoreValue != null) {
-                    scoreValue.setText(String.valueOf(currentScore));
-                }
-            }
-
-            // Lock the brick
             board.mergeBrickToBackground();
             ClearRow clearRow = board.clearRows();
 
-            // Handle line clear scoring
-            if (clearRow != null && clearRow.getLinesRemoved() > 0) {
-                int linesCleared = clearRow.getLinesRemoved();
+            handleLineClears(clearRow);
 
-                if (currentGameMode == GameMode.NORMAL) {
-                    // Use Tetris scoring for Normal mode
-                    int earnedScore = calculateTetrisScore(linesCleared, true);
-                    normalModeScore += earnedScore;
-                    if (scoreValue != null) {
-                        scoreValue.setText(String.valueOf(normalModeScore));
-                    }
+            gameState.setLockDelayActive(false);
+            gameState.resetLockDelayCount();
 
-                } else if (currentGameMode == GameMode.TWO_MINUTES) {
-                    // Use Tetris scoring for 2-minute mode
-                    int earnedScore = calculateTetrisScore(linesCleared, false);
-                    currentScore += earnedScore;
-                    if (scoreValue != null) {
-                        scoreValue.setText(String.valueOf(currentScore));
-                    }
-                }
-
-                updateStatsDisplay();
-                updateGameSpeed();
-
-            } else {
-                // No lines cleared - reset combo
-                if (currentGameMode == GameMode.NORMAL) {
-                    normalModeCombo = 0;
-                    normalModeLastWasTetris = false;
-                } else if (currentGameMode == GameMode.TWO_MINUTES) {
-                    currentCombo = 0;
-                    lastClearWasTetris = false;
-                }
-            }
-
-            // Reset lock delay BEFORE spawning new brick
-            isLockDelayActive = false;
-            lockDelayResetCount = 0;
-
-            // Spawn next brick
+            // CRITICAL FIX: Check if game over BEFORE spawning new brick
             if (board.createNewBrick()) {
                 gameOver();
+                return; // Don't update displays if game is over
             }
 
-            // Update displays
             refreshGameBackground(board.getBoardMatrix());
             refreshBrick(board.getViewData());
             updateNextDisplay();
@@ -469,12 +307,13 @@ public class GuiController implements Initializable {
     }
 
     public void initGameView(int[][] boardMatrix, ViewData brick) {
-
-        //Initialize game board
         int height = boardMatrix.length;
         int width = boardMatrix[0].length;
 
-        // Board of Grid lines
+        // Initialize timer manager after timeValue is available
+        timerManager = new TimerManager(gameState, timeValue);
+        scoringManager = new ScoringManager(gameState);
+
         displayMatrix = new Rectangle[height][width];
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
@@ -482,36 +321,28 @@ public class GuiController implements Initializable {
                 rectangle.setFill(Color.TRANSPARENT);
                 rectangle.setStroke(Color.rgb(40, 40, 40));
                 rectangle.setStrokeWidth(0.5);
-                brickPanel.setHgap(0.5);
-                brickPanel.setVgap(0.5);
                 displayMatrix[i][j] = rectangle;
-                gamePanel.add(rectangle, j, i);     // column, row
+                gamePanel.add(rectangle, j, i);
             }
         }
 
-        // Initialize current brick display
         rectangles = new Rectangle[brick.getBrickData().length][brick.getBrickData()[0].length];
         for (int i = 0; i < brick.getBrickData().length; i++) {
             for (int j = 0; j < brick.getBrickData()[i].length; j++) {
-                Rectangle rectangle = new Rectangle(BRICK_SIZE, BRICK_SIZE);  // Slightly bigger
+                Rectangle rectangle = new Rectangle(BRICK_SIZE, BRICK_SIZE);
                 rectangle.setFill(getFillColor(brick.getBrickData()[i][j]));
                 rectangles[i][j] = rectangle;
                 brickPanel.add(rectangle, j, i);
             }
         }
 
-        brickPanel.toFront();  // Force brickPanel to render on top
-
-        // Position relative to Pane container (0,0), not gamePanel
+        brickPanel.toFront();
         brickPanel.setLayoutX(brick.getxPosition() * BRICK_SIZE);
         brickPanel.setLayoutY(brick.getyPosition() * BRICK_SIZE);
 
-
-        // Initialize HOLD panel
         initializePreviewPanel(holdPanel, PREVIEW_BRICK_SIZE);
         holdRectangles = createPreviewRectangles(holdPanel, PREVIEW_BRICK_SIZE);
 
-        // Initialize NEXT panels
         initializePreviewPanel(nextPanel1, PREVIEW_BRICK_SIZE);
         initializePreviewPanel(nextPanel2, PREVIEW_BRICK_SIZE);
         initializePreviewPanel(nextPanel3, PREVIEW_BRICK_SIZE);
@@ -524,35 +355,20 @@ public class GuiController implements Initializable {
         nextRectangles4 = createPreviewRectangles(nextPanel4, PREVIEW_BRICK_SIZE);
         nextRectangles5 = createPreviewRectangles(nextPanel5, PREVIEW_BRICK_SIZE);
 
-        // Hide brick initially
         brickPanel.setVisible(false);
 
-        // Start game timer
-        gameStartTime = System.currentTimeMillis();
-        timer = new AnimationTimer() {
-            @Override
-            public void handle(long now) {
-                updateTimeDisplay();
-            }
-        };
-
-        // Set initial drop speed based on mode
-        if (currentGameMode == GameMode.NORMAL) {
-            currentDropSpeed = baseDropSpeed;
-        } else if (currentGameMode == GameMode.FORTY_LINES) {
-            currentDropSpeed = 400;
-        } else if (currentGameMode == GameMode.TWO_MINUTES) {
-            currentDropSpeed = 400;
+        // Set initial drop speed
+        if (gameState.getCurrentGameMode() == GameMode.NORMAL) {
+            gameState.setCurrentDropSpeed(gameState.getBaseDropSpeed());
+        } else {
+            gameState.setCurrentDropSpeed(400);
         }
 
-        // Start countdown when initial game start
         startGameWithCountdown();
     }
 
     private void initializePreviewPanel(GridPane panel, int size) {
-        // Set the GridPane to not grow larger than needed
         panel.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 Rectangle rectangle = new Rectangle(size, size);
@@ -568,11 +384,8 @@ public class GuiController implements Initializable {
             for (int j = 0; j < PREVIEW_GRID_SIZE; j++) {
                 Rectangle rectangles = new Rectangle(size, size);
                 rectangles.setFill(Color.TRANSPARENT);
-
-                // Add stroke for brick block outlines
-                rectangles.setStroke(Color.BLACK); // A darker color for better contrast
-                rectangles.setStrokeWidth(0.5); // A slightly visible border
-
+                rectangles.setStroke(Color.BLACK);
+                rectangles.setStrokeWidth(0.5);
                 rects[i][j] = rectangles;
                 panel.add(rectangles, j, i);
             }
@@ -581,15 +394,12 @@ public class GuiController implements Initializable {
     }
 
     private void updatePreviewPanel(Rectangle[][] rects, int[][] brickData) {
-        // Clear all cells first
         for (int i = 0; i < PREVIEW_GRID_SIZE; i++) {
             for (int j = 0; j < PREVIEW_GRID_SIZE; j++) {
                 rects[i][j].setFill(Color.TRANSPARENT);
-
             }
         }
 
-        // Find the bounds of the actual brick shape
         int minRow = PREVIEW_GRID_SIZE, maxRow = -1, minCol = PREVIEW_GRID_SIZE, maxCol = -1;
         for (int i = 0; i < brickData.length; i++) {
             for (int j = 0; j < brickData[i].length; j++) {
@@ -602,13 +412,11 @@ public class GuiController implements Initializable {
             }
         }
 
-        // Calculate centering offset
         int brickHeight = maxRow - minRow + 1;
         int brickWidth = maxCol - minCol + 1;
         int offsetRow = (4 - brickHeight) / 2;
         int offsetCol = (4 - brickWidth) / 2;
 
-        // Draw brick centered
         for (int i = 0; i < brickData.length; i++) {
             for (int j = 0; j < brickData[i].length; j++) {
                 if (brickData[i][j] != 0) {
@@ -620,62 +428,45 @@ public class GuiController implements Initializable {
                 }
             }
         }
-
     }
 
     private Paint getFillColor(int i) {
-        switch (i) {
-            case 0:
-                return Color.TRANSPARENT;
-            case 1:
-                return Color.CYAN;
-            case 2:
-                return Color.BLUE;
-            case 3:
-                return Color.ORANGE;
-            case 4:
-                return Color.YELLOW;
-            case 5:
-                return Color.GREEN;
-            case 6:
-                return Color.PURPLE;
-            case 7:
-                return Color.RED;
-            default:
-                return Color.WHITE;
-        }
+        return switch (i) {
+            case 0 -> Color.TRANSPARENT;
+            case 1 -> Color.CYAN;
+            case 2 -> Color.BLUE;
+            case 3 -> Color.ORANGE;
+            case 4 -> Color.YELLOW;
+            case 5 -> Color.GREEN;
+            case 6 -> Color.PURPLE;
+            case 7 -> Color.RED;
+            default -> Color.WHITE;
+        };
     }
 
-
     private void refreshBrick(ViewData brick) {
-        if (isPause.getValue() == Boolean.FALSE) {
-            // 1. Clear old brick from gamePanel
+        if (!gameState.isPaused() && !gameState.isGameOver()) {
             for (Rectangle[] row : rectangles) {
                 for (Rectangle r : row) {
                     gamePanel.getChildren().remove(r);
                 }
             }
 
-            // 2. Draw new brick at correct grid position
             for (int i = 0; i < brick.getBrickData().length; i++) {
                 for (int j = 0; j < brick.getBrickData()[i].length; j++) {
                     if (brick.getBrickData()[i][j] != 0) {
                         int gridX = brick.getxPosition() + j;
                         int gridY = brick.getyPosition() + i;
 
-                        // Draw the brick cell
                         rectangles[i][j].setFill(getFillColor(brick.getBrickData()[i][j]));
-                        rectangles[i][j].setStroke(Color.BLACK); // A darker color for better contrast
-                        rectangles[i][j].setStrokeWidth(0.5); // A slightly visible border
-
-                        // Add to gamePanel at exact grid position
+                        rectangles[i][j].setStroke(Color.BLACK);
+                        rectangles[i][j].setStrokeWidth(0.5);
                         gamePanel.add(rectangles[i][j], gridX, gridY);
                     } else {
                         rectangles[i][j].setFill(Color.TRANSPARENT);
                     }
                 }
             }
-
             updateShadow(brick);
         }
     }
@@ -683,54 +474,36 @@ public class GuiController implements Initializable {
     public void refreshGameBackground(int[][] board) {
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board[i].length; j++) {
-                setRectangleData(board[i][j], displayMatrix[i][j]);
+                displayMatrix[i][j].setFill(getFillColor(board[i][j]));
             }
         }
     }
 
-    private void setRectangleData(int color, Rectangle rectangle) {
-        rectangle.setFill(getFillColor(color));
-    }
-
     private void moveDown(MoveEvent event) {
-        if (isPause.getValue() == Boolean.FALSE) {
-            GameController gc = (GameController) eventListener;
-            Board board = gc.getBoard();
+        if (gameState.isPaused() || gameState.isGameOver()) return;
 
-            // Check if brick can move down
-            boolean canMove = board.moveBrickDown();
+        GameController gc = (GameController) eventListener;
+        Board board = gc.getBoard();
 
-            if (!canMove) {
-                // Brick hit the ground - start lock delay
-                if (!isLockDelayActive) {
-                    isLockDelayActive = true;
-                    lockDelayResetCount = 0;
-                    startLockDelay();
-                }
+        boolean canMove = board.moveBrickDown();
 
-            } else {
-                // Brick moved successfully - cancel lock delay
-                if (isLockDelayActive) {
-                    cancelLockDelay();
-                }
-
-                // Soft drop bonus (1 point per cell)
-                if (event.getEventSource() == EventSource.USER) {
-                    if (currentGameMode == GameMode.NORMAL) {
-                        normalModeScore += 1;
-                        if (scoreValue != null) {
-                            scoreValue.setText(String.valueOf(normalModeScore));
-                        }
-                    } else if (currentGameMode == GameMode.TWO_MINUTES) {
-                        currentScore += 1;
-                        if (scoreValue != null) {
-                            scoreValue.setText(String.valueOf(currentScore));
-                        }
-                    }
-                }
-
-                refreshBrick(board.getViewData());
+        if (!canMove) {
+            if (!gameState.isLockDelayActive()) {
+                gameState.setLockDelayActive(true);
+                gameState.resetLockDelayCount();
+                startLockDelay();
             }
+        } else {
+            if (gameState.isLockDelayActive()) {
+                cancelLockDelay();
+            }
+
+            if (event.getEventSource() == EventSource.USER) {
+                scoringManager.addSoftDropBonus(1);
+                updateScoreDisplay();
+            }
+
+            refreshBrick(board.getViewData());
         }
         gamePanel.requestFocus();
     }
@@ -761,102 +534,168 @@ public class GuiController implements Initializable {
             piecesValue.setText(String.valueOf(gc.getPiecesPlaced()));
             linesValue.setText(String.valueOf(linesCleared));
 
-            // Check if 40 lines challenge is complete
-            if (currentGameMode == GameMode.FORTY_LINES &&
-                    linesCleared >= GOAL &&
-                    !challengeCompleted) {
-                challengeCompleted = true;
+            if (gameState.getCurrentGameMode() == GameMode.FORTY_LINES &&
+                    linesCleared >= FORTY_LINES_GOAL &&
+                    !gameState.isChallengeCompleted()) {
+                gameState.setChallengeCompleted(true);
                 completeFortyLinesChallenge();
+            }
+
+            if (gameState.getCurrentGameMode() == GameMode.TWO_MINUTES &&
+                    !gameState.isChallengeCompleted()) {
+                long elapsed = timerManager.getElapsedTime();
+                if (elapsed >= TWO_MIN_GOAL) {
+                    gameState.setChallengeCompleted(true);
+                    completeTwoMinutesChallenge();
+                }
             }
         }
     }
 
-    private void updateTimeDisplay() {
-        if (!isGameOver.getValue()) {
-            long elapsed = System.currentTimeMillis() - gameStartTime;
-
-            // Show countdown from 2:00 to 0:00
-            if (currentGameMode == GameMode.TWO_MINUTES) {
-                long remaining = TIME - elapsed;
-                if (remaining < 0) remaining = 0;
-
-                int minutes = (int) (remaining / 60000);
-                int seconds = (int) ((remaining % 60000) / 1000);
-                int millis = (int) (remaining % 1000);
-                timeValue.setText(String.format("%d:%02d.%03d", minutes, seconds, millis));
-
-                checkTwoMinutesComplete();
-
-            } else {
-                int minutes = (int) (elapsed / 60000);
-                int seconds = (int) ((elapsed % 60000) / 1000);
-                int millis = (int) (elapsed % 1000);
-                timeValue.setText(String.format("%d:%02d.%03d", minutes, seconds, millis));
-            }
+    private void updateScoreDisplay() {
+        if (scoreValue != null) {
+            scoreValue.setText(String.valueOf(scoringManager.getCurrentScore()));
         }
     }
 
     private void updateBestTimeDisplay() {
-        if (fortyLinesBestTime == Long.MAX_VALUE) {
+        if (gameState.getFortyLinesBestTime() == Long.MAX_VALUE) {
             bestTimeLabel.setText("--:--");
         } else {
-            int minutes = (int) (fortyLinesBestTime / 60000);
-            int seconds = (int) ((fortyLinesBestTime % 60000) / 1000);
-            int millis = (int) (fortyLinesBestTime % 1000);
+            long time = gameState.getFortyLinesBestTime();
+            int minutes = (int) (time / 60000);
+            int seconds = (int) ((time % 60000) / 1000);
+            int millis = (int) (time % 1000);
             bestTimeLabel.setText(String.format("%d:%02d.%03d", minutes, seconds, millis));
         }
     }
 
     private void updateBestScoreDisplay() {
         if (bestScoreValue != null) {
-            if (twoMinutesBestScore > 0) {
-                bestScoreValue.setText(String.valueOf(twoMinutesBestScore));
+            int best = GameState.getTwoMinutesBestScore();
+            if (best > 0) {
+                bestScoreValue.setText(String.valueOf(best));
             } else {
                 bestScoreValue.setText("--");
             }
         }
     }
 
+    // Timing methods delegated to TimerManager
+    private void startLockDelay() {
+        timerManager.startLockDelay(this::executeLock);
+    }
+
+    private void resetLockDelay() {
+        if (gameState.getLockDelayResetCount() < gameState.getMaxLockResets()) {
+            gameState.incrementLockDelayResetCount();
+            timerManager.stopLockDelay();
+            startLockDelay();
+        } else {
+            executeLock();
+        }
+    }
+
+    private void cancelLockDelay() {
+        timerManager.stopLockDelay();
+        gameState.setLockDelayActive(false);
+        gameState.resetLockDelayCount();
+    }
+
+    private void executeLock() {
+        if (gameState.isGameOver()) return; // CRITICAL: Don't lock if game is over
+
+        if (eventListener instanceof GameController) {
+            GameController gc = (GameController) eventListener;
+            Board board = gc.getBoard();
+
+            board.mergeBrickToBackground();
+            ClearRow clearRow = board.clearRows();
+
+            handleLineClears(clearRow);
+
+            gameState.setLockDelayActive(false);
+            gameState.resetLockDelayCount();
+            timerManager.stopLockDelay();
+
+            // CRITICAL FIX: Check if game over BEFORE spawning
+            if (board.createNewBrick()) {
+                gameOver();
+                return;
+            }
+
+            refreshGameBackground(board.getBoardMatrix());
+            refreshBrick(board.getViewData());
+            updateNextDisplay();
+        }
+    }
+
+    private void handleLineClears(ClearRow clearRow) {
+        if (clearRow != null && clearRow.getLinesRemoved() > 0) {
+            int linesCleared = clearRow.getLinesRemoved();
+            int earnedScore = scoringManager.calculateTetrisScore(linesCleared);
+
+            if (gameState.getCurrentGameMode() == GameMode.NORMAL) {
+                gameState.setNormalModeScore(gameState.getNormalModeScore() + earnedScore);
+            } else if (gameState.getCurrentGameMode() == GameMode.TWO_MINUTES) {
+                gameState.setTwoMinutesScore(gameState.getTwoMinutesScore() + earnedScore);
+            }
+
+            updateScoreDisplay();
+            updateStatsDisplay();
+            updateGameSpeed();
+        } else {
+            scoringManager.resetCombo();
+        }
+    }
+
+    private void updateGameSpeed() {
+        if (gameState.getCurrentGameMode() == GameMode.NORMAL && eventListener instanceof GameController) {
+            GameController gc = (GameController) eventListener;
+            int linesCleared = gc.getLinesCleared();
+            int level = linesCleared / 10;
+            int newSpeed = Math.max(
+                    gameState.getMinDropSpeed(),
+                    gameState.getBaseDropSpeed() - (level * gameState.getSpeedDecreasePerLevel())
+            );
+            gameState.setCurrentDropSpeed(newSpeed);
+
+            timerManager.stopDropTimer();
+            timerManager.startDropTimer(newSpeed, () ->
+                    moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD))
+            );
+        }
+    }
+
     private void completeFortyLinesChallenge() {
-        // Stop the game
-        if (timeLine != null) timeLine.stop();
-        if (timer != null) timer.stop();
+        timerManager.stopAllTimers();
+        long finalTime = timerManager.getElapsedTime();
 
-        // Calculate final time
-        long finalTime = System.currentTimeMillis() - gameStartTime;
-
-        // Check if it's a new best time
-        boolean NewBest = finalTime < fortyLinesBestTime;
-        if (NewBest) {
-            fortyLinesBestTime = finalTime;
+        boolean isNewBest = finalTime < gameState.getFortyLinesBestTime();
+        if (isNewBest) {
+            gameState.setFortyLinesBestTime(finalTime);
             updateBestTimeDisplay();
         }
 
-        // Format the time
         int minutes = (int) (finalTime / 60000);
         int seconds = (int) ((finalTime % 60000) / 1000);
         int millis = (int) (finalTime % 1000);
         String timeString = String.format("%d:%02d.%03d", minutes, seconds, millis);
 
-        // Show completion message
-        showCompletionMessage(timeString, NewBest);
+        showCompletionMessage(timeString, isNewBest);
     }
 
-    private void showCompletionMessage(String timeString, boolean NewBest) {
-        // Format previous best time
+    private void showCompletionMessage(String timeString, boolean isNewBest) {
         String previousBest = null;
-
-        if (fortyLinesBestTime != Long.MAX_VALUE && !NewBest) {
-            int minutes = (int) (fortyLinesBestTime / 60000);
-            int seconds = (int) ((fortyLinesBestTime % 60000) / 1000);
-            int millis = (int) (fortyLinesBestTime % 1000);
+        if (gameState.getFortyLinesBestTime() != Long.MAX_VALUE && !isNewBest) {
+            long time = gameState.getFortyLinesBestTime();
+            int minutes = (int) (time / 60000);
+            int seconds = (int) ((time % 60000) / 1000);
+            int millis = (int) (time % 1000);
             previousBest = String.format("%d:%02d.%03d", minutes, seconds, millis);
         }
 
-        // Show completion panel
-        CompletionPanel panel = new CompletionPanel(timeString, NewBest, previousBest);
-
-        // Store reference to current panel
+        CompletionPanel panel = new CompletionPanel(timeString, isNewBest, previousBest);
         currentFortyLinesPanel = panel;
 
         panel.setOnRetry(() -> {
@@ -864,595 +703,39 @@ public class GuiController implements Initializable {
             restartGameWithCountdown();
         });
 
-        panel.setOnMainMenu(() -> goToMainMenu());
+        panel.setOnMainMenu(this::goToMainMenu);
 
         javafx.scene.Parent parent = gamePanel.getParent();
         if (parent instanceof javafx.scene.layout.Pane) {
             ((javafx.scene.layout.Pane) parent).getChildren().add(panel);
         }
-
-    }
-
-    private void removeFortyLinesPanel() {
-        if (currentFortyLinesPanel != null) {
-            javafx.scene.Parent parent = gamePanel.getParent();
-            if (parent instanceof javafx.scene.layout.Pane) {
-                ((javafx.scene.layout.Pane) parent).getChildren().remove(currentFortyLinesPanel);
-            }
-            currentFortyLinesPanel = null;
-        }
-    }
-
-    private void updateShadow(ViewData brick) {
-        if (!(eventListener instanceof GameController)) {
-            return;
-        }
-
-        GameController gc = (GameController) eventListener;
-        Board board = gc.getBoard();
-        int[][] boardMatrix = board.getBoardMatrix();
-
-        //Refresh the background to clear old shadow
-        refreshGameBackground(boardMatrix);
-
-        // Calculate where the brick would land
-        int shadowY = calculateShadowPosition(brick);
-        int shadowX = brick.getxPosition();
-        int[][] brickData = brick.getBrickData();
-
-        // Draw shadow directly on the board grid (displayMatrix)
-        for (int i = 0; i < brickData.length; i++) {
-            for (int j = 0; j < brickData[i].length; j++) {
-                if (brickData[i][j] != 0) {
-                    int boardRow = shadowY + i;
-                    int boardCol = shadowX + j;
-
-                    // Make sure it's within bounds
-                    if (boardRow >= 0 && boardRow < displayMatrix.length &&
-                            boardCol >= 0 && boardCol < displayMatrix[0].length) {
-
-                        // Only draw shadow if the cell is empty
-                        if (boardMatrix[boardRow][boardCol] == 0) {
-                            // Draw shadow with semi-transparent color
-                            Color shadowColor = Color.rgb(128, 128, 128, 0.3);
-                            displayMatrix[boardRow][boardCol].setFill(shadowColor);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private void updateGameSpeed() {
-        if (currentGameMode == GameMode.NORMAL && eventListener instanceof GameController) {
-            GameController gc = (GameController) eventListener;
-            int linesCleared = gc.getLinesCleared();
-
-            // Increase speed every 10 lines
-            int level = linesCleared / 10;
-            currentDropSpeed = Math.max(MIN_DROP_SPEED, baseDropSpeed - (level * SPEED_DECREASE_PER_LEVEL));
-
-            // Update the timeline with new speed
-            if (timeLine != null) {
-                timeLine.stop();
-                timeLine = new Timeline(new KeyFrame(
-                        Duration.millis(currentDropSpeed),
-                        ae -> moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD))
-                ));
-                timeLine.setCycleCount(Timeline.INDEFINITE);
-                timeLine.play();
-            }
-
-        }
-    }
-
-    private int calculateShadowPosition(ViewData brick) {
-        // Get current board state
-        if (!(eventListener instanceof GameController)) {
-            return brick.getyPosition();
-        }
-
-        GameController gc = (GameController) eventListener;
-        Board board = gc.getBoard();
-        int[][] boardMatrix = board.getBoardMatrix();
-        int[][] brickShape = brick.getBrickData();
-
-        int currentX = brick.getxPosition();
-        int currentY = brick.getyPosition();
-
-        // Start from current position and drop down
-        int dropY = currentY;
-
-        // Keep moving down while there's no collision
-        while (!checkCollision(boardMatrix, brickShape, currentX, dropY + 1)) {
-            dropY++;
-        }
-
-        return dropY;
-    }
-
-    private boolean checkCollision(int[][] board, int[][] brick, int x, int y) {
-        for (int i = 0; i < brick.length; i++) {
-            for (int j = 0; j < brick[i].length; j++) {
-                if (brick[i][j] != 0) {  // Only check filled cells
-                    int boardRow = y + i;
-                    int boardCol = x + j;
-
-                    // Check bottom boundary
-                    if (boardRow >= board.length) {
-                        return true;
-                    }
-
-                    // Check side boundaries
-                    if (boardCol < 0 || boardCol >= board[0].length) {
-                        return true;
-                    }
-
-                    // Check collision with placed blocks
-                    if (boardRow >= 0 && board[boardRow][boardCol] != 0) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    private void startLockDelay() {
-
-        // Cancel any existing lock delay timer
-        if (lockDelayTimeline != null) {
-            lockDelayTimeline.stop();
-        }
-
-        // Create new lock delay timer
-        lockDelayTimeline = new Timeline(new KeyFrame(
-                Duration.millis(LOCK_DELAY_MS),
-                ae -> executeLock()
-        ));
-        lockDelayTimeline.setCycleCount(1);
-        lockDelayTimeline.play();
-    }
-
-    private void resetLockDelay() {
-        // Limit the number of resets (prevents infinite delay)
-        if (lockDelayResetCount < MAX_LOCK_RESETS) {
-            lockDelayResetCount++;
-
-            // Cancel the current timer
-            if (lockDelayTimeline != null) {
-                lockDelayTimeline.stop();
-            }
-
-            startLockDelay();
-        } else {
-            // Force lock if too many resets
-            executeLock();
-        }
-    }
-
-    private void cancelLockDelay() {
-        if (lockDelayTimeline != null) {
-            lockDelayTimeline.stop();
-        }
-        isLockDelayActive = false;
-        lockDelayResetCount = 0;
-    }
-
-    private void executeLock() {
-        if (eventListener instanceof GameController) {
-            GameController gc = (GameController) eventListener;
-            Board board = gc.getBoard();
-
-            // Lock the brick in place
-            board.mergeBrickToBackground();
-            ClearRow clearRow = board.clearRows();
-
-            if (clearRow != null && clearRow.getLinesRemoved() > 0) {
-                int linesCleared = clearRow.getLinesRemoved();
-
-                if (currentGameMode == GameMode.NORMAL) {
-                    // Use Tetris scoring for Normal mode
-                    int earnedScore = calculateTetrisScore(linesCleared, true);
-                    normalModeScore += earnedScore;
-                    if (scoreValue != null) {
-                        scoreValue.setText(String.valueOf(normalModeScore));
-                    }
-
-                } else if (currentGameMode == GameMode.TWO_MINUTES) {
-                    // Use Tetris scoring for 2-minute mode
-                    int earnedScore = calculateTetrisScore(linesCleared, false);
-                    currentScore += earnedScore;
-                    if (scoreValue != null) {
-                        scoreValue.setText(String.valueOf(currentScore));
-                    }
-                }
-
-                updateStatsDisplay();
-                updateGameSpeed();
-
-            } else {
-                // No lines cleared - reset combo
-                if (currentGameMode == GameMode.NORMAL) {
-                    normalModeCombo = 0;
-                    normalModeLastWasTetris = false;
-                } else if (currentGameMode == GameMode.TWO_MINUTES) {
-                    currentCombo = 0;
-                    lastClearWasTetris = false;
-                }
-            }
-
-            //Reset lock delay state BEFORE creating new brick
-            isLockDelayActive = false;
-            lockDelayResetCount = 0;
-            if (lockDelayTimeline != null) {
-                lockDelayTimeline.stop();
-            }
-
-            // Create new brick
-            if (board.createNewBrick()) {
-                gameOver();
-            }
-
-            refreshGameBackground(board.getBoardMatrix());
-            refreshBrick(board.getViewData());
-            updateNextDisplay();
-
-            isLockDelayActive = false;
-            lockDelayResetCount = 0;
-        }
-    }
-
-    private void showCountdown(Runnable onComplete) {
-        removeCompletionPanel();
-
-        isCountdownActive = true;
-        countdownPanel.setVisible(true);
-        brickPanel.setVisible(false);
-
-        final int[] count = {3};
-
-        // ADD THIS LINE - Set initial text immediately
-        countdownLabel.setText("3");
-
-        countdownTimeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
-            count[0]--;
-            if (count[0] > 0) {
-                countdownLabel.setText(String.valueOf(count[0]));
-            } else {
-                countdownLabel.setText("GO!");
-
-                Timeline hideTimeline = new Timeline(new KeyFrame(Duration.millis(500), e -> {
-                    countdownPanel.setVisible(false);
-                    brickPanel.setVisible(true);
-                    isCountdownActive = false;
-                    onComplete.run();
-                }));
-                hideTimeline.play();
-            }
-        }));
-
-        countdownTimeline.setCycleCount(4);
-        countdownTimeline.play();
-    }
-
-    private void restartGameWithCountdown() {
-        // Stop everything
-        if (timeLine != null) timeLine.stop();
-        if (timer != null) timer.stop();
-        if (countdownTimeline != null) countdownTimeline.stop();
-        cancelLockDelay();
-
-        challengeCompleted = false;
-
-        // Reset score tracking
-        if (currentGameMode == GameMode.NORMAL) {
-            normalModeScore = 0;
-            normalModeCombo = 0;
-            normalModeLastWasTetris = false;
-            if (scoreValue != null) {
-                scoreValue.setText("0");
-            }
-        } else if (currentGameMode == GameMode.TWO_MINUTES) {
-            currentScore = 0;
-            currentCombo = 0;
-            lastClearWasTetris = false;
-            if (scoreValue != null) {
-                scoreValue.setText("0");
-            }
-        }
-
-
-        gameOverPanel.setVisible(false);
-        countdownPanel.setVisible(false);
-        brickPanel.setVisible(false);  // Hide brick during countdown
-
-        // Clear the board
-        eventListener.createNewGame();
-
-        // Force refresh
-        if (eventListener instanceof GameController) {
-            GameController gc = (GameController) eventListener;
-            Board board = gc.getBoard();
-            board.newGame();    // Resets board
-            refreshGameBackground(board.getBoardMatrix());
-
-            clearBrickDisplay();    // Clear brick display
-        }
-
-        gamePanel.requestFocus();
-
-        // Reset displays
-        gameStartTime = System.currentTimeMillis();
-        piecesValue.setText("0");
-        linesValue.setText("0");
-
-        // Set initial time display based on mode
-        if (currentGameMode == GameMode.TWO_MINUTES) {
-            timeValue.setText("2:00.000");
-        } else {
-            timeValue.setText("0:00.000");
-        }
-
-        // Clear hold and next displays
-        updateHoldDisplay();
-        updateNextDisplay();
-
-        isPause.setValue(Boolean.FALSE);
-        isGameOver.setValue(Boolean.FALSE);
-
-        // Reset speed
-        if (currentGameMode == GameMode.NORMAL) {
-            currentDropSpeed = baseDropSpeed;
-        } else if (currentGameMode == GameMode.FORTY_LINES) {
-            currentDropSpeed = 400;
-        } else if (currentGameMode == GameMode.TWO_MINUTES) {
-            currentDropSpeed = 400;
-        }
-
-        // Show countdown before starting
-        showCountdown(() -> {
-            // Create the first brick AFTER countdown
-            if (eventListener instanceof GameController) {
-                GameController gc = (GameController) eventListener;
-                Board board = gc.getBoard();
-                board.createNewBrick();
-                refreshBrick(board.getViewData());
-                updateNextDisplay();
-            }
-
-            if (timer != null) timer.start();
-
-            timeLine = new Timeline(new KeyFrame(
-                    Duration.millis(currentDropSpeed),
-                    ae -> moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD))
-            ));
-            timeLine.setCycleCount(Timeline.INDEFINITE);
-            timeLine.play();
-        });
-
-        pauseMenuPanel.setVisible(false);
-    }
-
-    private void startGameWithCountdown() {
-        // This is ONLY called when starting from main menu
-        brickPanel.setVisible(false);  // Hide brick during countdown
-
-        // Show countdown before starting
-        showCountdown(() -> {
-
-            // start the timer (after countdown)
-            if (timer != null) timer.start();
-
-            gameStartTime = System.currentTimeMillis();
-
-            timeLine = new Timeline(new KeyFrame(
-                    Duration.millis(currentDropSpeed),
-                    ae -> moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD))
-            ));
-            timeLine.setCycleCount(Timeline.INDEFINITE);
-            timeLine.play();
-        });
-    }
-
-    private void restartGameInstantly() {
-        // Stop everything COMPLETELY
-        if (timeLine != null) {
-            timeLine.stop();
-            timeLine = null; // Clear reference
-        }
-        if (timer != null) timer.stop();
-        if (countdownTimeline != null) countdownTimeline.stop();
-        cancelLockDelay();
-
-        challengeCompleted = false;
-        removeCompletionPanel();
-
-        // Reset score tracking
-        if (currentGameMode == GameMode.NORMAL) {
-            normalModeScore = 0;
-            normalModeCombo = 0;
-            normalModeLastWasTetris = false;
-            if (scoreValue != null) {
-                scoreValue.setText("0");
-            }
-        } else if (currentGameMode == GameMode.TWO_MINUTES) {
-            currentScore = 0;
-            currentCombo = 0;
-            lastClearWasTetris = false;
-            if (scoreValue != null) {
-                scoreValue.setText("0");
-            }
-        }
-
-        gameOverPanel.setVisible(false);
-        countdownPanel.setVisible(false);
-        brickPanel.setVisible(true);
-
-        // Clear old brick display
-        clearBrickDisplay();
-
-        // Create new game
-        eventListener.createNewGame();
-
-        // Create and display new brick
-        if (eventListener instanceof GameController) {
-            GameController gc = (GameController) eventListener;
-            Board board = gc.getBoard();
-
-            refreshGameBackground(board.getBoardMatrix());
-
-            boolean gameOverOnSpawn = board.createNewBrick();
-            if (gameOverOnSpawn) {
-                gameOver();
-                return;
-            }
-
-            refreshBrick(board.getViewData());
-        }
-
-        gamePanel.requestFocus();
-
-        // Reset displays
-        gameStartTime = System.currentTimeMillis();
-        piecesValue.setText("0");
-        linesValue.setText("0");
-
-        if (currentGameMode == GameMode.TWO_MINUTES) {
-            timeValue.setText("2:00.000");
-        } else {
-            timeValue.setText("0:00.000");
-        }
-
-        updateHoldDisplay();
-        updateNextDisplay();
-
-        isPause.setValue(Boolean.FALSE);
-        isGameOver.setValue(Boolean.FALSE);
-
-        // Reset speed to base speed
-        if (currentGameMode == GameMode.NORMAL) {
-            currentDropSpeed = baseDropSpeed;
-        } else if (currentGameMode == GameMode.FORTY_LINES) {
-            currentDropSpeed = 400;
-        } else if (currentGameMode == GameMode.TWO_MINUTES) {
-            currentDropSpeed = 400;
-        }
-
-        // Start timer
-        if (timer != null) timer.start();
-
-        // Create NEW timeline with correct speed
-        timeLine = new Timeline(new KeyFrame(
-                Duration.millis(currentDropSpeed),
-                ae -> moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD))
-        ));
-        timeLine.setCycleCount(Timeline.INDEFINITE);
-        timeLine.play();
-
-        pauseMenuPanel.setVisible(false);
-    }
-
-    public void setEventListener(InputEventListener eventListener) {
-        this.eventListener = eventListener;
-    }
-
-    /**
-     * Calculate score based on official Tetris scoring system
-     * Includes: base line clear points, combo bonus, and back-to-back Tetris bonus
-     */
-    private int calculateTetrisScore(int linesCleared, boolean isNormalMode) {
-        if (linesCleared == 0) return 0;
-
-        // Base points for line clears (standard Tetris scoring)
-        int baseScore = 0;
-        switch (linesCleared) {
-            case 1:
-                baseScore = 100;  // Single
-                break;
-            case 2:
-                baseScore = 300;  // Double
-                break;
-            case 3:
-                baseScore = 500;  // Triple
-                break;
-            case 4:
-                baseScore = 800;  // 4 lines at once
-                break;
-            default:
-                // Clearing more than 4 lines
-                baseScore = 800 + (linesCleared - 4) * 200;
-                break;
-        }
-
-        // Combo bonus and back-to-back tracking
-        int comboBonus, backToBackBonus;
-
-        if (isNormalMode) {
-            // Use Normal mode's separate combo tracking
-            comboBonus = normalModeCombo * 50;
-            backToBackBonus = 0;
-            if (linesCleared == 4 && normalModeLastWasTetris) {
-                backToBackBonus = 400; // 50% bonus for back-to-back Tetris
-            }
-            normalModeCombo++;  // Increment combo counter
-            normalModeLastWasTetris = (linesCleared == 4);  // Track if this was a Tetris
-        } else {
-            // Use 2-minute mode's separate combo tracking
-            comboBonus = currentCombo * 50;
-            backToBackBonus = 0;
-            if (linesCleared == 4 && lastClearWasTetris) {
-                backToBackBonus = 400;
-            }
-            currentCombo++;
-            lastClearWasTetris = (linesCleared == 4);
-        }
-
-        int totalScore = baseScore + comboBonus + backToBackBonus;
-
-        return totalScore;
-    }
-
-
-    private void checkTwoMinutesComplete() {
-        if (currentGameMode == GameMode.TWO_MINUTES && !challengeCompleted) {
-            long elapsed = System.currentTimeMillis() - gameStartTime;
-            if (elapsed >= TIME) { // 2 minutes = 120,000ms
-                challengeCompleted = true;
-                completeTwoMinutesChallenge();
-            }
-        }
     }
 
     private void completeTwoMinutesChallenge() {
-        // Stop the game
-        if (timeLine != null) timeLine.stop();
-        if (timer != null) timer.stop();
+        timerManager.stopAllTimers();
 
-        // Check if it's a new best score
-        boolean isNewBest = currentScore > twoMinutesBestScore;
+        int finalScore = gameState.getTwoMinutesScore();
+        boolean isNewBest = finalScore > GameState.getTwoMinutesBestScore();
         if (isNewBest) {
-            twoMinutesBestScore = currentScore;
+            GameState.setTwoMinutesBestScore(finalScore);
             updateBestScoreDisplay();
         }
-
 
         int linesCleared = 0;
         if (eventListener instanceof GameController) {
             linesCleared = ((GameController) eventListener).getLinesCleared();
         }
 
-        showTwoMinutesCompletion(currentScore, linesCleared, isNewBest);
+        showTwoMinutesCompletion(finalScore, linesCleared, isNewBest);
     }
 
     private void showTwoMinutesCompletion(int finalScore, int linesCleared, boolean isNewBest) {
-        String previousBest = (twoMinutesBestScore > 0 && !isNewBest) ?
-                String.valueOf(twoMinutesBestScore) : null;
+        String previousBest = (GameState.getTwoMinutesBestScore() > 0 && !isNewBest) ?
+                String.valueOf(GameState.getTwoMinutesBestScore()) : null;
 
         TwoMinutesCompletionPanel panel = new TwoMinutesCompletionPanel(
                 finalScore, linesCleared, isNewBest, previousBest
         );
-
         currentCompletionPanel = panel;
 
         panel.setOnRetry(() -> {
@@ -1460,20 +743,7 @@ public class GuiController implements Initializable {
             restartGameWithCountdown();
         });
 
-        panel.setOnMainMenu(() -> {
-            try {
-                // Best score persists because twoMinutesBestScore is static
-                javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-                        getClass().getResource("/MainMenu.fxml")
-                );
-                javafx.scene.Parent menuRoot = loader.load();
-                javafx.stage.Stage stage = (javafx.stage.Stage) gamePanel.getScene().getWindow();
-                javafx.scene.Scene menuScene = new javafx.scene.Scene(menuRoot, 900, 700);
-                stage.setScene(menuScene);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        });
+        panel.setOnMainMenu(this::goToMainMenu);
 
         javafx.scene.Parent parent = gamePanel.getParent();
         if (parent instanceof javafx.scene.layout.Pane) {
@@ -1489,26 +759,189 @@ public class GuiController implements Initializable {
             }
             currentCompletionPanel = null;
         }
-        removeFortyLinesPanel();
+        if (currentFortyLinesPanel != null) {
+            javafx.scene.Parent parent = gamePanel.getParent();
+            if (parent instanceof javafx.scene.layout.Pane) {
+                ((javafx.scene.layout.Pane) parent).getChildren().remove(currentFortyLinesPanel);
+            }
+            currentFortyLinesPanel = null;
+        }
+    }
+
+    private void showCountdown(Runnable onComplete) {
+        removeCompletionPanel();
+
+        gameState.setCountdownActive(true);
+        countdownPanel.setVisible(true);
+        brickPanel.setVisible(false);
+
+        timerManager.startCountdown(countdownLabel, () -> {
+            countdownPanel.setVisible(false);
+            brickPanel.setVisible(true);
+            gameState.setCountdownActive(false);
+            onComplete.run();
+        });
+    }
+
+    private void restartGameWithCountdown() {
+        timerManager.stopAllTimers();
+        cancelLockDelay();
+
+        gameState.setChallengeCompleted(false);
+        gameState.resetScores();
+        updateScoreDisplay();
+
+        gameOverPanel.setVisible(false);
+        countdownPanel.setVisible(false);
+        brickPanel.setVisible(false);
+
+        eventListener.createNewGame();
+
+        if (eventListener instanceof GameController) {
+            GameController gc = (GameController) eventListener;
+            Board board = gc.getBoard();
+            board.newGame();
+            refreshGameBackground(board.getBoardMatrix());
+            clearBrickDisplay();
+        }
+
+        gamePanel.requestFocus();
+        timerManager.resetStartTime();
+        piecesValue.setText("0");
+        linesValue.setText("0");
+
+        if (gameState.getCurrentGameMode() == GameMode.TWO_MINUTES) {
+            timeValue.setText("2:00.000");
+        } else {
+            timeValue.setText("0:00.000");
+        }
+
+        updateHoldDisplay();
+        updateNextDisplay();
+
+        gameState.setPaused(false);
+        gameState.setGameOver(false);
+
+        if (gameState.getCurrentGameMode() == GameMode.NORMAL) {
+            gameState.setCurrentDropSpeed(gameState.getBaseDropSpeed());
+        } else {
+            gameState.setCurrentDropSpeed(400);
+        }
+
+        showCountdown(() -> {
+            if (eventListener instanceof GameController) {
+                GameController gc = (GameController) eventListener;
+                Board board = gc.getBoard();
+                board.createNewBrick();
+                refreshBrick(board.getViewData());
+                updateNextDisplay();
+            }
+
+            timerManager.startGameTimer();
+            timerManager.startDropTimer(gameState.getCurrentDropSpeed(), () ->
+                    moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD))
+            );
+        });
+
+        pauseMenuPanel.setVisible(false);
+    }
+
+    private void startGameWithCountdown() {
+        brickPanel.setVisible(false);
+
+        showCountdown(() -> {
+            timerManager.startGameTimer();
+            timerManager.resetStartTime();
+
+            timerManager.startDropTimer(gameState.getCurrentDropSpeed(), () ->
+                    moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD))
+            );
+        });
+    }
+
+    private void restartGameInstantly() {
+        timerManager.stopAllTimers();
+        cancelLockDelay();
+
+        gameState.setChallengeCompleted(false);
+        removeCompletionPanel();
+        gameState.resetScores();
+        updateScoreDisplay();
+
+        gameOverPanel.setVisible(false);
+        countdownPanel.setVisible(false);
+        brickPanel.setVisible(true);
+
+        clearBrickDisplay();
+        eventListener.createNewGame();
+
+        if (eventListener instanceof GameController) {
+            GameController gc = (GameController) eventListener;
+            Board board = gc.getBoard();
+            refreshGameBackground(board.getBoardMatrix());
+
+            boolean gameOverOnSpawn = board.createNewBrick();
+            if (gameOverOnSpawn) {
+                gameOver();
+                return;
+            }
+
+            refreshBrick(board.getViewData());
+        }
+
+        gamePanel.requestFocus();
+        timerManager.resetStartTime();
+        piecesValue.setText("0");
+        linesValue.setText("0");
+
+        if (gameState.getCurrentGameMode() == GameMode.TWO_MINUTES) {
+            timeValue.setText("2:00.000");
+        } else {
+            timeValue.setText("0:00.000");
+        }
+
+        updateHoldDisplay();
+        updateNextDisplay();
+
+        gameState.setPaused(false);
+        gameState.setGameOver(false);
+
+        if (gameState.getCurrentGameMode() == GameMode.NORMAL) {
+            gameState.setCurrentDropSpeed(gameState.getBaseDropSpeed());
+        } else {
+            gameState.setCurrentDropSpeed(400);
+        }
+
+        timerManager.startGameTimer();
+        timerManager.startDropTimer(gameState.getCurrentDropSpeed(), () ->
+                moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD))
+        );
+
+        pauseMenuPanel.setVisible(false);
+    }
+
+    public void setEventListener(InputEventListener eventListener) {
+        this.eventListener = eventListener;
     }
 
     public void bindScore(IntegerProperty integerProperty) {
-        //Score binding
+        // Score binding
     }
 
     public void gameOver() {
-        timeLine.stop();
-        if (timer != null) timer.stop();
+        // CRITICAL FIX: Set game over state FIRST
+        gameState.setGameOver(true);
+
+        // Then stop all timers
+        timerManager.stopAllTimers();
         cancelLockDelay();
 
-        // Calculate final time
-        long finalTime = System.currentTimeMillis() - gameStartTime;
+        long finalTime = timerManager.getElapsedTime();
         int minutes = (int) (finalTime / 60000);
         int seconds = (int) ((finalTime % 60000) / 1000);
         int millis = (int) (finalTime % 1000);
         String timeStr = String.format("%d:%02d.%03d", minutes, seconds, millis);
 
-        // Get stats
         int pieces = 0, lines = 0, score = 0;
         if (eventListener instanceof GameController) {
             GameController gc = (GameController) eventListener;
@@ -1516,24 +949,18 @@ public class GuiController implements Initializable {
             lines = gc.getLinesCleared();
         }
 
-        if (currentGameMode == GameMode.NORMAL) {
-            score = normalModeScore;
-        } else if (currentGameMode == GameMode.TWO_MINUTES) {
-            score = currentScore;
+        if (gameState.getCurrentGameMode() == GameMode.NORMAL) {
+            score = gameState.getNormalModeScore();
+        } else if (gameState.getCurrentGameMode() == GameMode.TWO_MINUTES) {
+            score = gameState.getTwoMinutesScore();
         }
 
-        // Show full-screen game over with stats
-        gameOverPanel.showGameOver(pieces, lines, finalTime, timeStr, score, currentGameMode);
-
-        // Set button actions
-        gameOverPanel.setOnRetry(() -> restartGameWithCountdown());
-        gameOverPanel.setOnMainMenu(() -> goToMainMenu());
-
-        isGameOver.setValue(Boolean.TRUE);
+        gameOverPanel.showGameOver(pieces, lines, finalTime, timeStr, score, gameState.getCurrentGameMode());
+        gameOverPanel.setOnRetry(this::restartGameWithCountdown);
+        gameOverPanel.setOnMainMenu(this::goToMainMenu);
     }
 
     private void clearBrickDisplay() {
-        // Remove all brick rectangles from the game panel
         if (rectangles != null) {
             for (Rectangle[] row : rectangles) {
                 for (Rectangle r : row) {
@@ -1545,7 +972,6 @@ public class GuiController implements Initializable {
 
     public void newGame(ActionEvent actionEvent) {
         restartGameInstantly();
-
     }
 
     public void pauseGame(ActionEvent actionEvent) {
@@ -1553,36 +979,22 @@ public class GuiController implements Initializable {
     }
 
     private void togglePause() {
-        if (isGameOver.getValue()) return; // Cannot pause if game over
-        if (isCountdownActive) return;     // Cannot pause during countdown
+        if (gameState.isGameOver()) return;
+        if (gameState.isCountdownActive()) return;
 
-        if (isPause.getValue()) {
-            // RESUME GAME
-            isPause.setValue(false);
+        if (gameState.isPaused()) {
+            gameState.setPaused(false);
             pauseMenuPanel.setVisible(false);
-
-            // Restart timers
-            if (timeLine != null) timeLine.play();
-            if (timer != null) timer.start();
-
-            // Focus back on game panel so keys work immediately
+            timerManager.resumeDropTimer();
+            timerManager.startGameTimer();
             gamePanel.requestFocus();
-
         } else {
-            // PAUSE GAME
-            isPause.setValue(true);
+            gameState.setPaused(true);
             pauseMenuPanel.setVisible(true);
-
-            // Stop timers
-            if (timeLine != null) timeLine.stop(); // Stop the brick dropping
-            if (timer != null) timer.stop();       // Stop the clock
-
-            // Note: We intentionally do NOT stop lockDelayTimeline here because
-            // stopping it completely might reset the lock timer, making the game easier.
-            // If you want strict pausing, you can pause it, but standard Timeline.stop()
-            // resets position. Usually, for simple Tetris, pausing the drop loop is enough.
-            if (lockDelayTimeline != null) {
-                lockDelayTimeline.stop(); // Reset lock delay on pause prevents exploits
+            timerManager.pauseDropTimer();
+            timerManager.stopGameTimer();
+            if (gameState.isLockDelayActive()) {
+                timerManager.stopLockDelay();
             }
         }
     }
@@ -1601,4 +1013,72 @@ public class GuiController implements Initializable {
         }
     }
 
+    // Shadow and collision detection
+    private void updateShadow(ViewData brick) {
+        if (!(eventListener instanceof GameController)) return;
+
+        GameController gc = (GameController) eventListener;
+        Board board = gc.getBoard();
+        int[][] boardMatrix = board.getBoardMatrix();
+
+        refreshGameBackground(boardMatrix);
+
+        int shadowY = calculateShadowPosition(brick);
+        int shadowX = brick.getxPosition();
+        int[][] brickData = brick.getBrickData();
+
+        for (int i = 0; i < brickData.length; i++) {
+            for (int j = 0; j < brickData[i].length; j++) {
+                if (brickData[i][j] != 0) {
+                    int boardRow = shadowY + i;
+                    int boardCol = shadowX + j;
+
+                    if (boardRow >= 0 && boardRow < displayMatrix.length &&
+                            boardCol >= 0 && boardCol < displayMatrix[0].length) {
+                        if (boardMatrix[boardRow][boardCol] == 0) {
+                            Color shadowColor = Color.rgb(128, 128, 128, 0.3);
+                            displayMatrix[boardRow][boardCol].setFill(shadowColor);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private int calculateShadowPosition(ViewData brick) {
+        if (!(eventListener instanceof GameController)) {
+            return brick.getyPosition();
+        }
+
+        GameController gc = (GameController) eventListener;
+        Board board = gc.getBoard();
+        int[][] boardMatrix = board.getBoardMatrix();
+        int[][] brickShape = brick.getBrickData();
+
+        int currentX = brick.getxPosition();
+        int currentY = brick.getyPosition();
+        int dropY = currentY;
+
+        while (!checkCollision(boardMatrix, brickShape, currentX, dropY + 1)) {
+            dropY++;
+        }
+
+        return dropY;
+    }
+
+    private boolean checkCollision(int[][] board, int[][] brick, int x, int y) {
+        for (int i = 0; i < brick.length; i++) {
+            for (int j = 0; j < brick[i].length; j++) {
+                if (brick[i][j] != 0) {
+                    int boardRow = y + i;
+                    int boardCol = x + j;
+
+                    if (boardRow >= board.length) return true;
+                    if (boardCol < 0 || boardCol >= board[0].length) return true;
+                    if (boardRow >= 0 && board[boardRow][boardCol] != 0) return true;
+                }
+            }
+        }
+        return false;
+    }
 }

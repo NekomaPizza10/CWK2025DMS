@@ -18,7 +18,7 @@
     <BorderPane>
         <center>
             <HBox alignment="CENTER" spacing="20">
-                <!-- Left Side: HOLD Box -->
+                <!-- Left Side: HOLD Box + Score/Best Panels -->
                 <VBox alignment="TOP_CENTER" spacing="15" style="-fx-background-color: transparent;">
                     <padding>
                         <Insets top="50"/>
@@ -67,12 +67,64 @@
                                    style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold;"/>
                         </VBox>
                     </VBox>
+
+                    <!-- SCORE/BEST DISPLAY (Moved to Left Side) -->
+                    <VBox fx:id="scoreDisplayContainer" alignment="CENTER" spacing="10"
+                          style="-fx-background-color: rgba(0,0,0,0.6);
+                               -fx-padding: 15;
+                                 -fx-background-radius: 5;
+                               -fx-border-color: rgba(255,255,255,0.1);
+                               -fx-border-width: 1;
+                               -fx-border-radius: 5;">
+
+                        <!-- Best Time (40-Lines mode only) - AT TOP -->
+                        <VBox fx:id="bestTimeBox" alignment="CENTER" spacing="3"
+                              visible="false" managed="false">
+                            <Label text="BEST TIME"
+                                   style="-fx-text-fill: #ff9900; -fx-font-size: 13px; -fx-font-weight: bold; -fx-letter-spacing: 1;"/>
+                            <Label fx:id="bestTimeLabel" text="--:--"
+                                   style="-fx-text-fill: #ff9900; -fx-font-size: 28px; -fx-font-weight: bold;"/>
+                        </VBox>
+
+                        <!-- Score (Normal & 2-Min modes) -->
+                        <VBox fx:id="scoreBox"
+                              alignment="CENTER"
+                              prefHeight="40"
+                              minHeight="40"
+                              maxHeight="40"
+                              spacing="3"
+                              managed="true">
+                            <Label fx:id="scoreLabel" text="SCORE"
+                                   style="-fx-text-fill: #00aaff; -fx-font-size: 12px; -fx-font-weight: bold; -fx-letter-spacing: 1;"/>
+                            <Label fx:id="scoreValue" text="0"
+                                   style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;"/>
+                        </VBox>
+
+                        <!-- Separator (only visible in 2-min mode) -->
+                        <Region fx:id="scoreSeparator" prefHeight="1"
+                                style="-fx-background-color: rgba(255,255,255,0.2);"
+                                maxWidth="120" visible="false" managed="false"/>
+
+                        <!-- Best Score (2-Min mode only) -->
+                        <VBox fx:id="bestScoreBox"
+                              alignment="CENTER"
+                              prefHeight="40"
+                              minHeight="40"
+                              maxHeight="40"
+                              spacing="3"
+                              visible="false" managed="false">
+                            <Label fx:id="bestScoreLabel" text="BEST"
+                                   style="-fx-text-fill: #ffaa00; -fx-font-size: 12px; -fx-font-weight: bold; -fx-letter-spacing: 1;"/>
+                            <Label fx:id="bestScoreValue" text="--"
+                                   style="-fx-text-fill: #ffaa00; -fx-font-size: 24px; -fx-font-weight: bold;"/>
+                        </VBox>
+                    </VBox>
                 </VBox>
 
                 <!-- Center: Game Board -->
                 <VBox alignment="CENTER">
                     <StackPane alignment="CENTER" style="-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.8), 20, 0, 0, 0);">
-                        <VBox prefWidth="250" prefHeight="675"
+                        <VBox prefWidth="250" prefHeight="625"
                               style="-fx-border-color: #ffffff; -fx-border-width: 2; -fx-background-color: #000000; -fx-padding: 0;">
                             <StackPane alignment="TOP_LEFT">
                                 <GridPane fx:id="gamePanel"
@@ -81,9 +133,9 @@
                                           style="-fx-background-color: #000000;"/>
 
                                 <Pane fx:id="brickPaneContainer"
-                                      prefWidth="250" prefHeight="675"
-                                      minWidth="250" minHeight="675"
-                                      maxWidth="250" maxHeight="675"
+                                      prefWidth="250" prefHeight="625"
+                                      minWidth="250" minHeight="625"
+                                      maxWidth="250" maxHeight="625"
                                       style="-fx-background-color: transparent;"
                                       mouseTransparent="true">
                                     <GridPane fx:id="brickPanel" hgap="0" vgap="0"/>
@@ -104,13 +156,13 @@
                     </StackPane>
                 </VBox>
 
-                <!-- Right Side: NEXT Box + Score/Best -->
-                <VBox alignment="TOP_CENTER" spacing="15" style="-fx-background-color: transparent;">
+                <!-- Right Side: NEXT Box Only (Shortened) -->
+                <VBox alignment="TOP_CENTER" spacing="10" style="-fx-background-color: transparent;">
                     <padding>
                         <Insets top="50"/>
                     </padding>
 
-                    <!-- NEXT Panel -->
+                    <!-- NEXT Panel (Shortened) -->
                     <VBox style="-fx-background-color: #000000; -fx-border-color: #ffffff; -fx-border-width: 3;">
                         <padding>
                             <Insets top="5" right="10" bottom="5" left="10"/>
@@ -125,80 +177,38 @@
                             <VBox.margin><Insets top="5" bottom="5"/></VBox.margin>
                         </Region>
 
-                        <StackPane prefWidth="100" prefHeight="70" style="-fx-background-color: #000000;" alignment="CENTER">
+                        <StackPane prefWidth="100" prefHeight="60" style="-fx-background-color: #000000;" alignment="CENTER">
                             <GridPane fx:id="nextPanel1" hgap="0" vgap="0" alignment="CENTER"/>
                         </StackPane>
 
                         <Region prefHeight="1" style="-fx-background-color: #333333;">
-                            <VBox.margin><Insets top="3" bottom="3"/></VBox.margin>
+                            <VBox.margin><Insets top="2" bottom="2"/></VBox.margin>
                         </Region>
 
-                        <StackPane prefWidth="100" prefHeight="70" style="-fx-background-color: #000000;" alignment="CENTER">
+                        <StackPane prefWidth="100" prefHeight="60" style="-fx-background-color: #000000;" alignment="CENTER">
                             <GridPane fx:id="nextPanel2" hgap="0" vgap="0" alignment="CENTER"/>
                         </StackPane>
                         <Region prefHeight="1" style="-fx-background-color: #333333;">
-                            <VBox.margin><Insets top="3" bottom="3"/></VBox.margin>
+                            <VBox.margin><Insets top="2" bottom="2"/></VBox.margin>
                         </Region>
 
-                        <StackPane prefWidth="100" prefHeight="70" style="-fx-background-color: #000000;" alignment="CENTER">
+                        <StackPane prefWidth="100" prefHeight="60" style="-fx-background-color: #000000;" alignment="CENTER">
                             <GridPane fx:id="nextPanel3" hgap="0" vgap="0" alignment="CENTER"/>
                         </StackPane>
                         <Region prefHeight="1" style="-fx-background-color: #333333;">
-                            <VBox.margin><Insets top="3" bottom="3"/></VBox.margin>
+                            <VBox.margin><Insets top="2" bottom="2"/></VBox.margin>
                         </Region>
 
-                        <StackPane prefWidth="100" prefHeight="70" style="-fx-background-color: #000000;" alignment="CENTER">
+                        <StackPane prefWidth="100" prefHeight="60" style="-fx-background-color: #000000;" alignment="CENTER">
                             <GridPane fx:id="nextPanel4" hgap="0" vgap="0" alignment="CENTER"/>
                         </StackPane>
                         <Region prefHeight="1" style="-fx-background-color: #333333;">
-                            <VBox.margin><Insets top="3" bottom="3"/></VBox.margin>
+                            <VBox.margin><Insets top="2" bottom="2"/></VBox.margin>
                         </Region>
 
-                        <StackPane prefWidth="100" prefHeight="70" style="-fx-background-color: #000000;" alignment="CENTER">
+                        <StackPane prefWidth="100" prefHeight="60" style="-fx-background-color: #000000;" alignment="CENTER">
                             <GridPane fx:id="nextPanel5" hgap="0" vgap="0" alignment="CENTER"/>
                         </StackPane>
-                    </VBox>
-
-                    <!-- SCORE/BEST DISPLAY (Below Next Bricks) -->
-                    <!-- Normal Mode: Score only -->
-                    <!-- 40 Lines: Best Time only -->
-                    <!-- 2 Minutes: Score + Best Score -->
-                    <VBox fx:id="scoreDisplayContainer" alignment="CENTER" spacing="10"
-                          style="-fx-background-color: rgba(0,0,0,0.6);
-                                 -fx-padding: 15;
-                                 -fx-background-radius: 5;
-                                 -fx-border-color: rgba(255,255,255,0.1);
-                                 -fx-border-width: 1;
-                                 -fx-border-radius: 5;">
-
-                        <!-- Score (Normal & 2-Min modes) -->
-                        <VBox fx:id="scoreBox" alignment="CENTER" spacing="3">
-                            <Label fx:id="scoreLabel" text="SCORE"
-                                   style="-fx-text-fill: #00aaff; -fx-font-size: 13px; -fx-font-weight: bold; -fx-letter-spacing: 1;"/>
-                            <Label fx:id="scoreValue" text="0"
-                                   style="-fx-text-fill: white; -fx-font-size: 32px; -fx-font-weight: bold;"/>
-                        </VBox>
-
-                        <!-- Separator (only visible in 2-min mode) -->
-                        <Region fx:id="scoreSeparator" prefHeight="1"
-                                style="-fx-background-color: rgba(255,255,255,0.2);"
-                                maxWidth="120" visible="false"/>
-
-                        <!-- Best Score (2-Min mode only) -->
-                        <VBox fx:id="bestScoreBox" alignment="CENTER" spacing="3" visible="false">
-                            <Label fx:id="bestScoreLabel" text="BEST"
-                                   style="-fx-text-fill: #ffaa00; -fx-font-size: 12px; -fx-font-weight: bold; -fx-letter-spacing: 1;"/>
-                            <Label fx:id="bestScoreValue" text="--"
-                                   style="-fx-text-fill: #ffaa00; -fx-font-size: 24px; -fx-font-weight: bold;"/>
-                        </VBox>
-
-                        <!-- Best Time (40-Lines mode only) -->
-                        <VBox fx:id="bestTimeBox" alignment="CENTER" spacing="3" visible="false">
-                            <Label text="BEST TIME"
-                                   style="-fx-text-fill: #ff9900; -fx-font-size: 13px; -fx-font-weight: bold; -fx-letter-spacing: 1;"/>
-                            <Label fx:id="bestTimeLabel" text="--:--"
-                                   style="-fx-text-fill: #ff9900; -fx-font-size: 28px; -fx-font-weight: bold;"/>
-                        </VBox>
                     </VBox>
                 </VBox>
             </HBox>
