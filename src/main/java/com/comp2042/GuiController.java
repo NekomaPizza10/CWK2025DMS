@@ -705,10 +705,9 @@ public class GuiController implements Initializable {
 
         panel.setOnMainMenu(this::goToMainMenu);
 
-        javafx.scene.Parent parent = gamePanel.getParent();
-        if (parent instanceof javafx.scene.layout.Pane) {
-            ((javafx.scene.layout.Pane) parent).getChildren().add(panel);
-        }
+        // FOr Overlaying
+        StackPane rootStackPane = (StackPane) gamePanel.getParent().getParent().getParent();
+        rootStackPane.getChildren().add(panel);
     }
 
     private void completeTwoMinutesChallenge() {
@@ -745,25 +744,19 @@ public class GuiController implements Initializable {
 
         panel.setOnMainMenu(this::goToMainMenu);
 
-        javafx.scene.Parent parent = gamePanel.getParent();
-        if (parent instanceof javafx.scene.layout.Pane) {
-            ((javafx.scene.layout.Pane) parent).getChildren().add(panel);
-        }
+        StackPane rootStackPane = (StackPane) gamePanel.getParent().getParent().getParent();
+        rootStackPane.getChildren().add(panel);
     }
 
     private void removeCompletionPanel() {
+        StackPane rootStackPane = (StackPane) gamePanel.getParent().getParent().getParent();
+
         if (currentCompletionPanel != null) {
-            javafx.scene.Parent parent = gamePanel.getParent();
-            if (parent instanceof javafx.scene.layout.Pane) {
-                ((javafx.scene.layout.Pane) parent).getChildren().remove(currentCompletionPanel);
-            }
+            rootStackPane.getChildren().remove(currentCompletionPanel);
             currentCompletionPanel = null;
         }
         if (currentFortyLinesPanel != null) {
-            javafx.scene.Parent parent = gamePanel.getParent();
-            if (parent instanceof javafx.scene.layout.Pane) {
-                ((javafx.scene.layout.Pane) parent).getChildren().remove(currentFortyLinesPanel);
-            }
+            rootStackPane.getChildren().remove(currentFortyLinesPanel);
             currentFortyLinesPanel = null;
         }
     }
