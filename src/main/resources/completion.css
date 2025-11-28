@@ -1,0 +1,107 @@
+/* ============================================
+   MINIMALIST FLOATING TEXT DESIGN
+   ============================================ */
+
+/* 1. The Overlay - Dark Grey, 80% Transparent */
+.completion-overlay {
+    -fx-background-color: rgba(30, 30, 30, 0.8);
+    -fx-min-width: 100%;
+    -fx-min-height: 100%;
+    -fx-pref-width: 100%;
+    -fx-pref-height: 100%;
+}
+
+/* 2. The Container - INVISIBLE (No background, no border) */
+.completion-content {
+    -fx-background-color: transparent; /* Invisible background */
+    -fx-border-width: 0;               /* No border */
+    -fx-effect: null;                  /* No shadow */
+    -fx-padding: 0;
+
+    -fx-min-width: 500;
+    -fx-min-height: 400;
+    -fx-max-width: 800;
+    -fx-alignment: center;
+}
+
+/* 3. Title Text - Clean White */
+.completion-title {
+    -fx-font-family: 'Segoe UI', 'Verdana', sans-serif;
+    -fx-font-size: 48px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #FFFFFF;
+    -fx-padding: 0 0 20 0;
+}
+
+/* 4. Main Stats (Time/Score) - Standout Color */
+.completion-time, .completion-score {
+    -fx-font-family: 'Segoe UI', 'Verdana', sans-serif;
+    -fx-font-size: 64px; /* Very large since there's no box constraints */
+    -fx-font-weight: bold;
+    -fx-text-fill: #4FC3F7; /* Light Blue - easy to read on dark grey */
+}
+
+/* 5. Secondary Stats (Lines) */
+.completion-lines {
+    -fx-font-family: 'Segoe UI', 'Verdana', sans-serif;
+    -fx-font-size: 32px;
+    -fx-text-fill: #E0E0E0; /* Light Grey */
+}
+
+/* 6. New Best Badge */
+.completion-new-best {
+    -fx-font-family: 'Segoe UI', 'Verdana', sans-serif;
+    -fx-font-size: 36px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #FFD54F; /* Soft Gold */
+    -fx-padding: 20 0;
+}
+
+/* Previous Best Text */
+.completion-best {
+    -fx-font-family: 'Segoe UI', 'Verdana', sans-serif;
+    -fx-font-size: 24px;
+    -fx-text-fill: #BDBDBD;
+}
+
+/* 7. Buttons - Floating Pills */
+.completion-button {
+    -fx-font-family: 'Segoe UI', 'Verdana', sans-serif;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+
+    /* Semi-transparent white button for a modern "Glass" feel */
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-background-radius: 50;
+
+    /* Thin clean border */
+    -fx-border-color: white;
+    -fx-border-width: 2;
+    -fx-border-radius: 50;
+
+    -fx-padding: 15 50;
+    -fx-cursor: hand;
+    -fx-min-width: 200;
+}
+
+/* Button Hover */
+.completion-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.3);
+    -fx-text-fill: #FFFFFF;
+    -fx-border-color: #4FC3F7; /* Turns blue on hover */
+    -fx-text-fill: #4FC3F7;    /* Text turns blue on hover */
+}
+
+/* Button Pressed */
+.completion-button:pressed {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Hint Text */
+.completion-hint {
+    -fx-font-family: 'Segoe UI', sans-serif;
+    -fx-font-size: 16px;
+    -fx-text-fill: #9E9E9E; /* Dim grey */
+    -fx-padding: 40 0 0 0;
+}

@@ -24,19 +24,32 @@ public class GuiController implements Initializable {
     private static final int FORTY_LINES_GOAL = 3;
     private static final int TWO_MIN_GOAL = 30000;
 
-    @FXML private Label scoreLabel, scoreValue;
-    @FXML private Label bestScoreLabel, bestScoreValue;
-    @FXML private GridPane gamePanel, brickPanel;
-    @FXML private GridPane holdPanel;
-    @FXML private GridPane nextPanel1, nextPanel2, nextPanel3, nextPanel4, nextPanel5;
-    @FXML private GameOverPanel gameOverPanel;
-    @FXML private Label piecesLabel, piecesValue, linesLabel, linesValue, timeLabel, timeValue;
-    @FXML private StackPane countdownPanel;
-    @FXML private Label countdownLabel;
-    @FXML private Label bestTimeLabel;
-    @FXML private PauseMenuPanel pauseMenuPanel;
-    @FXML private VBox scoreDisplayContainer, scoreBox, bestScoreBox, bestTimeBox;
-    @FXML private Region scoreSeparator;
+    @FXML
+    private Label scoreLabel, scoreValue;
+    @FXML
+    private Label bestScoreLabel, bestScoreValue;
+    @FXML
+    private GridPane gamePanel, brickPanel;
+    @FXML
+    private GridPane holdPanel;
+    @FXML
+    private GridPane nextPanel1, nextPanel2, nextPanel3, nextPanel4, nextPanel5;
+    @FXML
+    private GameOverPanel gameOverPanel;
+    @FXML
+    private Label piecesLabel, piecesValue, linesLabel, linesValue, timeLabel, timeValue;
+    @FXML
+    private StackPane countdownPanel;
+    @FXML
+    private Label countdownLabel;
+    @FXML
+    private Label bestTimeLabel;
+    @FXML
+    private PauseMenuPanel pauseMenuPanel;
+    @FXML
+    private VBox scoreDisplayContainer, scoreBox, bestScoreBox, bestTimeBox;
+    @FXML
+    private Region scoreSeparator;
 
     private Rectangle[][] displayMatrix;
     private InputEventListener eventListener;
@@ -277,7 +290,8 @@ public class GuiController implements Initializable {
             int shadowY = calculateShadowPosition(currentBrickData);
             int dropDistance = shadowY - currentY;
 
-            while (board.moveBrickDown()) {}
+            while (board.moveBrickDown()) {
+            }
 
             if (dropDistance > 0) {
                 scoringManager.addHardDropBonus(dropDistance);
@@ -711,9 +725,12 @@ public class GuiController implements Initializable {
 
         panel.setOnMainMenu(this::goToMainMenu);
 
-        // FOr Overlaying
-        StackPane rootStackPane = (StackPane) gamePanel.getParent().getParent().getParent();
-        rootStackPane.getChildren().add(panel);
+        // Add as full-screen overlay
+        StackPane root = getRootPane();
+        root.getChildren().add(panel);
+
+        // Ensure panel fills entire screen
+        StackPane.setAlignment(panel, javafx.geometry.Pos.CENTER);
     }
 
     private void completeTwoMinutesChallenge() {
@@ -751,19 +768,23 @@ public class GuiController implements Initializable {
 
         panel.setOnMainMenu(this::goToMainMenu);
 
-        StackPane rootStackPane = (StackPane) gamePanel.getParent().getParent().getParent();
-        rootStackPane.getChildren().add(panel);
+        // Add as full-screen overlay
+        StackPane root = getRootPane();
+        root.getChildren().add(panel);
+
+        // Ensure panel fills entire screen
+        StackPane.setAlignment(panel, javafx.geometry.Pos.CENTER);
     }
 
     private void removeCompletionPanel() {
-        StackPane rootStackPane = (StackPane) gamePanel.getParent().getParent().getParent();
+        StackPane root = getRootPane();
 
         if (currentCompletionPanel != null) {
-            rootStackPane.getChildren().remove(currentCompletionPanel);
+            root.getChildren().remove(currentCompletionPanel);
             currentCompletionPanel = null;
         }
         if (currentFortyLinesPanel != null) {
-            rootStackPane.getChildren().remove(currentFortyLinesPanel);
+            root.getChildren().remove(currentFortyLinesPanel);
             currentFortyLinesPanel = null;
         }
     }
@@ -1100,4 +1121,26 @@ public class GuiController implements Initializable {
             keyEvent.consume();
         }
     }
+
+    //For 40-line and 2 minute Mode overlay completion panel
+    private StackPane getRootPane() {
+        if (gamePanel.getScene() != null && gamePanel.getScene().getRoot() instanceof StackPane) {
+            return (StackPane) gamePanel.getScene().getRoot();
+        }
+        // Fallback: traverse parent hierarchy
+        javafx.scene.Parent parent = gamePanel.getParent();
+        while (parent != null) {
+            if (parent instanceof StackPane && parent.getParent() == null) {
+                return (StackPane) parent;
+            }
+            if (parent.getParent() == null && parent instanceof javafx.scene.layout.Pane) {
+                // Wrap in StackPane if needed
+                break;
+            }
+            parent = parent.getParent();
+        }
+        return (StackPane) gamePanel.getScene().getRoot();
+    }
+
 }
+
