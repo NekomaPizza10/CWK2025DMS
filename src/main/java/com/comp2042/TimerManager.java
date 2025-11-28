@@ -19,7 +19,9 @@ public class TimerManager {
     private Label timeValueLabel;
     private GameState gameState;
 
-    private static final long TWO_MINUTES_MS = 120000;
+    private static final long TWO_MINUTES_MS = 10 * 1000;
+
+    private long pausedElapsedTime = 0; // ADD THIS LINE
 
     public TimerManager(GameState gameState, Label timeValueLabel) {
         this.gameState = gameState;
@@ -27,7 +29,7 @@ public class TimerManager {
     }
 
     public void startGameTimer() {
-        gameStartTime = System.currentTimeMillis();
+        gameStartTime = System.currentTimeMillis() - pausedElapsedTime;
 
         if (gameTimer != null) {
             gameTimer.stop();
@@ -44,6 +46,7 @@ public class TimerManager {
 
     public void stopGameTimer() {
         if (gameTimer != null) {
+            pausedElapsedTime = System.currentTimeMillis() - gameStartTime;
             gameTimer.stop();
         }
     }
@@ -165,5 +168,6 @@ public class TimerManager {
 
     public void resetStartTime() {
         gameStartTime = System.currentTimeMillis();
+        pausedElapsedTime = 0;
     }
 }

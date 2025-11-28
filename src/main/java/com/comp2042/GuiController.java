@@ -22,7 +22,8 @@ public class GuiController implements Initializable {
     private static final int PREVIEW_BRICK_SIZE = 20;
     private static final int PREVIEW_GRID_SIZE = 4;
     private static final int FORTY_LINES_GOAL = 3;
-    private static final int TWO_MIN_GOAL = 30000;
+    // 2 minutes = 120000 | 10 seconds = 10000 | 30 seconds = 30000
+    private static final int TWO_MIN_GOAL = 10 * 1000; // 10 seconds for testing
 
     @FXML
     private Label scoreLabel, scoreValue;
