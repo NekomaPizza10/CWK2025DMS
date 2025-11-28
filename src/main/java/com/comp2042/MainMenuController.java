@@ -13,96 +13,98 @@ import javafx.scene.layout.VBox;
 import javafx.animation.ScaleTransition;
 import javafx.util.Duration;
 
-
 public class MainMenuController {
 
     @FXML
     private Button normalModeButton;
-
     @FXML
     private Button fortyLinesButton;
-
     @FXML
     private Button twoMinutesButton;
-
     @FXML
     private Button howToPlayButton;
-
     @FXML
     private Button exitButton;
-
     @FXML
     private StackPane howToPlayPanel;
-
     @FXML
     private VBox mainMenuBox;
 
     @FXML
     public void initialize() {
-        // Add hover effects for each button
-        if (normalModeButton != null) {
-            addButtonEffects(normalModeButton, "#00ff88", "#00dd77", "#00bb66");
-        }
-        if (fortyLinesButton != null) {
-            addButtonEffects(fortyLinesButton, "#ff9900", "#ee8800", "#dd7700");
-        }
-        if (twoMinutesButton != null) {
-            addButtonEffects(twoMinutesButton, "#00aaff", "#0099ee", "#0088dd");
-        }
-        if (howToPlayButton != null) {
-            addButtonEffects(howToPlayButton, "#666666", "#777777", "#555555");
-        }
-        if (exitButton != null) {
-            addButtonEffects(exitButton, "#ff4444", "#ee3333", "#dd2222");
-        }
+        // Mode Buttons with NEW colors
+        setupButton(normalModeButton, "#EAE2B7"); // Beige
+        setupButton(fortyLinesButton, "#FCBF49"); // Orange-Yellow
+        setupButton(twoMinutesButton, "#F77F00"); // Orange
+
+        // System Buttons with NEW colors
+        setupButton(howToPlayButton, "#93E1D8");  // Light Teal
+        setupButton(exitButton, "#ff4444");       // Red (Standard Exit)
     }
 
-    private void addButtonEffects(Button button, String normalColor, String hoverColor, String clickColor) {
-        String originalStyle = button.getStyle();
+    private void setupButton(Button btn, String colorHex) {
+        if (btn == null) return;
 
-        button.setOnMouseEntered(e -> {
-            ScaleTransition scale = new ScaleTransition(Duration.millis(100), button);
-            scale.setToX(1.05);
-            scale.setToY(1.05);
-            scale.play();
+        // Base Style (Transparent with colored border)
+        String baseStyle = String.format(
+                "-fx-font-family: 'Segoe UI'; -fx-font-size: %s; -fx-font-weight: bold; " +
+                        "-fx-background-color: transparent; " +
+                        "-fx-border-color: %s; -fx-border-width: 2; " +
+                        "-fx-text-fill: %s; " +
+                        "-fx-background-radius: %s; -fx-border-radius: %s; -fx-cursor: hand;",
+                (btn == howToPlayButton || btn == exitButton) ? "14px" : "18px",
+                colorHex, colorHex,
+                (btn == howToPlayButton || btn == exitButton) ? "30" : "10",
+                (btn == howToPlayButton || btn == exitButton) ? "30" : "10"
+        );
 
-            if (button == normalModeButton) {
-                button.setStyle(originalStyle.replace(normalColor, hoverColor));
-            } else {
-                button.setStyle(originalStyle
-                        .replace("border-color: " + normalColor, "border-color: " + hoverColor)
-                        .replace("text-fill: " + normalColor, "text-fill: " + hoverColor));
-            }
+        // Hover Style (Filled with color, Dark text)
+        String hoverStyle = String.format(
+                "-fx-font-family: 'Segoe UI'; -fx-font-size: %s; -fx-font-weight: bold; " +
+                        "-fx-background-color: %s; " +
+                        "-fx-border-color: %s; -fx-border-width: 2; " +
+                        "-fx-text-fill: #1a1a1a; " + // Dark text for contrast
+                        "-fx-background-radius: %s; -fx-border-radius: %s; -fx-cursor: hand; " +
+                        "-fx-effect: dropshadow(gaussian, %s, 10, 0, 0, 0);",
+                (btn == howToPlayButton || btn == exitButton) ? "14px" : "18px",
+                colorHex, colorHex,
+                (btn == howToPlayButton || btn == exitButton) ? "30" : "10",
+                (btn == howToPlayButton || btn == exitButton) ? "30" : "10",
+                colorHex
+        );
+
+        // Set initial style
+        btn.setStyle(baseStyle);
+
+        // Animations & Style Swapping
+        btn.setOnMouseEntered(e -> {
+            btn.setStyle(hoverStyle);
+            ScaleTransition st = new ScaleTransition(Duration.millis(100), btn);
+            st.setToX(1.03);
+            st.setToY(1.03);
+            st.play();
         });
 
-        button.setOnMouseExited(e -> {
-            ScaleTransition scale = new ScaleTransition(Duration.millis(100), button);
-            scale.setToX(1.0);
-            scale.setToY(1.0);
-            scale.play();
-            button.setStyle(originalStyle);
+        btn.setOnMouseExited(e -> {
+            btn.setStyle(baseStyle);
+            ScaleTransition st = new ScaleTransition(Duration.millis(100), btn);
+            st.setToX(1.0);
+            st.setToY(1.0);
+            st.play();
         });
 
-        button.setOnMousePressed(e -> {
-            ScaleTransition scale = new ScaleTransition(Duration.millis(50), button);
-            scale.setToX(0.95);
-            scale.setToY(0.95);
-            scale.play();
-
-            if (button == normalModeButton) {
-                button.setStyle(originalStyle.replace(normalColor, clickColor));
-            } else {
-                button.setStyle(originalStyle
-                        .replace("border-color: " + normalColor, "border-color: " + clickColor)
-                        .replace("text-fill: " + normalColor, "text-fill: " + clickColor));
-            }
+        btn.setOnMousePressed(e -> {
+            ScaleTransition st = new ScaleTransition(Duration.millis(50), btn);
+            st.setToX(0.96);
+            st.setToY(0.96);
+            st.play();
         });
 
-        button.setOnMouseReleased(e -> {
-            ScaleTransition scale = new ScaleTransition(Duration.millis(50), button);
-            scale.setToX(1.05);
-            scale.setToY(1.05);
-            scale.play();
+        btn.setOnMouseReleased(e -> {
+            ScaleTransition st = new ScaleTransition(Duration.millis(50), btn);
+            st.setToX(1.03);
+            st.setToY(1.03);
+            st.play();
         });
     }
 
@@ -123,13 +125,11 @@ public class MainMenuController {
 
     private void startGame(ActionEvent event, GameMode mode) {
         try {
-            System.out.println("Loading game in " + mode.getDisplayName() + "...");
-
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/gameLayout.fxml"));
             Parent root = loader.load();
 
             GuiController guiController = loader.getController();
-            guiController.setGameMode(mode); // Set the mode FIRST
+            guiController.setGameMode(mode);
 
             GameController gameController = new GameController(guiController);
 
@@ -138,17 +138,13 @@ public class MainMenuController {
             stage.setScene(gameScene);
             stage.setTitle("Tetris - " + mode.getDisplayName());
 
-            System.out.println("Game started in " + mode.getDisplayName());
-
         } catch (Exception e) {
-            System.err.println("Error starting game:");
             e.printStackTrace();
         }
     }
 
     @FXML
     private void handleHowToPlay(ActionEvent event) {
-        // Show the how to play overlay
         if (howToPlayPanel != null) {
             howToPlayPanel.setVisible(true);
             howToPlayPanel.toFront();
@@ -157,7 +153,6 @@ public class MainMenuController {
 
     @FXML
     private void handleCloseHowToPlay(ActionEvent event) {
-        // Hide the how to play overlay
         if (howToPlayPanel != null) {
             howToPlayPanel.setVisible(false);
         }
