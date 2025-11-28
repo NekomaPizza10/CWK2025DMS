@@ -60,6 +60,8 @@ public class GuiController implements Initializable {
 
     private boolean rotateKeyPressed = false;
     private boolean hardDropKeyPressed = false;
+    private boolean holdKeyPressed = false;
+    private boolean isProcessingDrop = false;
 
     private TwoMinutesCompletionPanel currentCompletionPanel;
     private CompletionPanel currentFortyLinesPanel;
@@ -205,7 +207,8 @@ public class GuiController implements Initializable {
                 moveDown(new MoveEvent(EventType.DOWN, EventSource.USER));
                 keyEvent.consume();
             }
-            if (keyEvent.getCode() == KeyCode.SHIFT || keyEvent.getCode() == KeyCode.C) {
+            if ((keyEvent.getCode() == KeyCode.SHIFT || keyEvent.getCode() == KeyCode.C) && !holdKeyPressed) {
+                holdKeyPressed = true;
                 handleHold();
                 keyEvent.consume();
             }
@@ -262,6 +265,9 @@ public class GuiController implements Initializable {
         if (keyEvent.getCode() == KeyCode.SPACE) {
             hardDropKeyPressed = false;
         }
+        if (keyEvent.getCode() == KeyCode.SHIFT || keyEvent.getCode() == KeyCode.C) {
+            holdKeyPressed = false;
+        }
     }
 
     private void handleHold() {
@@ -284,7 +290,14 @@ public class GuiController implements Initializable {
     }
 
     private void handleHardDrop() {
+        // Prevent re-entry during processing
+        if (isProcessingDrop) return;
+
         if (eventListener instanceof GameController) {
+            isProcessingDrop = true;
+
+            // Stop drop timer to prevent race conditions
+            timerManager.stopDropTimer();
             cancelLockDelay();
 
             GameController gc = (GameController) eventListener;
@@ -311,16 +324,26 @@ public class GuiController implements Initializable {
             gameState.setLockDelayActive(false);
             gameState.resetLockDelayCount();
 
-            // CRITICAL FIX: Check if game over BEFORE spawning new brick
-            if (board.createNewBrick()) {
+            // Check game over AFTER merging
+            if (board.checkGameOver()) {
+                isProcessingDrop = false;
                 gameOver();
-                return; // Don't update displays if game is over
+                return;
             }
+
+            board.createNewBrick();
 
             refreshGameBackground(board.getBoardMatrix());
             refreshBrick(board.getViewData());
             updateNextDisplay();
             updateStatsDisplay();
+
+            // Restart drop timer AFTER everything is done
+            timerManager.startDropTimer(gameState.getCurrentDropSpeed(), () ->
+                    moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD))
+            );
+
+            isProcessingDrop = false;
         }
     }
 
@@ -486,7 +509,10 @@ public class GuiController implements Initializable {
                         rectangles[i][j].setFill(getFillColor(brick.getBrickData()[i][j]));
                         rectangles[i][j].setStroke(Color.BLACK);
                         rectangles[i][j].setStrokeWidth(0.5);
-                        gamePanel.add(rectangles[i][j], gridX, gridY);
+
+                        if (gridY >= 0) {
+                            gamePanel.add(rectangles[i][j], gridX, gridY);
+                        }
                     } else {
                         rectangles[i][j].setFill(Color.TRANSPARENT);
                     }
@@ -505,6 +531,7 @@ public class GuiController implements Initializable {
     }
 
     private void moveDown(MoveEvent event) {
+        if (isProcessingDrop) return;
         if (gameState.isPaused() || gameState.isGameOver()) return;
 
         GameController gc = (GameController) eventListener;
@@ -628,9 +655,12 @@ public class GuiController implements Initializable {
     }
 
     private void executeLock() {
-        if (gameState.isGameOver()) return; // CRITICAL: Don't lock if game is over
+        if (gameState.isGameOver()) return;
+        if (isProcessingDrop) return;
 
         if (eventListener instanceof GameController) {
+            isProcessingDrop = true;
+
             GameController gc = (GameController) eventListener;
             Board board = gc.getBoard();
 
@@ -643,15 +673,20 @@ public class GuiController implements Initializable {
             gameState.resetLockDelayCount();
             timerManager.stopLockDelay();
 
-            // CRITICAL FIX: Check if game over BEFORE spawning
+            // Spawn new brick - returns true if piece can't move down (game over)
             if (board.createNewBrick()) {
+                isProcessingDrop = false;
                 gameOver();
                 return;
             }
 
+            board.createNewBrick();
+
             refreshGameBackground(board.getBoardMatrix());
             refreshBrick(board.getViewData());
             updateNextDisplay();
+
+            isProcessingDrop = false;
         }
     }
 

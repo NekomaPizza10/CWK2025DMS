@@ -168,30 +168,29 @@ public class SimpleBoard implements Board {
     public boolean createNewBrick() {
         Brick currentBrick = brickGenerator.getBrick();
         brickRotator.setBrick(currentBrick);
-        currentOffset = new Point(width / 2 - 2, -1);
         canHold = true;
         piecesPlaced++;
 
-        // Check if spawn position is blocked
-        boolean spawnBlocked = MatrixOperations.intersect(
+        // Determine spawn height - spawn one cell higher if stack is near top
+        // This gives player one final chance to place a piece
+        int spawnY = isStackNearTop() ? -2 : -1;
+        currentOffset = new Point(width / 2 - 2, spawnY);
+
+        // Game over ONLY if piece cannot move down at all (can't enter visible area)
+        Point testPoint = new Point(currentOffset);
+        testPoint.translate(0, 1);
+        boolean cannotMoveDown = MatrixOperations.intersect(
                 currentGameMatrix,
                 brickRotator.getCurrentShape(),
-                (int) currentOffset.getX(),
-                (int) currentOffset.getY()
+                (int) testPoint.getX(),
+                (int) testPoint.getY()
         );
 
-        // Only game over if blocks have reached the top visible edge
-        if (spawnBlocked) {
-            return isTopEdgeReached();
-        }
-
-        return false;
+        return cannotMoveDown; // True = game over, False = continue
     }
 
-    private boolean isTopEdgeReached() {
-        int dangerZone = Math.max(2, height / 5);  // Top 20% or at least 2 rows
-
-        for (int row = 0; row < dangerZone; row++) {
+    private boolean isStackNearTop() {
+        for (int row = 0; row <= 1; row++) {
             for (int col = 0; col < width; col++) {
                 if (currentGameMatrix[row][col] != 0) {
                     return true;
@@ -306,5 +305,15 @@ public class SimpleBoard implements Board {
         return linesCleared;
     }
 
+    @Override
+    public boolean checkGameOver() {
+        // Game over when any block reaches row 0
+        for (int col = 0; col < width; col++) {
+            if (currentGameMatrix[0][col] != 0) {
+                return true;
+            }
+        }
+        return false;
+    }
 
 }

@@ -15,6 +15,8 @@ public interface Board {
 
     boolean createNewBrick();
 
+    boolean checkGameOver();
+
     int[][] getBoardMatrix();
 
     ViewData getViewData();
@@ -27,7 +29,6 @@ public interface Board {
 
     void newGame();
 
-    // New methods for HOLD and NEXT queue
     boolean holdCurrentBrick();
 
     int[][] getHoldBrickData();
