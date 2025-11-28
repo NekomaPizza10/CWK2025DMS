@@ -145,6 +145,10 @@ public class GuiController implements Initializable {
         if (pauseMenuPanel != null) {
             pauseMenuPanel.setVisible(false);
             pauseMenuPanel.setOnResume(this::togglePause);
+
+            pauseMenuPanel.setOnRetry(this::restartGameInstantly);
+
+
             pauseMenuPanel.setOnMainMenu(this::goToMainMenu);
         }
     }

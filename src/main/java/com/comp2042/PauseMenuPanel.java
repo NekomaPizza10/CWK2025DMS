@@ -3,115 +3,69 @@ package com.comp2042;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.VBox;
-import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 
-public class PauseMenuPanel extends StackPane {
-    private final Runnable onResume;
-    private final Runnable onMainMenu;
+public class PauseMenuPanel extends VBox {
+
+    private Runnable onResume;
+    private Runnable onRetry;
+    private Runnable onMainMenu;
 
     public PauseMenuPanel() {
-        // Default constructor for FXML
-        this(null, null);
-    }
-
-    public PauseMenuPanel(Runnable onResume, Runnable onMainMenu) {
-        this.onResume = onResume;
-        this.onMainMenu = onMainMenu;
-
-        // Semi-transparent background
-        this.setStyle("-fx-background-color: rgba(0, 0, 0, 0.85);");
-        this.setAlignment(Pos.CENTER);
-
-        VBox contentBox = new VBox(20); // Spacing between elements
-        contentBox.setAlignment(Pos.CENTER);
+        // Dark semi-transparent background
+        setBackground(new Background(new BackgroundFill(Color.rgb(0, 0, 0, 0.7), null, null)));
+        setAlignment(Pos.CENTER);
+        setSpacing(20); // Space between elements
 
         // 1. Title
         Label pauseLabel = new Label("PAUSED");
-        pauseLabel.setStyle("-fx-font-family: 'Let\\'s go Digital', 'Arial'; " +
-                "-fx-font-size: 50px; " +
-                "-fx-text-fill: white; " +
-                "-fx-font-weight: bold; " +
-                "-fx-effect: dropshadow(gaussian, cyan, 10, 0, 0, 0);");
+        // forcing large size for visibility as requested
+        pauseLabel.setStyle("-fx-font-family: 'Segoe UI'; -fx-font-size: 50px; -fx-font-weight: bold; -fx-text-fill: white;");
 
-        // 2. Resume Button
-        Button resumeBtn = createButton("RESUME", "#00ff88");
-        resumeBtn.setOnAction(e -> {
-            if (this.onResume != null) this.onResume.run();
+        // 2. Buttons
+        Button resumeButton = createButton("RESUME");
+        resumeButton.setOnAction(e -> {
+            if (onResume != null) onResume.run();
         });
 
-        // 3. Main Menu Button
-        Button menuBtn = createButton("MAIN MENU", "#ff4444");
-        menuBtn.setOnAction(e -> {
-            if (this.onMainMenu != null) this.onMainMenu.run();
+        //Retry Button
+        Button retryButton = createButton("RETRY");
+        retryButton.setOnAction(e -> {
+            if (onRetry != null) onRetry.run();
         });
 
-        contentBox.getChildren().addAll(pauseLabel, resumeBtn, menuBtn);
-        this.getChildren().add(contentBox);
+        Button menuButton = createButton("MAIN MENU");
+        menuButton.setOnAction(e -> {
+            if (onMainMenu != null) onMainMenu.run();
+        });
+
+        getChildren().addAll(pauseLabel, resumeButton, retryButton, menuButton);
     }
 
-    // Helper to style buttons consistently
-    private Button createButton(String text, String colorHex) {
+    // Helper to keep buttons consistent
+    private Button createButton(String text) {
         Button btn = new Button(text);
-        btn.setPrefWidth(200);
-        btn.setPrefHeight(40);
-        btn.setStyle(
-                "-fx-background-color: transparent; " +
-                        "-fx-border-color: " + colorHex + "; " +
-                        "-fx-border-width: 2; " +
-                        "-fx-text-fill: " + colorHex + "; " +
-                        "-fx-font-size: 16px; " +
-                        "-fx-font-weight: bold; " +
-                        "-fx-background-radius: 5; " +
-                        "-fx-border-radius: 5; " +
-                        "-fx-cursor: hand;"
-        );
+        btn.setStyle("-fx-background-color: white; -fx-text-fill: black; -fx-font-size: 18px; -fx-font-weight: bold; -fx-min-width: 200px; -fx-background-radius: 30;");
 
-        // Hover effects
-        btn.setOnMouseEntered(e -> btn.setStyle(
-                "-fx-background-color: " + colorHex + "; " +
-                        "-fx-border-color: " + colorHex + "; " +
-                        "-fx-border-width: 2; " +
-                        "-fx-text-fill: black; " +
-                        "-fx-font-size: 16px; " +
-                        "-fx-font-weight: bold; " +
-                        "-fx-background-radius: 5; " +
-                        "-fx-border-radius: 5; " +
-                        "-fx-cursor: hand;"
-        ));
-
-        btn.setOnMouseExited(e -> btn.setStyle(
-                "-fx-background-color: transparent; " +
-                        "-fx-border-color: " + colorHex + "; " +
-                        "-fx-border-width: 2; " +
-                        "-fx-text-fill: " + colorHex + "; " +
-                        "-fx-font-size: 16px; " +
-                        "-fx-font-weight: bold; " +
-                        "-fx-background-radius: 5; " +
-                        "-fx-border-radius: 5; " +
-                        "-fx-cursor: hand;"
-        ));
+        // Hover effect
+        btn.setOnMouseEntered(e -> btn.setStyle("-fx-background-color: #4FC3F7; -fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold; -fx-min-width: 200px; -fx-background-radius: 30;"));
+        btn.setOnMouseExited(e -> btn.setStyle("-fx-background-color: white; -fx-text-fill: black; -fx-font-size: 18px; -fx-font-weight: bold; -fx-min-width: 200px; -fx-background-radius: 30;"));
 
         return btn;
     }
 
-    // Setters for actions (used when loaded via FXML)
     public void setOnResume(Runnable onResume) {
-        // Re-bind the resume button action
-        VBox box = (VBox) this.getChildren().get(0);
-        Button btn = (Button) box.getChildren().get(1);
-        btn.setOnAction(e -> {
-            if (onResume != null) onResume.run();
-        });
+        this.onResume = onResume;
+    }
+
+    public void setOnRetry(Runnable onRetry) {
+        this.onRetry = onRetry;
     }
 
     public void setOnMainMenu(Runnable onMainMenu) {
-        // Re-bind the menu button action
-        VBox box = (VBox) this.getChildren().get(0);
-        Button btn = (Button) box.getChildren().get(2);
-        btn.setOnAction(e -> {
-            if (onMainMenu != null) onMainMenu.run();
-        });
+        this.onMainMenu = onMainMenu;
     }
 }
