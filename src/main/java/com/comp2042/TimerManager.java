@@ -21,11 +21,17 @@ public class TimerManager {
 
     private static final long TWO_MINUTES_MS = 10 * 1000;
 
-    private long pausedElapsedTime = 0; // ADD THIS LINE
+    private long pausedElapsedTime = 0;
+    private Runnable onTimeUp;
+    private boolean timeUpTriggered = false;
 
     public TimerManager(GameState gameState, Label timeValueLabel) {
         this.gameState = gameState;
         this.timeValueLabel = timeValueLabel;
+    }
+
+    public void setOnTimeUp(Runnable onTimeUp) {
+        this.onTimeUp = onTimeUp;
     }
 
     public void startGameTimer() {
@@ -146,7 +152,18 @@ public class TimerManager {
 
             if (gameState.getCurrentGameMode() == GameMode.TWO_MINUTES) {
                 long remaining = TWO_MINUTES_MS - elapsed;
-                if (remaining < 0) remaining = 0;
+
+                // FIX: Trigger completion when time hits 0
+                if (remaining <= 0) {
+                    remaining = 0;
+                    timeValueLabel.setText("0:00.000");
+
+                    if (!timeUpTriggered && onTimeUp != null) {
+                        timeUpTriggered = true;
+                        onTimeUp.run();
+                    }
+                    return;
+                }
 
                 int minutes = (int) (remaining / 60000);
                 int seconds = (int) ((remaining % 60000) / 1000);
@@ -169,5 +186,6 @@ public class TimerManager {
     public void resetStartTime() {
         gameStartTime = System.currentTimeMillis();
         pausedElapsedTime = 0;
+        timeUpTriggered = false;
     }
 }

@@ -328,6 +328,8 @@ public class GuiController implements Initializable {
         timerManager = new TimerManager(gameState, timeValue);
         scoringManager = new ScoringManager(gameState);
 
+        timerManager.setOnTimeUp(this::completeTwoMinutesChallenge);
+
         displayMatrix = new Rectangle[height][width];
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
