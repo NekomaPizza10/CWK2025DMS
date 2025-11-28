@@ -13,76 +13,78 @@ public class TwoMinutesCompletionPanel extends StackPane {
     private Runnable onMainMenu;
 
     public TwoMinutesCompletionPanel(int finalScore, int linesCleared, boolean isNewBest, String previousBest) {
-        // Load CSS stylesheet
         getStylesheets().add(getClass().getResource("/completion.css").toExternalForm());
-
         getStyleClass().add("completion-overlay");
 
-        VBox content = new VBox(25);
-        content.setAlignment(Pos.CENTER);
-        content.getStyleClass().add("completion-content");
+        // Main Card Container
+        VBox card = new VBox();
+        card.getStyleClass().add("completion-card");
 
-        // Title
+        // 1. Title
         Label title = new Label("TIME'S UP!");
         title.getStyleClass().add("completion-title");
 
-        // Score display
-        Label scoreLabel = new Label("Score: " + finalScore);
-        scoreLabel.getStyleClass().add("completion-score");
+        // 2. Score Section
+        VBox scoreBox = new VBox(5);
+        scoreBox.setAlignment(Pos.CENTER);
 
-        // Lines display
-        Label linesLabel = new Label("Lines Cleared: " + linesCleared);
-        linesLabel.getStyleClass().add("completion-lines");
+        Label scoreTitle = new Label("FINAL SCORE");
+        scoreTitle.getStyleClass().add("completion-sub-label");
 
-        content.getChildren().addAll(title, scoreLabel, linesLabel);
+        Label scoreValue = new Label(String.valueOf(finalScore));
+        scoreValue.getStyleClass().add("completion-main-stat");
 
-        // New best indicator
+        scoreBox.getChildren().addAll(scoreTitle, scoreValue);
+
+        // 3. High Score Indicator
         if (isNewBest) {
-            Label newBestLabel = new Label("★ NEW BEST! ★");
-            newBestLabel.getStyleClass().add("completion-new-best");
-            content.getChildren().add(newBestLabel);
-        } else if (previousBest != null) {
-            Label bestLabel = new Label("Best: " + previousBest);
-            bestLabel.getStyleClass().add("completion-best");
-            content.getChildren().add(bestLabel);
+            Label newBestBadge = new Label("NEW HIGH SCORE");
+            newBestBadge.getStyleClass().add("completion-new-best");
+            card.getChildren().addAll(title, scoreBox, newBestBadge);
+        } else {
+            card.getChildren().addAll(title, scoreBox);
+            if (previousBest != null) {
+                Label bestLabel = new Label("Best: " + previousBest);
+                bestLabel.getStyleClass().add("completion-best-text");
+                card.getChildren().add(bestLabel);
+            }
         }
 
-        // Spacer
-        VBox spacer = new VBox();
-        spacer.setMinHeight(20);
-        content.getChildren().add(spacer);
+        // 4. Secondary Stats
+        Label linesLabel = new Label(linesCleared + " Lines Cleared");
+        linesLabel.getStyleClass().add("completion-secondary-info");
+        card.getChildren().add(linesLabel);
 
-        // Buttons
-        HBox buttons = createButtons();
-        content.getChildren().add(buttons);
+        // 5. Buttons
+        HBox buttonBox = createButtons();
+        card.getChildren().add(buttonBox);
 
-        // Hint
-        Label hint = new Label("Press N to retry");
+        // 6. Hint
+        Label hint = new Label("Press 'N' for Quick Restart");
         hint.getStyleClass().add("completion-hint");
-        content.getChildren().add(hint);
+        card.getChildren().add(hint);
 
-        getChildren().add(content);
-        setAlignment(Pos.CENTER);
+        getChildren().add(card);
     }
 
     private HBox createButtons() {
-        HBox buttonBox = new HBox(30);
-        buttonBox.setAlignment(Pos.CENTER);
+        HBox box = new HBox(15); // Space between buttons
+        box.setAlignment(Pos.CENTER);
 
-        Button retryButton = new Button("RETRY");
-        retryButton.getStyleClass().add("completion-button");
-        retryButton.setOnAction(e -> {
+        Button btnRetry = new Button("PLAY AGAIN");
+        btnRetry.getStyleClass().add("completion-button-primary");
+        btnRetry.setOnAction(e -> {
             if (onRetry != null) onRetry.run();
         });
 
-        Button menuButton = new Button("MAIN MENU");
-        menuButton.getStyleClass().add("completion-button");
-        menuButton.setOnAction(e -> {
+        Button btnMenu = new Button("MAIN MENU");
+        btnMenu.getStyleClass().add("completion-button-secondary");
+        btnMenu.setOnAction(e -> {
             if (onMainMenu != null) onMainMenu.run();
         });
 
-        buttonBox.getChildren().addAll(retryButton, menuButton);
-        return buttonBox;
+        box.getChildren().addAll(btnRetry, btnMenu);
+        return box;
     }
 
     public void setOnRetry(Runnable onRetry) {
