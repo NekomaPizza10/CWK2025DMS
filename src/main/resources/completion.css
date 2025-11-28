@@ -7,118 +7,119 @@
 
 /* 2. The Card - The actual popup box */
 .completion-card {
-    -fx-background-color: rgba(35, 35, 40, 0.95); /* Almost opaque dark grey */
-    -fx-background-radius: 20;
-    -fx-border-color: rgba(255, 255, 255, 0.1);
-    -fx-border-width: 1;
-    -fx-border-radius: 20;
-    -fx-padding: 40;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 20, 0, 0, 10);
+    /* Transparency Black Background */
+    -fx-background-color: rgba(0, 0, 0, 0.7);
 
-    -fx-min-width: 450;
-    -fx-max-width: 600;
+    /* Border */
+    -fx-background-radius: 20;
+    -fx-border-color: rgba(255, 255, 255, 0.4);
+    -fx-border-width: 2;
+    -fx-border-radius: 20;
+
+    /* SIZE CONTROLS */
+    -fx-padding: 20 40;  /* Slightly wider padding for bigger text */
+
+    /* Allow width to grow for bigger text */
+    -fx-min-width: 380;
+    -fx-max-width: 500;
+
     -fx-alignment: center;
-    -fx-spacing: 15; /* Space between elements inside */
+    -fx-spacing: 5;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.9), 30, 0, 0, 10);
+}
+
+/* TITLES */
+.game-over-title {
+    -fx-font-family: 'Segoe UI Black', 'Verdana', sans-serif;
+    -fx-font-size: 54px; /* Huge Visibility */
+    -fx-font-weight: 900;
+    -fx-text-fill: #ff4444;
+    -fx-effect: dropshadow(gaussian, black, 2, 1, 0, 0);
+    -fx-padding: 0 0 5 0;
 }
 
 /* 3. Title Text */
 .completion-title {
-    -fx-font-family: 'Segoe UI', 'Verdana', sans-serif;
-    -fx-font-size: 32px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #FFFFFF;
-    -fx-padding: 0 0 10 0;
-}
-
-/* 4. Main Stat (The Big Number) */
-.completion-main-stat {
-    -fx-font-family: 'Segoe UI', 'Verdana', sans-serif;
-    -fx-font-size: 58px;
+    -fx-font-family: 'Segoe UI Black', 'Verdana', sans-serif;
+    -fx-font-size: 42px; /* Bigger */
     -fx-font-weight: 900;
-    -fx-text-fill: #4FC3F7; /* Light Blue */
-    -fx-effect: dropshadow(gaussian, rgba(79, 195, 247, 0.4), 15, 0.0, 0, 0);
+    -fx-text-fill: #ffffff;
+    -fx-effect: dropshadow(gaussian, black, 2, 1, 0, 0);
+    -fx-padding: 0 0 5 0;
 }
 
-/* 5. Sub Stat Label (e.g. "Score", "Time") */
-.completion-sub-label {
+/* STAT LABELS*/
+.stat-label {
     -fx-font-family: 'Segoe UI', sans-serif;
-    -fx-font-size: 14px;
-    -fx-text-fill: #AAAAAA;
+    -fx-font-size: 15px; /* Clearer to read */
+    -fx-text-fill: #dddddd;
     -fx-font-weight: bold;
-    -fx-text-transform: uppercase;
-    -fx-letter-spacing: 1px;
+    -fx-letter-spacing: 1.5px;
 }
 
-/* 6. Secondary Info (Lines Cleared) */
-.completion-secondary-info {
+/* MAIN HIGHLIGHT NUMBER */
+.stat-value-highlight {
     -fx-font-family: 'Segoe UI', sans-serif;
-    -fx-font-size: 20px;
-    -fx-text-fill: #E0E0E0;
+    -fx-font-size: 60px; /* Massive */
+    -fx-font-weight: 900;
+    -fx-text-fill: #4FC3F7;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.8), 3, 1, 0, 0);
+    -fx-padding: -5 0 0 0; /* Pull it up slightly to save height */
 }
 
-/* 7. New Best Badge */
+/* SECONDARY NUMBERS */
+.stat-value {
+    -fx-font-family: 'Segoe UI', sans-serif;
+    -fx-font-size: 32px; /* Much clearer */
+    -fx-font-weight: 700;
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.8), 2, 1, 0, 0);
+    -fx-padding: 0 0 2 0;
+}
+
+/* BADGE */
 .completion-new-best {
-    -fx-background-color: linear-gradient(to right, #FFD700, #FFA000);
+    -fx-background-color: #FFD700;
     -fx-background-radius: 5;
     -fx-text-fill: #000000;
-    -fx-font-weight: bold;
-    -fx-font-size: 14px;
-    -fx-padding: 5 15;
-}
-
-/* Previous Best Text */
-.completion-best-text {
     -fx-font-family: 'Segoe UI', sans-serif;
+    -fx-font-weight: 800;
     -fx-font-size: 16px;
-    -fx-text-fill: #757575;
-    -fx-font-style: italic;
+    -fx-padding: 5 20;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 3, 0, 0, 1);
+    -fx-margin: 10 0;
 }
 
-/* 8. Buttons */
-
-/* Primary Button (Play Again) - Solid Color */
-.completion-button-primary {
+/* BUTTONS */
+.unified-button {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-text-fill: #ffffff;
     -fx-font-family: 'Segoe UI', sans-serif;
-    -fx-font-size: 18px;
+    -fx-font-size: 18px; /* Bigger clickable area */
     -fx-font-weight: bold;
-    -fx-text-fill: #1a1a1a;
-    -fx-background-color: #4FC3F7;
-    -fx-background-radius: 30;
-    -fx-min-width: 160;
-    -fx-padding: 12 20;
-    -fx-cursor: hand;
-}
-
-.completion-button-primary:hover {
-    -fx-background-color: #81d4fa;
-    -fx-effect: dropshadow(gaussian, rgba(79, 195, 247, 0.5), 10, 0, 0, 0);
-}
-
-/* Secondary Button (Main Menu) - Outlined */
-.completion-button-secondary {
-    -fx-font-family: 'Segoe UI', sans-serif;
-    -fx-font-size: 18px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #AAAAAA;
-    -fx-background-color: transparent;
-    -fx-background-radius: 30;
-    -fx-border-color: #555555;
-    -fx-border-width: 2;
+    -fx-border-color: #ffffff;
+    -fx-border-width: 2.5;
     -fx-border-radius: 30;
-    -fx-min-width: 160;
-    -fx-padding: 10 20;
+    -fx-background-radius: 30;
+    -fx-min-width: 140;
+    -fx-padding: 8 15;
     -fx-cursor: hand;
 }
 
-.completion-button-secondary:hover {
-    -fx-text-fill: #FFFFFF;
-    -fx-border-color: #FFFFFF;
-    -fx-background-color: rgba(255, 255, 255, 0.05);
+.unified-button:hover {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #000000;
+    -fx-effect: dropshadow(gaussian, rgba(255,255,255,0.6), 10, 0, 0, 0);
 }
 
-/* Hint Text */
+/* Button Container Spacing */
+.button-box {
+    -fx-padding: 20 0 0 0;
+}
+
+/* Hint */
 .completion-hint {
-    -fx-font-size: 12px;
-    -fx-text-fill: #666666;
+    -fx-font-size: 14px;
+    -fx-text-fill: #bbbbbb;
     -fx-padding: 10 0 0 0;
 }
