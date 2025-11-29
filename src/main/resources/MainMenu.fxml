@@ -8,7 +8,7 @@
 
 <StackPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
-           fx:controller="com.comp2042.MainMenuController">
+           fx:controller="com.comp2042.controller.MainMenuController">
 
     <!-- Main Menu -->
     <VBox fx:id="mainMenuBox" alignment="CENTER" spacing="20"

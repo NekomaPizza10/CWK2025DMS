@@ -1,5 +1,6 @@
 package com.comp2042;
 
+import com.comp2042.controller.MainMenuController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
