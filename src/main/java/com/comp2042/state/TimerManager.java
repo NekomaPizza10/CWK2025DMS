@@ -44,7 +44,9 @@ public class TimerManager {
         gameTimer = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                if (!gameTimerPaused) { updateTimeDisplay(); }
+                if (!gameTimerPaused && !gameState.isPaused()) {
+                    updateTimeDisplay();
+                }
             }
         };
         gameTimer.start();
@@ -124,7 +126,7 @@ public class TimerManager {
     }
 
     private void updateTimeDisplay() {
-        if (gameState.isGameOver() || gameTimerPaused) return;
+        if (gameState.isGameOver() || gameTimerPaused || gameState.isPaused()) return;
         long elapsed = System.currentTimeMillis() - gameStartTime;
 
         if (gameState.getCurrentGameMode() == GameMode.TWO_MINUTES) {

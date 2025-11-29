@@ -54,7 +54,6 @@ public class InputHandler {
 
     private void handleGameplayInput(KeyEvent keyEvent) {
         KeyCode code = keyEvent.getCode();
-        boolean isFirstPress = !pressedKeys.contains(code);
         pressedKeys.add(code);
 
         if (code == KeyCode.LEFT || code == KeyCode.A) {

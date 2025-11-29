@@ -8,8 +8,6 @@ import com.comp2042.event.*;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 
-// Manages game flow: restarts, countdowns, and game state transitions.
-
 public class GameFlowManager {
 
     private final GameState gameState;
@@ -49,10 +47,10 @@ public class GameFlowManager {
 
     public void startGameWithCountdown() {
         renderer.clearBrickDisplay();
-        renderer.getBrickPanel().setVisible(false);
+        renderer.getBrickPanel().setOpacity(0);
         renderer.refreshGameBackground(gameController.getBoard().getBoardMatrix());
         showCountdown(() -> {
-            renderer.getBrickPanel().setVisible(true);
+            renderer.getBrickPanel().setOpacity(1);
             renderer.refreshBrick(gameController.getBoard().getViewData());
             if (updateNextDisplayCallback != null) updateNextDisplayCallback.run();
             if (updateHoldDisplayCallback != null) updateHoldDisplayCallback.run();
@@ -67,10 +65,10 @@ public class GameFlowManager {
         gameState.setCountdownActive(true);
         countdownPanel.setVisible(true);
         renderer.clearBrickDisplay();
-        renderer.getBrickPanel().setVisible(false);
+        renderer.getBrickPanel().setOpacity(0);
         timerManager.startCountdown(countdownLabel, () -> {
             countdownPanel.setVisible(false);
-            renderer.getBrickPanel().setVisible(true);
+            renderer.getBrickPanel().setOpacity(1);
             gameState.setCountdownActive(false);
             onComplete.run();
         });
@@ -83,7 +81,7 @@ public class GameFlowManager {
         if (hidePausePanelCallback != null) { hidePausePanelCallback.run(); }
         resetGameState(removeCompletionPanelCallback);
         showCountdown(() -> {
-            renderer.getBrickPanel().setVisible(true);
+            renderer.getBrickPanel().setOpacity(1);
             renderer.refreshBrick(gameController.getBoard().getViewData());
             if (updateNextDisplayCallback != null) updateNextDisplayCallback.run();
             timerManager.startGameTimer();
@@ -99,7 +97,7 @@ public class GameFlowManager {
         if (hidePausePanelCallback != null) { hidePausePanelCallback.run(); }
         resetGameState(removeCompletionPanelCallback);
         countdownPanel.setVisible(false);
-        renderer.getBrickPanel().setVisible(true);
+        renderer.getBrickPanel().setOpacity(1);
         renderer.refreshBrick(gameController.getBoard().getViewData());
         if (updateNextDisplayCallback != null) updateNextDisplayCallback.run();
         if (updateHoldDisplayCallback != null) updateHoldDisplayCallback.run();

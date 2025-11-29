@@ -161,8 +161,9 @@ public class GameLogicHandler {
     }
 
     private void updateGameSpeed() {
-        if (gameState.getCurrentGameMode() != GameMode.NORMAL || gameController == null) return;
-        int level = gameController.getLinesCleared() / 10;
+        if (gameController == null) return;
+        int linesCleared = gameController.getLinesCleared(); // Use total lines
+        int level = linesCleared / 10;
         int newSpeed = Math.max(gameState.getMinDropSpeed(),
                 gameState.getBaseDropSpeed() - (level * gameState.getSpeedDecreasePerLevel()));
         gameState.setCurrentDropSpeed(newSpeed);

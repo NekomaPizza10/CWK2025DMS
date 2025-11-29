@@ -19,13 +19,13 @@
         <center>
             <HBox alignment="CENTER" spacing="20">
                 <!-- Left Side: HOLD Box + Score/Best Panels -->
-                <VBox alignment="TOP_CENTER" spacing="15" style="-fx-background-color: transparent;">
+                <VBox alignment="TOP_CENTER" spacing="15" minWidth="160" style="-fx-background-color: transparent;">
                     <padding>
                         <Insets top="50"/>
                     </padding>
 
                     <!-- HOLD Panel -->
-                    <VBox style="-fx-background-color: #000000; -fx-border-color: #ffffff; -fx-border-width: 3;">
+                    <VBox minWidth="80" style="-fx-background-color: #000000; -fx-border-color: #ffffff; -fx-border-width: 3;">
                         <padding>
                             <Insets top="5" right="5" bottom="1" left="5"/>
                         </padding>
@@ -39,37 +39,37 @@
                             <VBox.margin><Insets top="5" bottom="5"/></VBox.margin>
                         </Region>
 
-                        <StackPane prefWidth="80" prefHeight="80" style="-fx-background-color: #000000;" alignment="CENTER">
+                        <StackPane prefWidth="60" prefHeight="60" minWidth="60" minHeight="60" style="-fx-background-color: #000000;" alignment="CENTER">
                             <GridPane fx:id="holdPanel" hgap="0" vgap="0" alignment="CENTER"/>
                         </StackPane>
                     </VBox>
 
                     <!-- Stats Panel (Left Side) -->
-                    <VBox alignment="TOP_LEFT" spacing="15" style="-fx-padding: 20; -fx-background-color: rgba(0,0,0,0.5); -fx-background-radius: 5;">
+                    <VBox alignment="TOP_LEFT" spacing="15" minWidth="140" style="-fx-padding: 20; -fx-background-color: rgba(0,0,0,0.5); -fx-background-radius: 5;">
                         <VBox spacing="5">
-                            <Label fx:id="piecesLabel" text="PIECES"
+                            <Label fx:id="piecesLabel" text="PIECES" alignment="CENTER"
                                    style="-fx-text-fill: #888888; -fx-font-size: 12px; -fx-font-weight: bold;"/>
-                            <Label fx:id="piecesValue" text="0"
+                            <Label fx:id="piecesValue" text="0" alignment="CENTER" minWidth="100"
                                    style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold;"/>
                         </VBox>
 
                         <VBox spacing="5">
-                            <Label fx:id="linesLabel" text="LINES"
+                            <Label fx:id="linesLabel" text="LINES" alignment="CENTER"
                                    style="-fx-text-fill: #888888; -fx-font-size: 12px; -fx-font-weight: bold;"/>
-                            <Label fx:id="linesValue" text="0"
+                            <Label fx:id="linesValue" text="0" alignment="CENTER" minWidth="100"
                                    style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold;"/>
                         </VBox>
 
                         <VBox spacing="5">
                             <Label fx:id="timeLabel" text="TIME"
                                    style="-fx-text-fill: #888888; -fx-font-size: 12px; -fx-font-weight: bold;"/>
-                            <Label fx:id="timeValue" text="0:00.000"
+                            <Label fx:id="timeValue" text="0:00.000" minWidth="120"
                                    style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold;"/>
                         </VBox>
                     </VBox>
 
                     <!-- SCORE/BEST DISPLAY (Moved to Left Side) -->
-                    <VBox fx:id="scoreDisplayContainer" alignment="CENTER" spacing="10"
+                    <VBox fx:id="scoreDisplayContainer" alignment="CENTER" spacing="10" minWidth="140"
                           style="-fx-background-color: rgba(0,0,0,0.6);
                                -fx-padding: 15;
                                  -fx-background-radius: 5;
@@ -82,7 +82,7 @@
                               visible="false" managed="false">
                             <Label text="BEST TIME"
                                    style="-fx-text-fill: #ff9900; -fx-font-size: 13px; -fx-font-weight: bold; -fx-letter-spacing: 1;"/>
-                            <Label fx:id="bestTimeLabel" text="--:--"
+                            <Label fx:id="bestTimeLabel" text="--:--" minWidth="100"
                                    style="-fx-text-fill: #ff9900; -fx-font-size: 28px; -fx-font-weight: bold;"/>
                         </VBox>
 
@@ -96,7 +96,7 @@
                               managed="true">
                             <Label fx:id="scoreLabel" text="SCORE"
                                    style="-fx-text-fill: #00aaff; -fx-font-size: 12px; -fx-font-weight: bold; -fx-letter-spacing: 1;"/>
-                            <Label fx:id="scoreValue" text="0"
+                            <Label fx:id="scoreValue" text="0" alignment="CENTER" minWidth="100"
                                    style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;"/>
                         </VBox>
 
@@ -115,7 +115,7 @@
                               visible="false" managed="false">
                             <Label fx:id="bestScoreLabel" text="BEST"
                                    style="-fx-text-fill: #ffaa00; -fx-font-size: 12px; -fx-font-weight: bold; -fx-letter-spacing: 1;"/>
-                            <Label fx:id="bestScoreValue" text="--"
+                            <Label fx:id="bestScoreValue" text="--" minWidth="100"
                                    style="-fx-text-fill: #ffaa00; -fx-font-size: 24px; -fx-font-weight: bold;"/>
                         </VBox>
                     </VBox>
@@ -156,14 +156,14 @@
                     </StackPane>
                 </VBox>
 
-                <!-- Right Side: NEXT Box Only (Shortened) -->
-                <VBox alignment="TOP_CENTER" spacing="10" style="-fx-background-color: transparent;">
+                <!-- Right Side: NEXT Box Only -->
+                <VBox alignment="TOP_CENTER" spacing="10" minWidth="120" style="-fx-background-color: transparent;">
                     <padding>
                         <Insets top="50"/>
                     </padding>
 
-                    <!-- NEXT Panel (Shortened) -->
-                    <VBox style="-fx-background-color: #000000; -fx-border-color: #ffffff; -fx-border-width: 3;">
+                    <!-- NEXT Panel -->
+                    <VBox minWidth="100" style="-fx-background-color: #000000; -fx-border-color: #ffffff; -fx-border-width: 3;">
                         <padding>
                             <Insets top="5" right="10" bottom="5" left="10"/>
                         </padding>
@@ -177,7 +177,7 @@
                             <VBox.margin><Insets top="5" bottom="5"/></VBox.margin>
                         </Region>
 
-                        <StackPane prefWidth="100" prefHeight="60" style="-fx-background-color: #000000;" alignment="CENTER">
+                        <StackPane prefWidth="100" prefHeight="60" minWidth="80" minHeight="60" style="-fx-background-color: #000000;" alignment="CENTER">
                             <GridPane fx:id="nextPanel1" hgap="0" vgap="0" alignment="CENTER"/>
                         </StackPane>
 
@@ -185,28 +185,28 @@
                             <VBox.margin><Insets top="2" bottom="2"/></VBox.margin>
                         </Region>
 
-                        <StackPane prefWidth="100" prefHeight="60" style="-fx-background-color: #000000;" alignment="CENTER">
+                        <StackPane prefWidth="100" prefHeight="60" minWidth="80" minHeight="60" style="-fx-background-color: #000000;" alignment="CENTER">
                             <GridPane fx:id="nextPanel2" hgap="0" vgap="0" alignment="CENTER"/>
                         </StackPane>
                         <Region prefHeight="1" style="-fx-background-color: #333333;">
                             <VBox.margin><Insets top="2" bottom="2"/></VBox.margin>
                         </Region>
 
-                        <StackPane prefWidth="100" prefHeight="60" style="-fx-background-color: #000000;" alignment="CENTER">
+                        <StackPane prefWidth="100" prefHeight="60" minWidth="80" minHeight="60" style="-fx-background-color: #000000;" alignment="CENTER">
                             <GridPane fx:id="nextPanel3" hgap="0" vgap="0" alignment="CENTER"/>
                         </StackPane>
                         <Region prefHeight="1" style="-fx-background-color: #333333;">
                             <VBox.margin><Insets top="2" bottom="2"/></VBox.margin>
                         </Region>
 
-                        <StackPane prefWidth="100" prefHeight="60" style="-fx-background-color: #000000;" alignment="CENTER">
+                        <StackPane prefWidth="100" prefHeight="60" minWidth="80" minHeight="60" style="-fx-background-color: #000000;" alignment="CENTER">
                             <GridPane fx:id="nextPanel4" hgap="0" vgap="0" alignment="CENTER"/>
                         </StackPane>
                         <Region prefHeight="1" style="-fx-background-color: #333333;">
                             <VBox.margin><Insets top="2" bottom="2"/></VBox.margin>
                         </Region>
 
-                        <StackPane prefWidth="100" prefHeight="60" style="-fx-background-color: #000000;" alignment="CENTER">
+                        <StackPane prefWidth="100" prefHeight="60" minWidth="80" minHeight="60" style="-fx-background-color: #000000;" alignment="CENTER">
                             <GridPane fx:id="nextPanel5" hgap="0" vgap="0" alignment="CENTER"/>
                         </StackPane>
                     </VBox>
@@ -219,7 +219,6 @@
         </stylesheets>
     </BorderPane>
 
-    <!-- Full-Screen Overlays (On Top of Everything) -->
     <PauseMenuPanel fx:id="pauseMenuPanel" visible="false"/>
     <GameOverPanel fx:id="gameOverPanel" visible="false"/>
 

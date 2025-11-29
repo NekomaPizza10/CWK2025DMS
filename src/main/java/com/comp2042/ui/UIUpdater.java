@@ -80,7 +80,7 @@ public class UIUpdater {
         if (scoreValue != null) { scoreValue.setText("0"); }
         if (timeValue != null) {
             if (mode == GameMode.TWO_MINUTES) { timeValue.setText("2:00"); }
-            else { timeValue.setText("0:00"); }
+            else { timeValue.setText("0:00.000"); }
         }
     }
 
