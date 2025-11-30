@@ -6,7 +6,6 @@ import com.comp2042.event.*;
 import com.comp2042.model.*;
 import com.comp2042.state.*;
 
-// Handles game logic operations including movement, locking, and line clearing.
 public class GameLogicHandler {
 
     private static final int FORTY_LINES_GOAL = 3;
@@ -27,8 +26,7 @@ public class GameLogicHandler {
     private Runnable onUpdateNextDisplay;
 
     public GameLogicHandler(GameState gameState, TimerManager timerManager,
-                            ScoringManager scoringManager, GameRenderer renderer,
-                            UIUpdater uiUpdater) {
+                            ScoringManager scoringManager, GameRenderer renderer, UIUpdater uiUpdater) {
         this.gameState = gameState;
         this.timerManager = timerManager;
         this.scoringManager = scoringManager;
@@ -162,7 +160,7 @@ public class GameLogicHandler {
 
     private void updateGameSpeed() {
         if (gameController == null) return;
-        int linesCleared = gameController.getLinesCleared(); // Use total lines
+        int linesCleared = gameController.getLinesCleared();
         int level = linesCleared / 10;
         int newSpeed = Math.max(gameState.getMinDropSpeed(),
                 gameState.getBaseDropSpeed() - (level * gameState.getSpeedDecreasePerLevel()));

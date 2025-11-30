@@ -16,8 +16,8 @@ public class GameState {
     // Speed management
     private int baseDropSpeed = 800;
     private int currentDropSpeed = 800;
-    private static final int MIN_DROP_SPEED = 200;
-    private static final int SPEED_DECREASE_PER_LEVEL = 50;
+    private static final int MIN_DROP_SPEED = 100;
+    private static final int SPEED_DECREASE_PER_LEVEL = 70;
 
     // Hold management
     private boolean holdUsedThisTurn = false;

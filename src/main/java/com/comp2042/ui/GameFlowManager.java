@@ -126,8 +126,7 @@ public class GameFlowManager {
     }
 
     private void setInitialDropSpeed() {
-        int speed = (gameState.getCurrentGameMode() == GameMode.NORMAL) ? gameState.getBaseDropSpeed() : 400;
-        gameState.setCurrentDropSpeed(speed);
+        gameState.setCurrentDropSpeed(gameState.getBaseDropSpeed());
     }
 
     public void togglePause() {
