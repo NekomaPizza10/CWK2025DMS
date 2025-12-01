@@ -19,7 +19,7 @@ public class TimerManager {
     private Label timeValueLabel;
     private GameState gameState;
 
-    private static final long TWO_MINUTES_MS = 10 * 1000;
+    private static final long TWO_MINUTES_MS = 120 * 1000;
 
     private long pausedElapsedTime = 0;
     private Runnable onTimeUp;
@@ -133,19 +133,19 @@ public class TimerManager {
             long remaining = TWO_MINUTES_MS - elapsed;
             if (remaining <= 0) {
                 remaining = 0;
-                timeValueLabel.setText("0:00.000");
+                timeValueLabel.setText("0:00.00");
                 if (!timeUpTriggered && onTimeUp != null) { timeUpTriggered = true; onTimeUp.run(); }
                 return;
             }
             int minutes = (int) (remaining / 60000);
             int seconds = (int) ((remaining % 60000) / 1000);
-            int millis = (int) (remaining % 1000);
-            timeValueLabel.setText(String.format("%d:%02d.%03d", minutes, seconds, millis));
+            int millis = (int) (remaining % 100);
+            timeValueLabel.setText(String.format("%d:%02d.%02d", minutes, seconds, millis));
         } else {
             int minutes = (int) (elapsed / 60000);
             int seconds = (int) ((elapsed % 60000) / 1000);
-            int millis = (int) (elapsed % 1000);
-            timeValueLabel.setText(String.format("%d:%02d.%03d", minutes, seconds, millis));
+            int millis = (int) (elapsed % 100);
+            timeValueLabel.setText(String.format("%d:%02d.%02d", minutes, seconds, millis));
         }
     }
 
