@@ -8,8 +8,8 @@ import com.comp2042.state.*;
 
 public class GameLogicHandler {
 
-    private static final int FORTY_LINES_GOAL = 3;
-    private static final long TWO_MINUTES_MS = 10 * 1000;
+    private static final int FORTY_LINES_GOAL = 40;
+    private static final long TWO_MINUTES_MS = 120 * 1000;
 
     private final GameState gameState;
     private final TimerManager timerManager;

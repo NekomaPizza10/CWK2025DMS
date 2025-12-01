@@ -3,7 +3,6 @@ package com.comp2042.ui;
 import com.comp2042.controller.*;
 import com.comp2042.model.*;
 import com.comp2042.state.*;
-import com.comp2042.event.*;
 import javafx.beans.property.IntegerProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;

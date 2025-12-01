@@ -64,7 +64,7 @@ public class ScoringManager {
 
     public void addHardDropBonus(int distance) {
         GameMode mode = gameState.getCurrentGameMode();
-        int bonus = distance * 2; // 2 points per cell for hard drop
+        int bonus = distance * 5; // 5 points per cell for hard drop
 
         if (mode == GameMode.NORMAL) {
             gameState.setNormalModeScore(gameState.getNormalModeScore() + bonus);

@@ -1,7 +1,6 @@
 package com.comp2042.ui;
 
 import com.comp2042.controller.GameController;
-import com.comp2042.model.GameMode;
 import com.comp2042.state.GameState;
 import com.comp2042.state.TimerManager;
 import com.comp2042.event.*;
