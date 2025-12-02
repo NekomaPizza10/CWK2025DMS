@@ -9,10 +9,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for InputHandler - Keyboard input handling
- *
- * Note: Tests focus on logic and state management.
- * KeyEvent creation requires JavaFX, so we use mock-style verification
- * through callback tracking instead of actual key event simulation.
  */
 class InputHandlerTest {
 
@@ -141,7 +137,6 @@ class InputHandlerTest {
 
         // When: Reset
         callback.reset();
-
         // Then: All flags cleared
         assertFalse(callback.moveLeftCalled, "moveLeft should be reset");
         assertFalse(callback.rotateCalled, "rotate should be reset");
@@ -155,9 +150,7 @@ class InputHandlerTest {
     void handlerRespectsCountdownActiveState() {
         // Given: Countdown is active
         gameState.setCountdownActive(true);
-
         // Then: Input should be blocked
-        // (We can't test KeyEvent directly, but we verify state)
         assertTrue(gameState.isCountdownActive(),
                 "Countdown should block input");
     }
@@ -167,7 +160,6 @@ class InputHandlerTest {
     void handlerRespectsGameOverState() {
         // Given: Game is over
         gameState.setGameOver(true);
-
         // Then: Input should be blocked
         assertTrue(gameState.isGameOver(),
                 "Game over should block input");
@@ -178,7 +170,6 @@ class InputHandlerTest {
     void handlerRespectsPausedState() {
         // Given: Game is paused
         gameState.setPaused(true);
-
         // Then: Gameplay input should be blocked
         assertTrue(gameState.isPaused(),
                 "Paused should block gameplay input");
@@ -189,7 +180,6 @@ class InputHandlerTest {
     void handlerRespectsChallengeCompletedState() {
         // Given: Challenge is completed
         gameState.setChallengeCompleted(true);
-
         // Then: Restart behavior changes
         assertTrue(gameState.isChallengeCompleted(),
                 "Challenge completed affects restart behavior");
@@ -229,7 +219,6 @@ class InputHandlerTest {
         gameState.setPaused(false);
         gameState.setGameOver(false);
         gameState.setCountdownActive(false);
-
         // Then: All states allow input
         assertFalse(gameState.isPaused(), "Should not be paused");
         assertFalse(gameState.isGameOver(), "Should not be game over");
@@ -244,8 +233,6 @@ class InputHandlerTest {
         // Given: Challenge completed
         gameState.setChallengeCompleted(true);
         gameState.setGameOver(false);
-
-        // Note: handleRestartKey would call onRestartWithCountdown
         assertTrue(gameState.isChallengeCompleted(),
                 "Challenge completed should trigger countdown restart");
     }
@@ -256,7 +243,6 @@ class InputHandlerTest {
         // Given: Game over
         gameState.setGameOver(true);
         gameState.setChallengeCompleted(false);
-
         // Note: handleRestartKey would call onRestartWithCountdown
         assertTrue(gameState.isGameOver(),
                 "Game over should trigger countdown restart");
@@ -268,8 +254,6 @@ class InputHandlerTest {
         // Given: Normal gameplay (not completed, not game over)
         gameState.setChallengeCompleted(false);
         gameState.setGameOver(false);
-
-        // Note: handleRestartKey would call onRestartInstant
         assertFalse(gameState.isChallengeCompleted() || gameState.isGameOver(),
                 "Normal gameplay should trigger instant restart");
     }
@@ -280,8 +264,6 @@ class InputHandlerTest {
         // Given: Both flags set
         gameState.setChallengeCompleted(true);
         gameState.setGameOver(true);
-
-        // Note: handleRestartKey would call onRestartWithCountdown (either flag)
         assertTrue(gameState.isChallengeCompleted() || gameState.isGameOver(),
                 "Either flag should trigger countdown restart");
     }
@@ -293,7 +275,6 @@ class InputHandlerTest {
     void rotateKeyPressCanBePreventedWithFlag() {
         // This tests the internal flag mechanism
         // rotateKeyPressed flag prevents repeated rotation
-        // (Actual KeyEvent testing would require JavaFX)
         assertTrue(true, "Flag mechanism exists in code");
     }
 
@@ -320,11 +301,9 @@ class InputHandlerTest {
         InputHandler handler1 = new InputHandler(gameState);
         InputHandler handler2 = new InputHandler(gameState);
         InputHandler handler3 = new InputHandler(gameState);
-
         // Each should be independent
         assertNotSame(handler1, handler2, "Handlers should be different instances");
         assertNotSame(handler2, handler3, "Handlers should be different instances");
-
         // Each can have different callbacks
         TestInputCallback callback1 = new TestInputCallback();
         TestInputCallback callback2 = new TestInputCallback();
@@ -344,7 +323,6 @@ class InputHandlerTest {
 
         // When: Change GameState
         gameState.setPaused(true);
-
         // Then: All handlers see the change
         assertTrue(gameState.isPaused(), "Both handlers should see paused state");
     }
@@ -357,7 +335,6 @@ class InputHandlerTest {
         // Given: Handler without callback
         InputHandler handler = new InputHandler(gameState);
         // Don't set callback
-
         // Then: Should not crash (callback checks are in place)
         assertDoesNotThrow(() -> {
             // Methods check for null callback before calling
@@ -369,10 +346,8 @@ class InputHandlerTest {
     void settingCallbackToNullDoesntCrash() {
         // Given: Handler with callback
         inputHandler.setCallback(callback);
-
         // When: Set to null
         inputHandler.setCallback(null);
-
         // Then: Should not crash
         assertDoesNotThrow(() -> {
             // Future input would check for null
@@ -388,15 +363,12 @@ class InputHandlerTest {
             // Create
             GameState state = new GameState();
             InputHandler handler = new InputHandler(state);
-
             // Set callback
             TestInputCallback cb = new TestInputCallback();
             handler.setCallback(cb);
-
             // Use (indirectly through state)
             state.setPaused(false);
             state.setGameOver(false);
-
             // Verify state
             assertFalse(state.isPaused());
             assertFalse(state.isGameOver());
@@ -406,7 +378,6 @@ class InputHandlerTest {
     @Test
     @DisplayName("State transitions affect handler behavior")
     void stateTransitionsAffectHandlerBehavior() {
-        // Test various state transitions
         gameState.setCountdownActive(true);
         assertTrue(gameState.isCountdownActive(), "Countdown should be active");
 
@@ -426,7 +397,6 @@ class InputHandlerTest {
     @Test
     @DisplayName("Complex state combinations work correctly")
     void complexStateCombinationsWorkCorrectly() {
-        // Test various combinations
         gameState.setPaused(true);
         gameState.setGameOver(false);
         assertTrue(gameState.isPaused() && !gameState.isGameOver(),
@@ -480,7 +450,6 @@ class InputHandlerTest {
 
         // When: Change state1
         state1.setPaused(true);
-
         // Then: state2 should be independent
         assertFalse(state2.isPaused(), "State2 should be independent");
     }
@@ -509,7 +478,6 @@ class InputHandlerTest {
     @Test
     @DisplayName("Lambda callbacks work for single method")
     void lambdaCallbacksWorkForSingleMethod() {
-        // Note: Full interface can't use lambda, but we test concept
         Runnable simpleCallback = () -> {};
         assertNotNull(simpleCallback, "Lambda-style callbacks should work");
     }

@@ -9,10 +9,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for TimerManager - Game timer management
- *
- * Note: Tests focus on non-UI logic and method safety.
- * JavaFX Timeline/AnimationTimer behavior cannot be fully tested without JavaFX runtime.
- * These tests verify the manager's API, state management, and error handling.
  */
 class TimerManagerTest {
 
@@ -27,7 +23,6 @@ class TimerManagerTest {
     }
 
     // ========== Constructor Tests ==========
-
     @Test
     @DisplayName("TimerManager initializes successfully")
     void timerManagerInitializesSuccessfully() {
@@ -47,7 +42,6 @@ class TimerManagerTest {
     void constructorStoresGameStateReference() {
         // When: Create manager
         TimerManager manager = new TimerManager(gameState, null);
-
         // Then: Should not be null (indirect verification)
         assertNotNull(manager, "Manager should be initialized");
     }
@@ -59,10 +53,8 @@ class TimerManagerTest {
     void getElapsedTimeReturnsNonNegativeValue() {
         // Given: Fresh manager
         timerManager.resetStartTime();
-
         // When: Get elapsed time
         long elapsed = timerManager.getElapsedTime();
-
         // Then: Should be non-negative and small (just created)
         assertTrue(elapsed >= 0, "Elapsed time should be non-negative");
         assertTrue(elapsed < 1000, "Elapsed time should be small immediately after creation");
@@ -74,11 +66,9 @@ class TimerManagerTest {
         // Given: Reset timer
         timerManager.resetStartTime();
         long time1 = timerManager.getElapsedTime();
-
         // When: Wait 50ms
         Thread.sleep(50);
         long time2 = timerManager.getElapsedTime();
-
         // Then: Time should increase
         assertTrue(time2 > time1,
                 "Elapsed time should increase: " + time1 + " -> " + time2);
@@ -92,10 +82,8 @@ class TimerManagerTest {
         Thread.sleep(100);
         long beforeReset = timerManager.getElapsedTime();
         assertTrue(beforeReset > 50, "Time should have passed");
-
         // When: Reset
         timerManager.resetStartTime();
-
         // Then: Elapsed time near 0
         long afterReset = timerManager.getElapsedTime();
         assertTrue(afterReset < 50,
@@ -292,8 +280,8 @@ class TimerManagerTest {
                 timerManager.startGameTimer();
                 timerManager.stopGameTimer();
             } catch (IllegalStateException | NullPointerException e) {
-                // Expected without JavaFX runtime
-            }
+            }                // Expected without JavaFX runtime
+
         }, "Should accept game timer calls");
     }
 
@@ -336,14 +324,11 @@ class TimerManagerTest {
         // When: Pause
         timerManager.pauseGameTimer();
         long timeAfterPause = timerManager.getElapsedTime();
-
         // Wait while "paused"
         Thread.sleep(100);
-
         // When: Resume
         timerManager.resumeGameTimer();
         long timeAfterResume = timerManager.getElapsedTime();
-
         // Then: Time difference should be small (pause should preserve state)
         long difference = Math.abs(timeAfterResume - timeAfterPause);
         assertTrue(difference < 50,
@@ -392,7 +377,6 @@ class TimerManagerTest {
         timerManager.resetStartTime();
         timerManager.resetStartTime();
         timerManager.resetStartTime();
-
         // Then: Should not crash
         assertDoesNotThrow(() -> {
             timerManager.resetStartTime();
@@ -408,7 +392,6 @@ class TimerManagerTest {
 
         timerManager.resetStartTime();
         long elapsed2 = timerManager.getElapsedTime();
-
         // Then: Both should be near zero
         assertTrue(elapsed1 < 20, "First reset: elapsed should be near 0");
         assertTrue(elapsed2 < 20, "Second reset: elapsed should be near 0");
@@ -421,7 +404,6 @@ class TimerManagerTest {
     void timerWorksWithNormalGameMode() {
         // Given: Normal mode
         gameState.setCurrentGameMode(GameMode.NORMAL);
-
         // Then: Timer operations should work
         assertDoesNotThrow(() -> {
             timerManager.resetStartTime();
@@ -435,7 +417,6 @@ class TimerManagerTest {
     void timerWorksWithTwoMinutesGameMode() {
         // Given: Two Minutes mode
         gameState.setCurrentGameMode(GameMode.TWO_MINUTES);
-
         // Then: Timer operations should work
         assertDoesNotThrow(() -> {
             timerManager.resetStartTime();
@@ -449,7 +430,6 @@ class TimerManagerTest {
     void timerWorksWithFortyLinesGameMode() {
         // Given: Forty Lines mode
         gameState.setCurrentGameMode(GameMode.FORTY_LINES);
-
         // Then: Timer operations should work
         assertDoesNotThrow(() -> {
             timerManager.resetStartTime();
@@ -469,7 +449,6 @@ class TimerManagerTest {
         // When: Switch mode
         gameState.setCurrentGameMode(GameMode.TWO_MINUTES);
         long elapsed = timerManager.getElapsedTime();
-
         // Then: Time should still be tracked
         assertTrue(elapsed >= 40, "Time should continue after mode switch");
     }
@@ -531,7 +510,6 @@ class TimerManagerTest {
             timerManager.pauseGameTimer();
             timerManager.resumeGameTimer();
         }, "Pause/resume sequence should work");
-
         // Then: Time should still be tracked
         long elapsed = timerManager.getElapsedTime();
         assertTrue(elapsed > 0, "Time should be tracked after pause/resume");
@@ -577,15 +555,11 @@ class TimerManagerTest {
         // Complex sequence
         timerManager.resetStartTime();
         Thread.sleep(30);
-
         timerManager.pauseGameTimer();
         Thread.sleep(30);
-
         timerManager.resumeGameTimer();
         Thread.sleep(30);
-
         timerManager.stopAllTimers();
-
         // Elapsed time should still be valid
         long elapsed = timerManager.getElapsedTime();
         assertTrue(elapsed >= 60,
@@ -628,7 +602,6 @@ class TimerManagerTest {
     void timerRespectsGameStateGameOverFlag() {
         // Given: Game over
         gameState.setGameOver(true);
-
         // Then: Timer operations should still work
         assertDoesNotThrow(() -> {
             timerManager.resetStartTime();

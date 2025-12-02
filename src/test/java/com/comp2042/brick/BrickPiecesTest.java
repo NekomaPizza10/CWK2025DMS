@@ -11,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Tests for individual Tetris brick pieces (Tetrominos)
  * Tests the 7 standard Tetris pieces: I, O, T, S, Z, J, L
- * Pure JUnit 5 - No parameterized tests
  */
 class BrickPiecesTest {
 
@@ -24,7 +23,6 @@ class BrickPiecesTest {
         List<int[][]> shapes = brick.getShapeMatrix();
         assertEquals(2, shapes.size(), "I-Brick should have 2 rotation states");
     }
-
     @Test
     @DisplayName("I-Brick first rotation is horizontal")
     void iBrickFirstRotationIsHorizontal() {
@@ -41,13 +39,11 @@ class BrickPiecesTest {
         }
         assertEquals(4, filledCount, "Should have 4 consecutive blocks horizontally");
     }
-
     @Test
     @DisplayName("I-Brick second rotation is vertical")
     void iBrickSecondRotationIsVertical() {
         IBrick brick = new IBrick();
         int[][] shape = brick.getShapeMatrix().get(1);
-
         // Check for vertical line (column 1)
         int filledCount = 0;
         for (int i = 0; i < 4; i++) {
@@ -55,13 +51,11 @@ class BrickPiecesTest {
         }
         assertEquals(4, filledCount, "Should have 4 consecutive blocks vertically");
     }
-
     @Test
     @DisplayName("I-Brick uses color code 1 (cyan)")
     void iBrickUsesColorCode1() {
         IBrick brick = new IBrick();
         int[][] shape = brick.getShapeMatrix().get(0);
-
         boolean hasColorCode1 = false;
         for (int i = 0; i < shape.length; i++) {
             for (int j = 0; j < shape[i].length; j++) {
@@ -70,7 +64,6 @@ class BrickPiecesTest {
         }
         assertTrue(hasColorCode1, "I-Brick should use color code 1");
     }
-
     @Test
     @DisplayName("I-Brick has exactly 4 blocks")
     void iBrickHas4Blocks() {
@@ -85,7 +78,6 @@ class BrickPiecesTest {
         }
         assertEquals(4, filledCount, "I-Brick should have exactly 4 blocks");
     }
-
     @Test
     @DisplayName("I-Brick returns 4x4 matrix")
     void iBrickReturns4x4Matrix() {
@@ -96,7 +88,6 @@ class BrickPiecesTest {
     }
 
     // ========== O-Brick Tests ==========
-
     @Test
     @DisplayName("O-Brick has 1 rotation state")
     void oBrickHasOneRotation() {
@@ -104,7 +95,6 @@ class BrickPiecesTest {
         List<int[][]> shapes = brick.getShapeMatrix();
         assertEquals(1, shapes.size(), "O-Brick should have 1 rotation state (square)");
     }
-
     @Test
     @DisplayName("O-Brick is a 2x2 square")
     void oBrickIs2x2Square() {
@@ -135,7 +125,6 @@ class BrickPiecesTest {
         }
         assertTrue(hasColorCode4, "O-Brick should use color code 4");
     }
-
     @Test
     @DisplayName("O-Brick has exactly 4 blocks")
     void oBrickHas4Blocks() {
@@ -150,7 +139,6 @@ class BrickPiecesTest {
         }
         assertEquals(4, filledCount, "O-Brick should have exactly 4 blocks");
     }
-
     @Test
     @DisplayName("O-Brick returns 4x4 matrix")
     void oBrickReturns4x4Matrix() {
@@ -161,7 +149,6 @@ class BrickPiecesTest {
     }
 
     // ========== T-Brick Tests ==========
-
     @Test
     @DisplayName("T-Brick has 4 rotation states")
     void tBrickHasFourRotations() {
@@ -169,7 +156,6 @@ class BrickPiecesTest {
         List<int[][]> shapes = brick.getShapeMatrix();
         assertEquals(4, shapes.size(), "T-Brick should have 4 rotation states");
     }
-
     @Test
     @DisplayName("T-Brick has T-shape with 4 blocks")
     void tBrickHasTShapeWith4Blocks() {
@@ -184,7 +170,6 @@ class BrickPiecesTest {
         }
         assertEquals(4, filledCount, "T-Brick should have exactly 4 blocks");
     }
-
     @Test
     @DisplayName("T-Brick uses color code 6 (purple)")
     void tBrickUsesColorCode6() {
@@ -308,7 +293,6 @@ class BrickPiecesTest {
     }
 
     // ========== J-Brick Tests ==========
-
     @Test
     @DisplayName("J-Brick has 4 rotation states")
     void jBrickHasFourRotations() {
@@ -316,7 +300,6 @@ class BrickPiecesTest {
         List<int[][]> shapes = brick.getShapeMatrix();
         assertEquals(4, shapes.size(), "J-Brick should have 4 rotation states");
     }
-
     @Test
     @DisplayName("J-Brick has 4 blocks")
     void jBrickHas4Blocks() {
@@ -331,7 +314,6 @@ class BrickPiecesTest {
         }
         assertEquals(4, filledCount, "J-Brick should have exactly 4 blocks");
     }
-
     @Test
     @DisplayName("J-Brick uses color code 2 (blue)")
     void jBrickUsesColorCode2() {
@@ -346,7 +328,6 @@ class BrickPiecesTest {
         }
         assertTrue(hasColorCode2, "J-Brick should use color code 2");
     }
-
     @Test
     @DisplayName("J-Brick returns 4x4 matrix")
     void jBrickReturns4x4Matrix() {
@@ -357,7 +338,6 @@ class BrickPiecesTest {
     }
 
     // ========== L-Brick Tests ==========
-
     @Test
     @DisplayName("L-Brick has 4 rotation states")
     void lBrickHasFourRotations() {
@@ -365,7 +345,6 @@ class BrickPiecesTest {
         List<int[][]> shapes = brick.getShapeMatrix();
         assertEquals(4, shapes.size(), "L-Brick should have 4 rotation states");
     }
-
     @Test
     @DisplayName("L-Brick has 4 blocks")
     void lBrickHas4Blocks() {
@@ -380,7 +359,6 @@ class BrickPiecesTest {
         }
         assertEquals(4, filledCount, "L-Brick should have exactly 4 blocks");
     }
-
     @Test
     @DisplayName("L-Brick uses color code 3 (orange)")
     void lBrickUsesColorCode3() {
@@ -395,7 +373,6 @@ class BrickPiecesTest {
         }
         assertTrue(hasColorCode3, "L-Brick should use color code 3");
     }
-
     @Test
     @DisplayName("L-Brick returns 4x4 matrix")
     void lBrickReturns4x4Matrix() {
@@ -405,8 +382,7 @@ class BrickPiecesTest {
         assertEquals(4, shape[0].length, "L-Brick should have 4 columns");
     }
 
-    // ========== Consolidated Tests for All Bricks ==========
-
+    // ========== Tests for All Bricks ==========
     @Test
     @DisplayName("All bricks have exactly 4 blocks")
     void allBricksHaveExactly4Blocks() {
@@ -422,7 +398,6 @@ class BrickPiecesTest {
                     brick.getClass().getSimpleName() + " should have exactly 4 blocks");
         }
     }
-
     @Test
     @DisplayName("All bricks return 4x4 matrices")
     void allBricksReturn4x4Matrices() {
@@ -442,43 +417,36 @@ class BrickPiecesTest {
             }
         }
     }
-
     @Test
     @DisplayName("I-Brick has correct rotation count")
     void iBrickHasCorrectRotationCount() {
         assertEquals(2, new IBrick().getShapeMatrix().size());
     }
-
     @Test
     @DisplayName("O-Brick has correct rotation count")
     void oBrickHasCorrectRotationCount() {
         assertEquals(1, new OBrick().getShapeMatrix().size());
     }
-
     @Test
     @DisplayName("T-Brick has correct rotation count")
     void tBrickHasCorrectRotationCount() {
         assertEquals(4, new TBrick().getShapeMatrix().size());
     }
-
     @Test
     @DisplayName("S-Brick has correct rotation count")
     void sBrickHasCorrectRotationCount() {
         assertEquals(2, new SBrick().getShapeMatrix().size());
     }
-
     @Test
     @DisplayName("Z-Brick has correct rotation count")
     void zBrickHasCorrectRotationCount() {
         assertEquals(2, new ZBrick().getShapeMatrix().size());
     }
-
     @Test
     @DisplayName("J-Brick has correct rotation count")
     void jBrickHasCorrectRotationCount() {
         assertEquals(4, new JBrick().getShapeMatrix().size());
     }
-
     @Test
     @DisplayName("L-Brick has correct rotation count")
     void lBrickHasCorrectRotationCount() {
@@ -500,7 +468,6 @@ class BrickPiecesTest {
         assertNotEquals(999, shapes2.get(0)[0][0],
                 "I-Brick getShapeMatrix should return independent copies");
     }
-
     @Test
     @DisplayName("All bricks return defensive copies")
     void allBricksReturnDefensiveCopies() {
@@ -524,7 +491,6 @@ class BrickPiecesTest {
     }
 
     // ========== Rotation Consistency Tests ==========
-
     @Test
     @DisplayName("All rotations have same number of blocks")
     void allRotationsHaveSameNumberOfBlocks() {
@@ -545,7 +511,6 @@ class BrickPiecesTest {
             }
         }
     }
-
     @Test
     @DisplayName("All rotations use same color code")
     void allRotationsUseSameColorCode() {
@@ -568,7 +533,6 @@ class BrickPiecesTest {
     }
 
     // ========== Edge Cases ==========
-
     @Test
     @DisplayName("Empty cells in matrix are zeros")
     void emptyCellsInMatrixAreZeros() {
@@ -589,7 +553,6 @@ class BrickPiecesTest {
             }
         }
     }
-
     @Test
     @DisplayName("No brick has all zeros in any rotation")
     void noBrickHasAllZerosInAnyRotation() {
@@ -610,7 +573,6 @@ class BrickPiecesTest {
     }
 
     // ========== Helper Methods ==========
-
     private int countBlocks(int[][] shape) {
         int count = 0;
         for (int i = 0; i < shape.length; i++) {
