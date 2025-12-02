@@ -1,0 +1,42 @@
+/* Root */
+.root {
+    -fx-background-color: linear-gradient(to bottom, #0f0f23, #1a1a2e, #16213e);
+}
+
+/* Game board */
+#gamePanel {
+    -fx-background-color: rgba(0, 0, 0, 0.7);
+    -fx-border-color: #333333;
+    -fx-border-width: 2;
+}
+
+/* Panel backgrounds */
+.panel-bg {
+    -fx-background-color: rgba(0, 0, 0, 0.5);
+    -fx-background-radius: 8;
+    -fx-padding: 10;
+}
+
+/* Labels */
+.label-title {
+    -fx-text-fill: #888888;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.label-value {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.label-score {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+/* Combo meter glow */
+.combo-meter-glow {
+    -fx-effect: dropshadow(gaussian, #00ff00, 10, 0.5, 0, 0);
+}

@@ -1,8 +1,12 @@
 package com.comp2042.ui;
 
-import com.comp2042.controller.*;
-import com.comp2042.model.*;
+import com.comp2042.controller.GameController;
+import com.comp2042.controller.InputEventListener;
+import com.comp2042.event.*;
+import com.comp2042.model.GameMode;
+import com.comp2042.model.ViewData;
 import com.comp2042.state.*;
+import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -11,7 +15,11 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.*;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.net.URL;
@@ -34,6 +42,8 @@ public class GuiController implements Initializable {
     @FXML private Label piecesValue, linesValue, linesLabel, timeLabel;
     @FXML private VBox scoreDisplayContainer, scoreBox, bestScoreBox, bestTimeBox;
     @FXML private Region scoreSeparator;
+    @FXML private Pane effectsLayer;
+    @FXML private ComboMeterPanel comboMeterPanel;
 
     private GameState gameState;
     private TimerManager timerManager;
@@ -63,38 +73,49 @@ public class GuiController implements Initializable {
     private void setupInputCallbacks() {
         inputHandler.setCallback(new InputHandler.InputCallback() {
             public void onMoveLeft() {
-                if (logicHandler.moveBrickHorizontally(-1) && gameState.isLockDelayActive())
-                    logicHandler.resetLockDelay();
+                if (logicHandler.moveBrickHorizontally(-1) && gameState.isLockDelayActive()) {logicHandler.resetLockDelay();}
             }
+
             public void onMoveRight() {
-                if (logicHandler.moveBrickHorizontally(1) && gameState.isLockDelayActive())
-                    logicHandler.resetLockDelay();
+                if (logicHandler.moveBrickHorizontally(1) && gameState.isLockDelayActive()) {logicHandler.resetLockDelay();}
             }
+
             public void onRotate() {
-                if (logicHandler.attemptRotation() && gameState.isLockDelayActive())
-                    logicHandler.resetLockDelay();
+                if (logicHandler.attemptRotation() && gameState.isLockDelayActive()) {logicHandler.resetLockDelay();}
             }
-            public void onSoftDrop() {
-                logicHandler.moveDown(new com.comp2042.event.MoveEvent(
-                        com.comp2042.event.EventType.DOWN, com.comp2042.event.EventSource.USER));
-            }
-            public void onHardDrop() { logicHandler.handleHardDrop(); }
+
+            public void onSoftDrop() {logicHandler.moveDown(new MoveEvent(EventType.DOWN, EventSource.USER));}
+            public void onHardDrop() {logicHandler.handleHardDrop();}
+
             public void onHold() {
                 logicHandler.handleHold(() -> {
                     updateHoldDisplay();
                     updateNextDisplay();
                 });
             }
+
             public void onTogglePause() {
                 flowManager.togglePause();
                 pauseMenuPanel.setVisible(gameState.isPaused());
-                if (!gameState.isPaused()) gamePanel.requestFocus();
+                if (gameState.isPaused()) {logicHandler.pauseComboDecay();}
+                else {
+                    logicHandler.resumeComboDecay();
+                    gamePanel.requestFocus();
+                }
             }
+
             public void onRestartInstant() {
-                flowManager.restartInstantly(() -> completionManager.removeCompletionPanels(getRootPane()));
+                flowManager.restartInstantly(() -> {
+                    completionManager.removeCompletionPanels(getRootPane());
+                    if (comboMeterPanel != null) {comboMeterPanel.reset();}
+                });
             }
+
             public void onRestartWithCountdown() {
-                flowManager.restartWithCountdown(() -> completionManager.removeCompletionPanels(getRootPane()));
+                flowManager.restartWithCountdown(() -> {
+                    completionManager.removeCompletionPanels(getRootPane());
+                    if (comboMeterPanel != null) {comboMeterPanel.reset();}
+                });
             }
         });
 
@@ -114,8 +135,12 @@ public class GuiController implements Initializable {
                 pauseMenuPanel.setVisible(false);
                 gamePanel.requestFocus();
             });
-            pauseMenuPanel.setOnRetry(() ->
-                    flowManager.restartInstantly(() -> completionManager.removeCompletionPanels(getRootPane())));
+            pauseMenuPanel.setOnRetry(() -> flowManager.restartInstantly(() -> {
+                completionManager.removeCompletionPanels(getRootPane());
+                if (comboMeterPanel != null) {
+                    comboMeterPanel.reset();
+                }
+            }));
             pauseMenuPanel.setOnMainMenu(this::goToMainMenu);
         }
     }
@@ -125,22 +150,35 @@ public class GuiController implements Initializable {
         gameState.setChallengeCompleted(false);
         gameState.resetScores();
         uiUpdater.configureForGameMode(mode);
+
+        if (comboMeterPanel != null) {
+            if (mode == GameMode.FORTY_LINES) {
+                comboMeterPanel.setVisible(false);
+                comboMeterPanel.setManaged(false);
+            } else {
+                comboMeterPanel.setVisible(true);
+                comboMeterPanel.setManaged(true);
+            }
+        }
     }
 
     public void initGameView(int[][] boardMatrix, ViewData brick) {
-        // Bind UI
         uiUpdater.bindLabels(scoreValue, bestScoreValue, bestTimeLabel,
                 scoreBox, bestScoreBox, bestTimeBox, scoreSeparator, scoreDisplayContainer,
                 piecesValue, linesValue, linesLabel, timeValue, timeLabel);
 
-        // Initialize managers
         timerManager = new TimerManager(gameState, timeValue);
         scoringManager = new ScoringManager(gameState);
         logicHandler = new GameLogicHandler(gameState, timerManager, scoringManager, renderer, uiUpdater);
         flowManager = new GameFlowManager(gameState, timerManager, renderer, uiUpdater, logicHandler);
         completionManager = new ChallengeCompletionManager(gameState, timerManager, uiUpdater);
 
-        // Link components
+        if (gamePanel != null && effectsLayer != null) {
+            ComboAnimationManager animationManager = new ComboAnimationManager(gamePanel, effectsLayer);
+            BoardGlowEffect glowEffect = new BoardGlowEffect(gamePanel);
+            logicHandler.setComboComponents(animationManager, comboMeterPanel, glowEffect);
+        }
+
         logicHandler.setGameController(gameController);
         flowManager.setGameController(gameController);
         completionManager.setGameController(gameController);
@@ -150,25 +188,40 @@ public class GuiController implements Initializable {
         flowManager.setHideGameOverPanelCallback(() -> gameOverPanel.setVisible(false));
         flowManager.setHidePausePanelCallback(() -> pauseMenuPanel.setVisible(false));
 
-        // Set callbacks
         timerManager.setOnTimeUp(() -> completionManager.completeTwoMinutesChallenge(
                 getRootPane(),
-                () -> flowManager.restartWithCountdown(() -> completionManager.removeCompletionPanels(getRootPane())),
+                () -> flowManager.restartWithCountdown(() -> {
+                    completionManager.removeCompletionPanels(getRootPane());
+                    if (comboMeterPanel != null) {
+                        comboMeterPanel.reset();
+                    }
+                }),
                 this::goToMainMenu));
 
         logicHandler.setOnGameOver(this::gameOver);
+
         logicHandler.setOnChallengeComplete40Lines(() -> completionManager.completeFortyLinesChallenge(
                 getRootPane(),
-                () -> flowManager.restartWithCountdown(() -> completionManager.removeCompletionPanels(getRootPane())),
+                () -> flowManager.restartWithCountdown(() -> {
+                    completionManager.removeCompletionPanels(getRootPane());
+                    if (comboMeterPanel != null) {
+                        comboMeterPanel.reset();
+                    }
+                }),
                 this::goToMainMenu));
+
         logicHandler.setOnUpdateNextDisplay(this::updateNextDisplay);
 
         logicHandler.setOnChallengeComplete2Minutes(() -> completionManager.completeTwoMinutesChallenge(
                 getRootPane(),
-                () -> flowManager.restartWithCountdown(() -> completionManager.removeCompletionPanels(getRootPane())),
+                () -> flowManager.restartWithCountdown(() -> {
+                    completionManager.removeCompletionPanels(getRootPane());
+                    if (comboMeterPanel != null) {
+                        comboMeterPanel.reset();
+                    }
+                }),
                 this::goToMainMenu));
 
-        // Initialize renderer
         renderer.initializeGameBoard(boardMatrix.length, boardMatrix[0].length);
         renderer.initializeBrickPanel(brick.getBrickData());
         renderer.setHoldRectangles(renderer.initializePreviewPanel(holdPanel));
@@ -179,8 +232,7 @@ public class GuiController implements Initializable {
                 renderer.initializePreviewPanel(nextPanel4),
                 renderer.initializePreviewPanel(nextPanel5));
 
-        // Add key handler and start
-        javafx.application.Platform.runLater(() -> {
+        Platform.runLater(() -> {
             if (gamePanel.getScene() != null) {
                 gamePanel.getScene().addEventFilter(KeyEvent.KEY_PRESSED, inputHandler::handleKeyPress);
             }
@@ -215,25 +267,29 @@ public class GuiController implements Initializable {
 
         int pieces = gameController.getPiecesPlaced();
         int lines = gameController.getLinesCleared();
-        int score = (gameState.getCurrentGameMode() == GameMode.NORMAL) ?
-                gameState.getNormalModeScore() : gameState.getTwoMinutesScore();
+        int score;
+        if (gameState.getCurrentGameMode() == GameMode.NORMAL) {
+            score = gameState.getNormalModeScore();
+        } else {
+            score = gameState.getTwoMinutesScore();
+        }
 
         gameOverPanel.showGameOver(pieces, lines, finalTime, timeStr, score, gameState.getCurrentGameMode());
-        gameOverPanel.setOnRetry(() ->
-                flowManager.restartWithCountdown(() -> completionManager.removeCompletionPanels(getRootPane())));
+        gameOverPanel.setOnRetry(() -> flowManager.restartWithCountdown(() -> {
+            completionManager.removeCompletionPanels(getRootPane());
+            if (comboMeterPanel != null) {
+                comboMeterPanel.reset();
+            }
+        }));
         gameOverPanel.setOnMainMenu(this::goToMainMenu);
     }
 
     private StackPane getRootPane() {
-        if (gamePanel.getScene() == null) return null;
-        if (gamePanel.getScene().getRoot() instanceof StackPane) {
-            return (StackPane) gamePanel.getScene().getRoot();
-        }
-        javafx.scene.Parent parent = gamePanel.getParent();
+        if (gamePanel.getScene() == null) {return null;}
+        if (gamePanel.getScene().getRoot() instanceof StackPane) {return (StackPane) gamePanel.getScene().getRoot();}
+        Parent parent = gamePanel.getParent();
         while (parent != null) {
-            if (parent instanceof StackPane && parent.getParent() == null) {
-                return (StackPane) parent;
-            }
+            if (parent instanceof StackPane && parent.getParent() == null) {return (StackPane) parent;}
             parent = parent.getParent();
         }
         return null;
@@ -252,9 +308,9 @@ public class GuiController implements Initializable {
 
     public void setEventListener(InputEventListener eventListener) {
         this.gameController = (GameController) eventListener;
-        if (logicHandler != null) logicHandler.setGameController((GameController) eventListener);
-        if (flowManager != null) flowManager.setGameController((GameController) eventListener);
-        if (completionManager != null) completionManager.setGameController((GameController) eventListener);
+        if (logicHandler != null) {logicHandler.setGameController((GameController) eventListener);}
+        if (flowManager != null) {flowManager.setGameController((GameController) eventListener);}
+        if (completionManager != null) {completionManager.setGameController((GameController) eventListener);}
     }
 
     public void bindScore(IntegerProperty integerProperty) {}

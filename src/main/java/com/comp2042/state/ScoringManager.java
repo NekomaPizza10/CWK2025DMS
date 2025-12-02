@@ -21,6 +21,12 @@ public class ScoringManager {
 
         GameMode mode = gameState.getCurrentGameMode();
 
+        if (mode == GameMode.NORMAL) {
+            gameState.incrementNormalModeCombo();
+        } else {
+            gameState.incrementTwoMinutesCombo();
+        }
+
         // Base points for line clears
         int baseScore = switch (linesCleared) {
             case 1 -> 100;  // Single
@@ -34,19 +40,21 @@ public class ScoringManager {
         int backToBackBonus = 0;
 
         if (mode == GameMode.NORMAL) {
-            comboBonus = gameState.getNormalModeCombo() * 50;
+            int currentCombo = gameState.getNormalModeCombo();
+            comboBonus = (currentCombo - 1) * 50;
+
             if (linesCleared == 4 && gameState.isNormalModeLastWasTetris()) {
-                backToBackBonus = 400; // 50% bonus for back-to-back Tetris
+                backToBackBonus = 400; 
             }
-            gameState.incrementNormalModeCombo();
             gameState.setNormalModeLastWasTetris(linesCleared == 4);
 
         } else { // TWO_MINUTES
-            comboBonus = gameState.getTwoMinutesCombo() * 50;
+            int currentCombo = gameState.getTwoMinutesCombo();
+            comboBonus = (currentCombo - 1) * 50;
+
             if (linesCleared == 4 && gameState.isTwoMinutesLastWasTetris()) {
                 backToBackBonus = 400;
             }
-            gameState.incrementTwoMinutesCombo();
             gameState.setTwoMinutesLastWasTetris(linesCleared == 4);
         }
 
