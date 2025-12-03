@@ -1,6 +1,6 @@
 package com.comp2042.controller;
 
-import com.comp2042.ui.GuiController;
+import com.comp2042.ui.initialization.GuiController;
 import com.comp2042.model.GameMode;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -17,20 +17,12 @@ import javafx.util.Duration;
 
 public class MainMenuController {
 
-    @FXML
-    private Button normalModeButton;
-    @FXML
-    private Button fortyLinesButton;
-    @FXML
-    private Button twoMinutesButton;
-    @FXML
-    private Button howToPlayButton;
-    @FXML
-    private Button exitButton;
-    @FXML
-    private StackPane howToPlayPanel;
-    @FXML
-    private VBox mainMenuBox;
+    @FXML private Button normalModeButton;
+    @FXML private Button fortyLinesButton;
+    @FXML private Button twoMinutesButton;
+    @FXML private Button howToPlayButton;
+    @FXML private Button exitButton;
+    @FXML private StackPane howToPlayPanel;
 
     @FXML
     public void initialize() {
@@ -41,13 +33,12 @@ public class MainMenuController {
 
         // System Buttons with NEW colors
         setupButton(howToPlayButton, "#93E1D8");  // Light Teal
-        setupButton(exitButton, "#ff4444");       // Red (Standard Exit)
+        setupButton(exitButton, "#ff4444");       // Red
     }
 
     private void setupButton(Button btn, String colorHex) {
         if (btn == null) return;
-
-        // Base Style (Transparent with colored border)
+        // Base Style
         String baseStyle = String.format(
                 "-fx-font-family: 'Segoe UI'; -fx-font-size: %s; -fx-font-weight: bold; " +
                         "-fx-background-color: transparent; " +
@@ -60,7 +51,7 @@ public class MainMenuController {
                 (btn == howToPlayButton || btn == exitButton) ? "30" : "10"
         );
 
-        // Hover Style (Filled with color, Dark text)
+        // Hover Style
         String hoverStyle = String.format(
                 "-fx-font-family: 'Segoe UI'; -fx-font-size: %s; -fx-font-weight: bold; " +
                         "-fx-background-color: %s; " +

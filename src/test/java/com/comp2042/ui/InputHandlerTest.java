@@ -1,6 +1,7 @@
 package com.comp2042.ui;
 
 import com.comp2042.state.GameState;
+import com.comp2042.ui.handlers.InputHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;

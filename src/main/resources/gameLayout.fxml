@@ -3,14 +3,14 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.geometry.Insets?>
-<?import com.comp2042.ui.ComboMeterPanel?>
-<?import com.comp2042.ui.GameOverPanel?>
-<?import com.comp2042.ui.PauseMenuPanel?>
+<?import com.comp2042.ui.effect.ComboMeterPanel?>
+<?import com.comp2042.ui.panel.GameOverPanel?>
+<?import com.comp2042.ui.panel.PauseMenuPanel?>
 
 <StackPane xmlns:fx="http://javafx.com/fxml"
            stylesheets="game-style.css"
            fx:id="rootPane"
-           fx:controller="com.comp2042.ui.GuiController"
+           fx:controller="com.comp2042.ui.initialization.GuiController"
            prefWidth="700" prefHeight="900"
            style="-fx-background-color: linear-gradient(to bottom, #0f0f23, #1a1a2e, #16213e);">
 

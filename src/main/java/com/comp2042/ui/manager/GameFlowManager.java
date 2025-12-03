@@ -1,9 +1,12 @@
-package com.comp2042.ui;
+package com.comp2042.ui.manager;
 
 import com.comp2042.controller.GameController;
 import com.comp2042.state.GameState;
 import com.comp2042.state.TimerManager;
 import com.comp2042.event.*;
+import com.comp2042.ui.handlers.UIUpdater;
+import com.comp2042.ui.logic.GameLogicHandler;
+import com.comp2042.ui.render.GameRenderer;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 

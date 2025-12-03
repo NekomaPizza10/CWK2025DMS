@@ -2,6 +2,7 @@ package com.comp2042.ui;
 
 import com.comp2042.controller.InputEventListener;
 import com.comp2042.model.ViewData;
+import com.comp2042.ui.initialization.GuiController;
 import javafx.beans.property.IntegerProperty;
 
 /**

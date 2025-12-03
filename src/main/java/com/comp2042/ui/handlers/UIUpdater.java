@@ -1,4 +1,4 @@
-package com.comp2042.ui;
+package com.comp2042.ui.handlers;
 
 import com.comp2042.model.GameMode;
 import com.comp2042.state.GameState;

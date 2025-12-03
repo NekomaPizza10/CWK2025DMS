@@ -1,4 +1,4 @@
-package com.comp2042.ui;
+package com.comp2042.ui.effect;
 
 import javafx.application.Platform;
 import javafx.scene.layout.GridPane;

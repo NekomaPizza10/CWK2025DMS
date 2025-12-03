@@ -4,7 +4,7 @@ import com.comp2042.core.Board;
 import com.comp2042.core.SimpleBoard;
 import com.comp2042.model.*;
 import com.comp2042.event.*;
-import com.comp2042.ui.GuiController;
+import com.comp2042.ui.initialization.GuiController;
 
 import java.util.List;
 

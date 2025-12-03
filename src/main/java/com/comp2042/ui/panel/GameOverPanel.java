@@ -1,5 +1,7 @@
-package com.comp2042.ui;
+package com.comp2042.ui.panel;
 
+import com.comp2042.model.*;
+import javafx.animation.FadeTransition;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -7,38 +9,39 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 
-public class CompletionPanel extends StackPane {
+public class GameOverPanel extends StackPane {
 
     private Runnable onRetry;
     private Runnable onMainMenu;
 
-    public CompletionPanel(String timeString, boolean isNewBest, String previousBest) {
+    public GameOverPanel() {
         getStylesheets().add(getClass().getResource("/completion.css").toExternalForm());
         getStyleClass().add("completion-overlay");
+        setVisible(false);
+    }
+
+    public void showGameOver(int pieces, int lines, long timeMs, String timeStr, int score, GameMode mode) {
+        getChildren().clear();
 
         VBox card = new VBox();
         card.getStyleClass().add("completion-card");
 
+        // This prevents the VBox from stretching to the top and bottom of the screen
         card.setMaxHeight(Region.USE_PREF_SIZE);
         card.setMaxWidth(Region.USE_PREF_SIZE);
 
-        Label title = new Label("COMPLETED!");
-        title.getStyleClass().add("completion-title");
+        Label title = new Label("GAME OVER");
+        title.getStyleClass().add("game-over-title");
         card.getChildren().add(title);
 
-        addStat(card, "FINAL TIME", timeString, true);
+        // Stats
+        addStat(card, "FINAL SCORE", String.valueOf(score), true);
+        addStat(card, "TIME PLAYED", timeStr, false);
+        addStat(card, "LINES CLEARED", String.valueOf(lines), false);
 
-        if (isNewBest) {
-            Label badge = new Label("★ NEW RECORD ★");
-            badge.getStyleClass().add("completion-new-best");
-            card.getChildren().add(badge);
-        } else if (previousBest != null) {
-            Label best = new Label("Best: " + previousBest);
-            best.getStyleClass().add("stat-label");
-            card.getChildren().add(best);
-        }
-
+        // Buttons
         HBox buttons = new HBox(15);
         buttons.setAlignment(Pos.CENTER);
         buttons.getStyleClass().add("button-box");
@@ -59,6 +62,14 @@ public class CompletionPanel extends StackPane {
         card.getChildren().add(hint);
 
         getChildren().add(card);
+
+        // Fade in animation
+        setVisible(true);
+        setOpacity(0);
+        FadeTransition fade = new FadeTransition(Duration.millis(300), this);
+        fade.setFromValue(0);
+        fade.setToValue(1);
+        fade.play();
     }
 
     private void addStat(VBox container, String labelText, String valueText, boolean isHighlight) {

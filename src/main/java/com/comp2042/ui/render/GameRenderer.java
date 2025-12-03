@@ -1,4 +1,4 @@
-package com.comp2042.ui;
+package com.comp2042.ui.render;
 
 import com.comp2042.model.ViewData;
 import javafx.scene.layout.GridPane;
@@ -6,9 +6,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 
-
-// Handles all game rendering operations.
-
+/**
+ * Handles all game rendering operations.
+ */
 public class GameRenderer {
 
     private static final int BRICK_SIZE = 25;
@@ -22,12 +22,17 @@ public class GameRenderer {
     private GridPane gamePanel;
     private GridPane brickPanel;
 
+    private int boardWidth;
+    private int boardHeight;
+
     public GameRenderer(GridPane gamePanel, GridPane brickPanel) {
         this.gamePanel = gamePanel;
         this.brickPanel = brickPanel;
     }
 
     public void initializeGameBoard(int height, int width) {
+        this.boardHeight = height;
+        this.boardWidth = width;
         displayMatrix = new Rectangle[height][width];
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
@@ -68,24 +73,49 @@ public class GameRenderer {
     }
 
     public void refreshBrick(ViewData brick) {
+        if (brick == null || brickRectangles == null) {return;}
+        // Remove existing brick rectangles from game panel
         for (Rectangle[] row : brickRectangles) {
-            for (Rectangle r : row) { gamePanel.getChildren().remove(r); }
+            for (Rectangle r : row) {
+                gamePanel.getChildren().remove(r);
+            }
         }
-        for (int i = 0; i < brick.getBrickData().length; i++) {
-            for (int j = 0; j < brick.getBrickData()[i].length; j++) {
-                if (brick.getBrickData()[i][j] != 0) {
-                    int gridX = brick.getxPosition() + j;
-                    int gridY = brick.getyPosition() + i;
-                    brickRectangles[i][j].setFill(getFillColor(brick.getBrickData()[i][j]));
+        int[][] brickData = brick.getBrickData();
+        if (brickData == null) {
+            return;
+        }
+        int brickX = brick.getxPosition();
+        int brickY = brick.getyPosition();
+
+        for (int i = 0; i < brickData.length; i++) {
+            for (int j = 0; j < brickData[i].length; j++) {
+                if (brickData[i][j] != 0) {
+                    int gridX = brickX + j;
+                    int gridY = brickY + i;
+
+                    brickRectangles[i][j].setFill(getFillColor(brickData[i][j]));
                     brickRectangles[i][j].setStroke(Color.BLACK);
                     brickRectangles[i][j].setStrokeWidth(0.5);
-                    if (gridY >= 0) { gamePanel.add(brickRectangles[i][j], gridX, gridY); }
-                } else { brickRectangles[i][j].setFill(Color.TRANSPARENT); }
+
+                    if (isValidGridPosition(gridX, gridY)) {
+                        gamePanel.add(brickRectangles[i][j], gridX, gridY);
+                    }
+                } else {
+                    brickRectangles[i][j].setFill(Color.TRANSPARENT);
+                }
             }
         }
     }
 
+    private boolean isValidGridPosition(int x, int y) {
+        return x >= 0 && y >= 0 && x < boardWidth && y < boardHeight;
+
+    }
+
     public void refreshGameBackground(int[][] board) {
+        if (board == null || displayMatrix == null) {
+            return;
+        }
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board[i].length; j++) {
                 displayMatrix[i][j].setFill(getFillColor(board[i][j]));
@@ -94,33 +124,51 @@ public class GameRenderer {
     }
 
     public void updatePreviewPanel(Rectangle[][] rects, int[][] brickData) {
+        if (rects == null) {return;}
+
+        // Clear the preview panel
         for (int i = 0; i < PREVIEW_GRID_SIZE; i++) {
             for (int j = 0; j < PREVIEW_GRID_SIZE; j++) {
                 rects[i][j].setFill(Color.TRANSPARENT);
                 rects[i][j].setStroke(null);
             }
         }
-        if (brickData == null) return;
 
-        int minRow = PREVIEW_GRID_SIZE, maxRow = -1, minCol = PREVIEW_GRID_SIZE, maxCol = -1;
+        if (brickData == null) {return;}
+
+        // Find bounding box of the brick
+        int minRow = PREVIEW_GRID_SIZE, maxRow = -1;
+        int minCol = PREVIEW_GRID_SIZE, maxCol = -1;
+
         for (int i = 0; i < brickData.length; i++) {
             for (int j = 0; j < brickData[i].length; j++) {
                 if (brickData[i][j] != 0) {
-                    minRow = Math.min(minRow, i); maxRow = Math.max(maxRow, i);
-                    minCol = Math.min(minCol, j); maxCol = Math.max(maxCol, j);
+                    minRow = Math.min(minRow, i);
+                    maxRow = Math.max(maxRow, i);
+                    minCol = Math.min(minCol, j);
+                    maxCol = Math.max(maxCol, j);
                 }
             }
         }
-        if (maxRow < 0) return;
 
-        int brickHeight = maxRow - minRow + 1, brickWidth = maxCol - minCol + 1;
-        int offsetRow = (4 - brickHeight) / 2, offsetCol = (4 - brickWidth) / 2;
+        if (maxRow < 0) {
+            return;
+        }
+
+        // Center the brick in the preview
+        int brickHeight = maxRow - minRow + 1;
+        int brickWidth = maxCol - minCol + 1;
+        int offsetRow = (PREVIEW_GRID_SIZE - brickHeight) / 2;
+        int offsetCol = (PREVIEW_GRID_SIZE - brickWidth) / 2;
 
         for (int i = 0; i < brickData.length; i++) {
             for (int j = 0; j < brickData[i].length; j++) {
                 if (brickData[i][j] != 0) {
-                    int targetRow = offsetRow + (i - minRow), targetCol = offsetCol + (j - minCol);
-                    if (targetRow >= 0 && targetRow < 4 && targetCol >= 0 && targetCol < 4) {
+                    int targetRow = offsetRow + (i - minRow);
+                    int targetCol = offsetCol + (j - minCol);
+
+                    if (targetRow >= 0 && targetRow < PREVIEW_GRID_SIZE &&
+                            targetCol >= 0 && targetCol < PREVIEW_GRID_SIZE) {
                         rects[targetRow][targetCol].setFill(getFillColor(brickData[i][j]));
                         rects[targetRow][targetCol].setStroke(Color.BLACK);
                         rects[targetRow][targetCol].setStrokeWidth(0.5);
@@ -131,12 +179,18 @@ public class GameRenderer {
     }
 
     public void renderShadow(ViewData brick, int shadowY, int[][] boardMatrix) {
+        if (brick == null || boardMatrix == null || displayMatrix == null) {return;}
         int shadowX = brick.getxPosition();
         int[][] brickData = brick.getBrickData();
+
+        if (brickData == null) {return;}
+
         for (int i = 0; i < brickData.length; i++) {
             for (int j = 0; j < brickData[i].length; j++) {
                 if (brickData[i][j] != 0) {
-                    int boardRow = shadowY + i, boardCol = shadowX + j;
+                    int boardRow = shadowY + i;
+                    int boardCol = shadowX + j;
+
                     if (boardRow >= 0 && boardRow < displayMatrix.length &&
                             boardCol >= 0 && boardCol < displayMatrix[0].length) {
                         if (boardMatrix[boardRow][boardCol] == 0) {
@@ -151,24 +205,39 @@ public class GameRenderer {
     public void clearBrickDisplay() {
         if (brickRectangles != null) {
             for (Rectangle[] row : brickRectangles) {
-                for (Rectangle r : row) { gamePanel.getChildren().remove(r); }
+                for (Rectangle r : row) {
+                    gamePanel.getChildren().remove(r);
+                }
             }
         }
     }
 
     private Paint getFillColor(int value) {
         return switch (value) {
-            case 0 -> Color.TRANSPARENT; case 1 -> Color.CYAN; case 2 -> Color.BLUE;
-            case 3 -> Color.ORANGE; case 4 -> Color.YELLOW; case 5 -> Color.GREEN;
-            case 6 -> Color.PURPLE; case 7 -> Color.RED; default -> Color.WHITE;
+            case 0 -> Color.TRANSPARENT;
+            case 1 -> Color.CYAN;
+            case 2 -> Color.BLUE;
+            case 3 -> Color.ORANGE;
+            case 4 -> Color.YELLOW;
+            case 5 -> Color.GREEN;
+            case 6 -> Color.PURPLE;
+            case 7 -> Color.RED;
+            default -> Color.WHITE;
         };
     }
 
-    public void setHoldRectangles(Rectangle[][] holdRectangles) { this.holdRectangles = holdRectangles; }
-    public void setNextRectangles(Rectangle[][] n1, Rectangle[][] n2, Rectangle[][] n3, Rectangle[][] n4, Rectangle[][] n5) {
-        this.nextRectangles1 = n1; this.nextRectangles2 = n2; this.nextRectangles3 = n3;
-        this.nextRectangles4 = n4; this.nextRectangles5 = n5;
+    // Getters and Setters
+    public void setHoldRectangles(Rectangle[][] holdRectangles) {this.holdRectangles = holdRectangles;}
+
+    public void setNextRectangles(Rectangle[][] n1, Rectangle[][] n2, Rectangle[][] n3,
+                                  Rectangle[][] n4, Rectangle[][] n5) {
+        this.nextRectangles1 = n1;
+        this.nextRectangles2 = n2;
+        this.nextRectangles3 = n3;
+        this.nextRectangles4 = n4;
+        this.nextRectangles5 = n5;
     }
+
     public Rectangle[][] getHoldRectangles() { return holdRectangles; }
     public Rectangle[][] getNextRectangles1() { return nextRectangles1; }
     public Rectangle[][] getNextRectangles2() { return nextRectangles2; }

@@ -1,4 +1,4 @@
-package com.comp2042.ui;
+package com.comp2042.ui.panel;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
