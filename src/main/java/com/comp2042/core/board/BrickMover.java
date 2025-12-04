@@ -40,7 +40,15 @@ public class BrickMover {
     private boolean tryMove(int dx, int dy) {
         Point newPosition = new Point(currentOffset);
         newPosition.translate(dx, dy);
-        if (wouldCollide(newPosition)) {return false;}
+
+        // Prevent X from going negative
+        if (newPosition.getX() < 0) {
+            return false;
+        }
+
+        if (wouldCollide(newPosition)) {
+            return false;
+        }
         currentOffset = newPosition;
         return true;
     }

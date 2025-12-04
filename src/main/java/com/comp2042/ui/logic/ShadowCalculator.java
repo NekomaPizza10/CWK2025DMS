@@ -8,17 +8,23 @@ import com.comp2042.model.ViewData;
  */
 public class ShadowCalculator {
 
-    // Calculates the Y position where the shadow piece should be rendered.
     public int calculateShadowY(ViewData brick, int[][] boardMatrix) {
-        if (brick == null || boardMatrix == null) {
+        // Handle null brick
+        if (brick == null) {
             return 0;
+        }
+
+        // Handle null/empty board
+        if (boardMatrix == null || boardMatrix.length == 0) {
+            return brick.getyPosition();
         }
 
         int x = brick.getxPosition();
         int y = brick.getyPosition();
         int[][] shape = brick.getBrickData();
 
-        if (shape == null) {
+        // Handle null/empty shape
+        if (shape == null || shape.length == 0) {
             return y;
         }
         // Move down until collision
@@ -29,26 +35,32 @@ public class ShadowCalculator {
     }
 
     public boolean hasCollision(int[][] board, int[][] brick, int x, int y) {
-        if (board == null || brick == null) {
+        if (board == null || brick == null || brick.length == 0) {
+            return true;
+        }
+
+        if (board.length == 0 || board[0].length == 0) {
             return true;
         }
 
         int boardHeight = board.length;
         int boardWidth = board[0].length;
 
-        for (int row = 0; row < brick.length; row++) {
-            for (int col = 0; col < brick[row].length; col++) {
-                if (brick[row][col] != 0) {
-                    int boardRow = y + row;
-                    int boardCol = x + col;
+        // MUST match MatrixOperations.intersect convention exactly
+        for (int i = 0; i < brick.length; i++) {
+            for (int j = 0; j < brick[i].length; j++) {
+                int targetX = x + i;  // Column position
+                int targetY = y + j;  // Row position
 
-                    // Check bounds
-                    if (isOutOfBounds(boardRow, boardCol, boardHeight, boardWidth)) {
+                // Use brick[j][i] - same transposed access as MatrixOperations
+                if (brick[j][i] != 0) {
+                    // Check horizontal bounds and bottom bound
+                    if (targetX < 0 || targetX >= boardWidth || targetY >= boardHeight) {
                         return true;
                     }
 
                     // Check collision with existing blocks (only for visible rows)
-                    if (boardRow >= 0 && board[boardRow][boardCol] != 0) {
+                    if (targetY >= 0 && board[targetY][targetX] != 0) {
                         return true;
                     }
                 }
@@ -57,9 +69,4 @@ public class ShadowCalculator {
 
         return false;
     }
-
-    private boolean isOutOfBounds(int row, int col, int height, int width) {
-        return row >= height || col < 0 || col >= width;
-    }
-
 }

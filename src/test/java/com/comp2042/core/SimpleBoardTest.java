@@ -406,7 +406,7 @@ class SimpleBoardTest {
     void fullGameCycle() {
         // Spawn first brick
         board.createNewBrick();
-        assertEquals(0, board.getPiecesPlaced(), "Should have 0 pieces (counter increments differently)");
+        assertEquals(0, board.getPiecesPlaced(), "Should have 0 pieces before merge");
 
         // Move and rotate
         board.moveBrickRight();
@@ -421,30 +421,37 @@ class SimpleBoardTest {
         // Merge
         board.mergeBrickToBackground();
 
+        // After merge, pieces counter should be 1
+        assertEquals(1, board.getPiecesPlaced(), "Should have 1 piece after merge");
+
         // Clear rows
         ClearRow clearResult = board.clearRows();
         int linesCleared = clearResult.getLinesRemoved();
 
         // Spawn next brick
         boolean gameOver = board.createNewBrick();
-        assertEquals(0, board.getPiecesPlaced(), "Pieces counter not incrementing as expected");
+
+        // Still 1 piece (counter increments on merge, not spawn)
+        assertEquals(1, board.getPiecesPlaced(), "Should still have 1 piece");
 
         // Verify game continues
         assertFalse(gameOver, "Game should continue");
 
-        // Verify board has merged brick
-        int[][] matrix = board.getBoardMatrix();
-        boolean hasBlocks = false;
-        for (int i = 0; i < HEIGHT; i++) {
-            for (int j = 0; j < WIDTH; j++) {
-                if (matrix[i][j] != 0) {
-                    hasBlocks = true;
-                    break;
+        // Verify board has merged brick (unless row was cleared)
+        if (linesCleared == 0) {
+            int[][] matrix = board.getBoardMatrix();
+            boolean hasBlocks = false;
+            for (int i = 0; i < HEIGHT; i++) {
+                for (int j = 0; j < WIDTH; j++) {
+                    if (matrix[i][j] != 0) {
+                        hasBlocks = true;
+                        break;
+                    }
                 }
+                if (hasBlocks) break;
             }
-            if (hasBlocks) break;
+            assertTrue(hasBlocks, "Board should have blocks from first piece");
         }
-        assertTrue(hasBlocks, "Board should have blocks from first piece");
     }
 
     // ========== Pieces Placed Counter ==========
@@ -452,12 +459,19 @@ class SimpleBoardTest {
     @Test
     @DisplayName("Pieces placed counter increments correctly")
     void piecesPlacedCounterIncrementsCorrectly() {
-        // Spawn 5 pieces
+        // Pieces counter increments on MERGE, not on spawn
+        assertEquals(0, board.getPiecesPlaced(), "Should start at 0");
+
+        // Spawn and merge 5 pieces
         for (int i = 1; i <= 5; i++) {
             board.createNewBrick();
+            // Move to bottom
+            while (board.moveBrickDown()) {}
+            board.mergeBrickToBackground();
+
+            assertEquals(i, board.getPiecesPlaced(),
+                    String.format("Pieces counter should be %d after %d merges", i, i));
         }
-        assertEquals(0, board.getPiecesPlaced(),
-                String.format("Pieces counter at 0 (not %d as expected)", 5));
     }
 
 

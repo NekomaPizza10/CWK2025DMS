@@ -16,6 +16,7 @@ public final class ViewData {
         this.nextBrickData = nextBrickData;
     }
 
+    // MatrixOperations.copy handles null
     public int[][] getBrickData() {
         return MatrixOperations.copy(brickData);
     }
