@@ -113,8 +113,10 @@ class MatrixOperationsTest {
 
         // When: Y=-1 (brick spawning above visible area)
         boolean result = MatrixOperations.intersect(board, brick, 1, -1);
-        // Then: Should allow (for spawn mechanic)
-        assertTrue(result, "Y=-1 with brick extending outside should be detected as collision");
+
+        // Then: Should allow placement (no collision with empty board cells)
+        // Cells above board (Y<0) don't collide, cells at Y>=0 check board
+        assertFalse(result, "Should allow brick above visible area for spawn mechanic");
     }
 
     @Test

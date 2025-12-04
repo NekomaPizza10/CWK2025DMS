@@ -1,6 +1,5 @@
 package com.comp2042.brick;
 
-
 import com.comp2042.brick.pieces.*;
 
 import java.util.ArrayDeque;
@@ -24,16 +23,20 @@ public class RandomBrickGenerator implements BrickGenerator {
     @Override
     public Brick getBrick() {
         // Maintain queue size
-        if (nextBricks.size() <= 7) {   // Keep 7 bricks in queue at most
+        if (nextBricks.size() <= 7) {
             fillBag();
         }
 
         return nextBricks.poll();
     }
 
-
     // Get multiple next bricks for preview
     public List<Brick> getNextBricks(int count) {
+        // FIX: Ensure we have enough bricks in the queue for the requested count
+        while (nextBricks.size() < count) {
+            fillBag();
+        }
+
         List<Brick> preview = new ArrayList<>();
         int index = 0;
         for (Brick brick : nextBricks) {
@@ -73,5 +76,4 @@ public class RandomBrickGenerator implements BrickGenerator {
         // Add shuffled bag to queue
         nextBricks.addAll(bag);
     }
-
 }

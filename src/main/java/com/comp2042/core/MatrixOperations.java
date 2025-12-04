@@ -18,8 +18,20 @@ public class MatrixOperations {
             for (int j = 0; j < brick[i].length; j++) {
                 int targetX = x + i;
                 int targetY = y + j;
-                if (brick[j][i] != 0 && (checkOutOfBound(matrix, targetX, targetY) || matrix[targetY][targetX] != 0)) {
-                    return true;
+                if (brick[j][i] != 0) {
+                    // FIX: Cells above the board (negative Y) cannot collide with board cells
+                    // They should only check horizontal boundaries
+                    if (targetY < 0) {
+                        // Still check if X is out of horizontal bounds
+                        if (targetX < 0 || targetX >= matrix[0].length) {
+                            return true;
+                        }
+                        // Skip collision check for cells above board
+                        continue;
+                    }
+                    if (checkOutOfBound(matrix, targetX, targetY) || matrix[targetY][targetX] != 0) {
+                        return true;
+                    }
                 }
             }
         }
