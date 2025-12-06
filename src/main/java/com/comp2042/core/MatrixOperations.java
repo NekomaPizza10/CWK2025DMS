@@ -14,19 +14,17 @@ public class MatrixOperations {
     }
 
     public static boolean intersect(final int[][] matrix, final int[][] brick, int x, int y) {
-        for (int i = 0; i < brick.length; i++) {
-            for (int j = 0; j < brick[i].length; j++) {
-                int targetX = x + i;
-                int targetY = y + j;
-                if (brick[j][i] != 0) {
-                    // FIX: Cells above the board (negative Y) cannot collide with board cells
-                    // They should only check horizontal boundaries
+        for (int row = 0; row < brick.length; row++) {
+            for (int col = 0; col < brick[row].length; col++) {
+                if (brick[row][col] != 0) {
+                    int targetX = x + col;  // Column → X (horizontal)
+                    int targetY = y + row;  // Row → Y (vertical)
+
+                    // Cells above the board (negative Y) only check horizontal bounds
                     if (targetY < 0) {
-                        // Still check if X is out of horizontal bounds
                         if (targetX < 0 || targetX >= matrix[0].length) {
                             return true;
                         }
-                        // Skip collision check for cells above board
                         continue;
                     }
                     if (checkOutOfBound(matrix, targetX, targetY) || matrix[targetY][targetX] != 0) {
@@ -39,14 +37,9 @@ public class MatrixOperations {
     }
 
     private static boolean checkOutOfBound(int[][] matrix, int targetX, int targetY) {
-        boolean returnValue = true;
-        if (targetX >= 0 && targetY >= 0 && targetY < matrix.length && targetX < matrix[targetY].length) {
-            returnValue = false;
-        }
-        return returnValue;
+        return !(targetX >= 0 && targetY >= 0 && targetY < matrix.length && targetX < matrix[targetY].length);
     }
 
-    // Add null check
     public static int[][] copy(int[][] original) {
         if (original == null) {
             return null;
@@ -61,20 +54,20 @@ public class MatrixOperations {
         return myInt;
     }
 
-    // Add complete bounds checking
     public static int[][] merge(int[][] filledFields, int[][] brick, int x, int y) {
         int[][] copy = copy(filledFields);
-        for (int i = 0; i < brick.length; i++) {
-            for (int j = 0; j < brick[i].length; j++) {
-                int targetX = x + i;
-                int targetY = y + j;
-                // Complete bounds check - both lower AND upper bounds
-                if (brick[j][i] != 0
-                        && targetY >= 0
-                        && targetX >= 0
-                        && targetY < copy.length
-                        && targetX < copy[0].length) {
-                    copy[targetY][targetX] = brick[j][i];
+        for (int row = 0; row < brick.length; row++) {
+            for (int col = 0; col < brick[row].length; col++) {
+                if (brick[row][col] != 0) {
+                    int targetX = x + col;  // Column → X (horizontal)
+                    int targetY = y + row;  // Row → Y (vertical)
+
+                    if (targetY >= 0
+                            && targetX >= 0
+                            && targetY < copy.length
+                            && targetX < copy[0].length) {
+                        copy[targetY][targetX] = brick[row][col];
+                    }
                 }
             }
         }

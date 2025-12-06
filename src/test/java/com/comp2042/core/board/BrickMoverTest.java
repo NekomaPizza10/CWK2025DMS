@@ -410,14 +410,17 @@ class BrickMoverTest {
     }
 
     @Test
-    @DisplayName("Position never goes negative X below 0")
-    void positionNeverGoesNegativeXBelowZero() {
+    @DisplayName("Brick cells never go past left wall")
+    void brickCellsNeverGoPastLeftWall() {
         // Move left as much as possible
-        for (int i = 0; i < 20; i++) {
-            brickMover.moveBrickLeft();
+        int moves = 0;
+        while (brickMover.moveBrickLeft() && moves < 20) {
+            moves++;
         }
 
-        assertTrue(brickMover.getX() >= 0, "X should never be negative");
+        // Should have stopped at the wall - can't move further left
+        assertFalse(brickMover.moveBrickLeft(), "Should not be able to move past left wall");
+
     }
 
     @Test

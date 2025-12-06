@@ -41,10 +41,8 @@ public class BrickMover {
         Point newPosition = new Point(currentOffset);
         newPosition.translate(dx, dy);
 
-        // Prevent X from going negative
-        if (newPosition.getX() < 0) {
-            return false;
-        }
+        // REMOVED: Early negative X check - let collision detection handle all bounds
+        // The brick offset CAN be negative if the brick's filled cells don't start at column 0
 
         if (wouldCollide(newPosition)) {
             return false;
