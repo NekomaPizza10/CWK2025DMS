@@ -8,18 +8,36 @@ import java.util.Deque;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ * Random brick generator using the 7-bag randomization system.
+ * This ensures fair distribution by guaranteeing all 7 piece types
+ * appear exactly once before the bag refills.
+ *
+ * <p>The 7-bag system prevents long droughts of specific pieces
+ * and is the standard used in modern Tetris games.
+ */
 public class RandomBrickGenerator implements BrickGenerator {
 
     private final Deque<Brick> nextBricks = new ArrayDeque<>();
 
     private static final int QUEUE_SIZE = 14; // Keep 2 bags worth (2 × 7 = 14)
 
+    /**
+     * Creates a new random brick generator.
+     * Initializes with two full bags (14 pieces) in the queue.
+     */
     public RandomBrickGenerator() {
         // Initialize with 2 full bags
         fillBag();
         fillBag();
     }
 
+    /**
+     * Gets the next brick from the queue.
+     * Automatically refills the queue when it drops below 7 pieces.
+     *
+     * @return the next brick to spawn
+     */
     @Override
     public Brick getBrick() {
         // Maintain queue size
@@ -30,6 +48,13 @@ public class RandomBrickGenerator implements BrickGenerator {
         return nextBricks.poll();
     }
 
+    /**
+     * Previews multiple upcoming bricks without consuming them.
+     * Ensures the queue has enough bricks before returning.
+     *
+     * @param count number of bricks to preview
+     * @return list of upcoming bricks in order
+     */
     // Get multiple next bricks for preview
     public List<Brick> getNextBricks(int count) {
         // FIX: Ensure we have enough bricks in the queue for the requested count

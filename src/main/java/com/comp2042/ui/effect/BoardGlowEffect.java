@@ -26,8 +26,16 @@ public class BoardGlowEffect {
     private static final long DECAY_START_DELAY = 3000;
     private static final long DECAY_STEP_INTERVAL = 1200;
 
+    /**
+     * Creates a new BoardGlowEffect.
+     * @param gamePanel the game panel to apply glow to
+     */
     public BoardGlowEffect(GridPane gamePanel) {this.gamePanel = gamePanel;}
 
+    /**
+     * Updates glow intensity based on combo.
+     * @param combo current combo count
+     */
     public void updateGlow(int combo) {
         if (isDisposed) return;
         targetCombo = Math.max(0, Math.min(combo, 15));

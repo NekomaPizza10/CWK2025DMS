@@ -12,6 +12,11 @@ public class ComponentInitializer {
 
     private final GuiController controller;
 
+    /**
+     * Creates a new initializer for setting up components in the given controller.
+     *
+     * @param controller the main GUI controller used to register created components
+     */
     public ComponentInitializer(GuiController controller) {
         this.controller = controller;
     }

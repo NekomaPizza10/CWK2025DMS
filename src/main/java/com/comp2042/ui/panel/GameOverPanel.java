@@ -22,6 +22,16 @@ public class GameOverPanel extends StackPane {
         setVisible(false);
     }
 
+    /**
+     * Shows the game over panel with statistics.
+     *
+     * @param pieces number of pieces placed
+     * @param lines number of lines cleared
+     * @param timeMs elapsed time in milliseconds
+     * @param timeStr formatted time string
+     * @param score final score
+     * @param mode game mode played
+     */
     public void showGameOver(int pieces, int lines, long timeMs, String timeStr, int score, GameMode mode) {
         getChildren().clear();
 
@@ -83,6 +93,15 @@ public class GameOverPanel extends StackPane {
         container.getChildren().add(box);
     }
 
+    /**
+     * Sets the retry button callback.
+     * @param r callback to execute on retry
+     */
     public void setOnRetry(Runnable r) { this.onRetry = r; }
+
+    /**
+     * Sets the main menu button callback.
+     * @param r callback to execute on main menu
+     */
     public void setOnMainMenu(Runnable r) { this.onMainMenu = r; }
 }

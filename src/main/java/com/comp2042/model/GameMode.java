@@ -13,10 +13,18 @@ public enum GameMode {
         this.description = description;
     }
 
+    /**
+     * Gets the display name of this game mode.
+     * @return human-readable mode name
+     */
     public String getDisplayName() {
         return displayName;
     }
 
+    /**
+     * Gets the description of this game mode.
+     * @return mode description
+     */
     public String getDescription() {
         return description;
     }

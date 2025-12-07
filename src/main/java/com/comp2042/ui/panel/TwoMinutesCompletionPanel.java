@@ -13,6 +13,14 @@ public class TwoMinutesCompletionPanel extends StackPane {
     private Runnable onRetry;
     private Runnable onMainMenu;
 
+    /**
+     * Creates a new TwoMinutesCompletionPanel.
+     *
+     * @param finalScore final score achieved
+     * @param linesCleared total lines cleared
+     * @param isNewBest whether this is a new best score
+     * @param previousBest previous best score string (null if none)
+     */
     public TwoMinutesCompletionPanel(int finalScore, int linesCleared, boolean isNewBest, String previousBest) {
         getStylesheets().add(getClass().getResource("/completion.css").toExternalForm());
         getStyleClass().add("completion-overlay");
@@ -76,6 +84,15 @@ public class TwoMinutesCompletionPanel extends StackPane {
         container.getChildren().add(box);
     }
 
+    /**
+     * Sets the retry callback.
+     * @param r callback to execute
+     */
     public void setOnRetry(Runnable r) { this.onRetry = r; }
+
+    /**
+     * Sets the main menu callback.
+     * @param r callback to execute
+     */
     public void setOnMainMenu(Runnable r) { this.onMainMenu = r; }
 }

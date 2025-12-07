@@ -19,6 +19,15 @@ public class BrickRotationHandler {
     private final BoardStateManager stateManager;
     private final BrickMover brickMover;
 
+    /**
+     * Creates a new BrickRotationHandler.
+     *
+     * @param boardWidth width of the game board
+     * @param boardHeight height of the game board
+     * @param brickRotator the brick rotator managing rotations
+     * @param stateManager board state for collision checking
+     * @param brickMover brick mover for position adjustments
+     */
     public BrickRotationHandler(int boardWidth, int boardHeight,
                                 BrickRotator brickRotator,
                                 BoardStateManager stateManager,
@@ -30,6 +39,11 @@ public class BrickRotationHandler {
         this.brickMover = brickMover;
     }
 
+    /**
+     * Attempts to rotate the brick counter-clockwise.
+     * Tries wall kicks if direct rotation is blocked.
+     * @return true if rotation succeeded (possibly with wall kick)
+     */
     public boolean rotateLeftBrick() {
         NextShapeInfo nextShape = brickRotator.getNextShape();
         int[][] nextShapeArray = nextShape.getShape();

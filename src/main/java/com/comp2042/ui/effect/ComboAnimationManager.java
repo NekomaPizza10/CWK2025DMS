@@ -23,6 +23,12 @@ public class ComboAnimationManager {
     private boolean isDisposed = false;
     private boolean isBouncing = false;
 
+    /**
+     * Creates a new ComboAnimationManager.
+     *
+     * @param gamePanel game panel for shake effects
+     * @param effectsLayer layer for text effects
+     */
     public ComboAnimationManager(GridPane gamePanel, Pane effectsLayer) {
         this.gamePanel = gamePanel;
         this.effectsLayer = effectsLayer;
@@ -54,6 +60,12 @@ public class ComboAnimationManager {
         effectsLayer.getChildren().add(textContainer);
     }
 
+    /**
+     * Triggers combo visual effects.
+     * Shows combo text based on level.
+     *
+     * @param combo combo count
+     */
     public void triggerComboEffects(int combo) {
         if (isDisposed || combo < 2) return;
         runOnFx(() -> showText(combo));
@@ -64,6 +76,11 @@ public class ComboAnimationManager {
         runOnFx(() -> bounce(10));
     }
 
+    /**
+     * Triggers screen shake for line clear.
+     *
+     * @param lines number of lines cleared
+     */
     public void shakeOnLineClear(int lines) {
         if (isDisposed || lines < 1) return;
         runOnFx(() -> bounce(5 + lines * 2));

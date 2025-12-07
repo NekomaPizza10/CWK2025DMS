@@ -4,7 +4,18 @@ import com.comp2042.model.GameMode;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 
-// Manages game state flags and mode-specific data
+/**
+ * Central game state manager handling all game flags and mode-specific data.
+ * Manages game modes, pause/game-over states, speed settings, scoring data,
+ * and lock delay mechanics.
+ *
+ * <p>Supports three game modes:
+ * <ul>
+ *   <li>NORMAL - Practice mode with increasing speed</li>
+ *   <li>FORTY_LINES - Time trial to clear 40 lines</li>
+ *   <li>TWO_MINUTES - Score as many points as possible in 2 minutes</li>
+ * </ul>
+ */
 
 public class GameState {
     private GameMode currentGameMode = GameMode.NORMAL;
@@ -42,16 +53,47 @@ public class GameState {
     // 40 Lines Challenge
     private long fortyLinesBestTime = Long.MAX_VALUE;
 
-    // Getters and Setters
+    /**
+     * Gets the current game mode.
+     * @return the active GameMode
+     */
     public GameMode getCurrentGameMode() { return currentGameMode; }
+    /**
+     * Sets the current game mode.
+     * @param mode the GameMode to activate
+     */
     public void setCurrentGameMode(GameMode mode) { this.currentGameMode = mode; }
 
+    /**
+     * Gets the paused state property for binding.
+     * @return BooleanProperty indicating if game is paused
+     */
     public BooleanProperty isPausedProperty() { return isPaused; }
+    /**
+     * Checks if the game is currently paused.
+     * @return true if paused, false otherwise
+     */
     public boolean isPaused() { return isPaused.get(); }
+    /**
+     * Sets the paused state.
+     * @param paused true to pause, false to resume
+     */
     public void setPaused(boolean paused) { isPaused.set(paused); }
 
+    /**
+     * Gets the game over state property for binding.
+     * @return BooleanProperty indicating if game is over
+     */
     public BooleanProperty isGameOverProperty() { return isGameOver; }
+    /**
+     * Checks if the game is over.
+     * @return true if game over, false otherwise
+     */
     public boolean isGameOver() { return isGameOver.get(); }
+    /**
+     * Sets the game over state.
+     * @param gameOver true if game is over
+     */
     public void setGameOver(boolean gameOver) { isGameOver.set(gameOver); }
 
     public boolean isCountdownActive() { return isCountdownActive; }
@@ -61,7 +103,15 @@ public class GameState {
     public void setChallengeCompleted(boolean completed) { challengeCompleted = completed; }
 
     public int getBaseDropSpeed() { return baseDropSpeed; }
+    /**
+     * Gets the current drop speed in milliseconds.
+     * @return current drop speed (time between automatic piece movements)
+     */
     public int getCurrentDropSpeed() { return currentDropSpeed; }
+    /**
+     * Sets the drop speed.
+     * @param speed new drop speed in milliseconds
+     */
     public void setCurrentDropSpeed(int speed) { currentDropSpeed = speed; }
     public int getMinDropSpeed() { return MIN_DROP_SPEED; }
     public int getSpeedDecreasePerLevel() { return SPEED_DECREASE_PER_LEVEL; }

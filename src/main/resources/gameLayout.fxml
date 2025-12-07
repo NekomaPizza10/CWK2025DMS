@@ -22,10 +22,12 @@
             <padding><Insets top="20" right="5" bottom="20" left="10"/></padding>
 
             <!-- Hold Panel -->
-            <VBox alignment="CENTER" spacing="3"
-                  style="-fx-background-color: rgba(0,0,0,0.5); -fx-background-radius: 8; -fx-padding: 10;">
+            <VBox alignment="CENTER" spacing="5"
+                  style="-fx-background-color: rgba(0,0,0,0.6); -fx-background-radius: 10; -fx-padding: 12;">
                 <Label text="HOLD" style="-fx-text-fill: #888888; -fx-font-size: 12px; -fx-font-weight: bold;"/>
-                <GridPane fx:id="holdPanel" alignment="CENTER" hgap="0" vgap="0"/>
+                <StackPane prefWidth="90" prefHeight="90" style="-fx-background-color: rgba(0,0,0,0.4); -fx-background-radius: 5;">
+                    <GridPane fx:id="holdPanel" alignment="CENTER" hgap="0" vgap="0"/>
+                </StackPane>
             </VBox>
 
             <!-- Spacer -->
@@ -100,38 +102,48 @@
         </StackPane>
 
         <!-- ========== RIGHT SIDE: Next Panels + Combo Meter ========== -->
-        <HBox alignment="TOP_CENTER" spacing="5">
+        <HBox alignment="TOP_CENTER" spacing="6">
             <padding><Insets top="20" right="10" bottom="20" left="5"/></padding>
 
             <!-- Next Panels -->
-            <VBox alignment="TOP_CENTER" spacing="5" minWidth="80" maxWidth="80">
+            <VBox alignment="TOP_CENTER" spacing="8" minWidth="95" maxWidth="95">
 
                 <!-- Next Label -->
                 <Label text="NEXT" style="-fx-text-fill: #888888; -fx-font-size: 12px; -fx-font-weight: bold;"/>
 
                 <!-- Next Panel 1 (largest) -->
-                <StackPane style="-fx-background-color: rgba(0,0,0,0.5); -fx-background-radius: 6; -fx-padding: 6;">
-                    <GridPane fx:id="nextPanel1" alignment="CENTER" hgap="0" vgap="0"/>
+                <StackPane style="-fx-background-color: rgba(0,0,0,0.6); -fx-background-radius: 8; -fx-padding: 8;">
+                    <VBox alignment="CENTER" prefWidth="80" prefHeight="80">
+                        <GridPane fx:id="nextPanel1" alignment="CENTER" hgap="0" vgap="0"/>
+                    </VBox>
                 </StackPane>
 
-                <!-- Next Panel 2 -->
-                <StackPane style="-fx-background-color: rgba(0,0,0,0.4); -fx-background-radius: 5; -fx-padding: 4;">
-                    <GridPane fx:id="nextPanel2" alignment="CENTER" hgap="0" vgap="0"/>
+                <!-- Next Panel 2 - FIXED -->
+                <StackPane style="-fx-background-color: rgba(0,0,0,0.5); -fx-background-radius: 7; -fx-padding: 6;">
+                    <VBox alignment="CENTER" prefWidth="70" prefHeight="70">
+                        <GridPane fx:id="nextPanel2" alignment="CENTER" hgap="0" vgap="0"/>
+                    </VBox>
                 </StackPane>
 
-                <!-- Next Panel 3 -->
+                <!-- Next Panel 3 - FIXED -->
+                <StackPane style="-fx-background-color: rgba(0,0,0,0.4); -fx-background-radius: 6; -fx-padding: 5;">
+                    <VBox alignment="CENTER" prefWidth="60" prefHeight="60">
+                        <GridPane fx:id="nextPanel3" alignment="CENTER" hgap="0" vgap="0"/>
+                    </VBox>
+                </StackPane>
+
+                <!-- Next Panel 4 - FIXED -->
+                <StackPane style="-fx-background-color: rgba(0,0,0,0.35); -fx-background-radius: 5; -fx-padding: 4;">
+                    <VBox alignment="CENTER" prefWidth="55" prefHeight="55">
+                        <GridPane fx:id="nextPanel4" alignment="CENTER" hgap="0" vgap="0"/>
+                    </VBox>
+                </StackPane>
+
+                <!-- Next Panel 5 - FIXED -->
                 <StackPane style="-fx-background-color: rgba(0,0,0,0.3); -fx-background-radius: 5; -fx-padding: 4;">
-                    <GridPane fx:id="nextPanel3" alignment="CENTER" hgap="0" vgap="0"/>
-                </StackPane>
-
-                <!-- Next Panel 4 -->
-                <StackPane style="-fx-background-color: rgba(0,0,0,0.25); -fx-background-radius: 5; -fx-padding: 3;">
-                    <GridPane fx:id="nextPanel4" alignment="CENTER" hgap="0" vgap="0"/>
-                </StackPane>
-
-                <!-- Next Panel 5 -->
-                <StackPane style="-fx-background-color: rgba(0,0,0,0.2); -fx-background-radius: 5; -fx-padding: 3;">
-                    <GridPane fx:id="nextPanel5" alignment="CENTER" hgap="0" vgap="0"/>
+                    <VBox alignment="CENTER" prefWidth="50" prefHeight="50">
+                        <GridPane fx:id="nextPanel5" alignment="CENTER" hgap="0" vgap="0"/>
+                    </VBox>
                 </StackPane>
 
             </VBox>

@@ -66,6 +66,12 @@ public class ComboMeterPanel extends VBox {
         getChildren().add(container);
     }
 
+    /**
+     * Updates combo display to new value.
+     * Triggers animation and starts decay timer.
+     *
+     * @param combo new combo count (0-15)
+     */
     public void updateCombo(int combo) {
         if (isDisposed) return;
         targetCombo = Math.max(0, Math.min(combo, 15));
@@ -221,6 +227,11 @@ public class ComboMeterPanel extends VBox {
         stopAnimTimer();
     }
 
+    /**
+            * Gets the current display combo value.
+            *
+            * @return current combo count
+     */
     public int getDisplayCombo() {
         return displayCombo;
     }

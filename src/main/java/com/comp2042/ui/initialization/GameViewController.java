@@ -23,10 +23,22 @@ public class GameViewController {
 
     private final GuiController controller;
 
+    /**
+     * Creates a new controller for managing the game view.
+     *
+     * @param controller the main GUI controller used to access UI components
+     */
     public GameViewController(GuiController controller) {
         this.controller = controller;
     }
 
+    /**
+     * Initializes the full game view, including managers, logic, renderer,
+     * callbacks, and key-event handling, then starts the game countdown.
+     *
+     * @param boardMatrix the initial board state
+     * @param brick       the currently falling brick to display
+     */
     public void initGameView(int[][] boardMatrix, ViewData brick) {
         initializeManagers();
         initializeLogicHandler();
@@ -174,6 +186,12 @@ public class GameViewController {
         });
     }
 
+    /**
+     * Initializes the game renderer for the board, hold piece, and next piece previews.
+     *
+     * @param boardMatrix the initial board matrix
+     * @param brick       the initial brick to display
+     */
     private void initializeRenderer(int[][] boardMatrix, ViewData brick) {
         GameRenderer renderer = controller.getRenderer();
         GridPane[] nextPanels = controller.getNextPanels();
@@ -236,6 +254,14 @@ public class GameViewController {
         showGameOverPanel(data);
     }
 
+    /**
+     * Collects relevant data for a game-over summary.
+     *
+     * @param timerManager   the timer manager tracking elapsed time
+     * @param gameController the game controller providing gameplay statistics
+     * @param gameState      the active game state
+     * @return a data object containing pieces, lines, time, score, and mode
+     */
     private GameOverData collectGameOverData(TimerManager timerManager,
                                              GameController gameController,
                                              GameState gameState) {
@@ -258,6 +284,12 @@ public class GameViewController {
         return new GameOverData(pieces, lines, finalTime, timeStr, score, gameState.getCurrentGameMode());
     }
 
+    /**
+     * Displays the game-over panel using the supplied data and assigns retry
+     * and main-menu actions.
+     *
+     * @param data the data to display on the game-over screen
+     */
     private void showGameOverPanel(GameOverData data) {
         GameOverPanel gameOverPanel = controller.getGameOverPanel();
 
@@ -280,6 +312,11 @@ public class GameViewController {
         });
     }
 
+    /**
+     * Returns the application's root container.
+     *
+     * @return the root {@link StackPane}
+     */
     private StackPane getRootPane() {
         return controller.getNavigationHandler().getRootPane();
     }
@@ -292,6 +329,16 @@ public class GameViewController {
         final int score;
         final GameMode gameMode;
 
+        /**
+         * Creates a new container for game-over results.
+         *
+         * @param pieces   number of pieces placed
+         * @param lines    number of lines cleared
+         * @param finalTime elapsed time in milliseconds
+         * @param timeStr  formatted time string
+         * @param score    final score
+         * @param gameMode the mode that was played
+         */
         GameOverData(int pieces, int lines, long finalTime, String timeStr, int score, GameMode gameMode) {
             this.pieces = pieces;
             this.lines = lines;

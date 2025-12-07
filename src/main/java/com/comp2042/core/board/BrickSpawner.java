@@ -25,6 +25,14 @@ public class BrickSpawner {
 
     private BrickGenerator brickGenerator;
 
+    /**
+     * Creates a new BrickSpawner.
+     *
+     * @param boardWidth width of the game board
+     * @param brickRotator brick rotator for setting new bricks
+     * @param stateManager board state for spawn collision checks
+     * @param brickMover brick mover for positioning new bricks
+     */
     public BrickSpawner(int boardWidth, BrickRotator brickRotator,
                         BoardStateManager stateManager, BrickMover brickMover) {
         this.boardWidth = boardWidth;
@@ -34,6 +42,12 @@ public class BrickSpawner {
         this.brickGenerator = new RandomBrickGenerator();
     }
 
+    /**
+     * Creates and spawns a new brick.
+     * Chooses spawn height based on stack proximity to top.
+     *
+     * @return true if spawn caused game over (collision detected)
+     */
     public boolean createNewBrick() {
         Brick currentBrick = brickGenerator.getBrick();
         brickRotator.setBrick(currentBrick);
@@ -52,16 +66,31 @@ public class BrickSpawner {
         );
     }
 
+    /**
+     * Calculates the appropriate spawn point for a new brick.
+     * Uses emergency spawn if stack is near top.
+     *
+     * @return Point containing spawn X and Y coordinates
+     */
     public Point calculateSpawnPoint() {
         int spawnX = boardWidth / 2 - SPAWN_X_OFFSET;
         int spawnY = stateManager.isStackNearTop() ? EMERGENCY_SPAWN_Y : NORMAL_SPAWN_Y;
         return new Point(spawnX, spawnY);
     }
 
+    /**
+     * Gets the default spawn point (normal, not emergency).
+     * @return Point with centered X and Y=-1
+     */
     public Point getDefaultSpawnPoint() {
         return new Point(boardWidth / 2 - SPAWN_X_OFFSET, NORMAL_SPAWN_Y);
     }
 
+    /**
+     * Gets preview data for upcoming bricks.
+     * @param count number of bricks to preview
+     * @return list of shape matrices for next bricks
+     */
     public List<int[][]> getNextBricksData(int count) {
         List<int[][]> nextBricks = new ArrayList<>();
         List<Brick> bricks = brickGenerator.getNextBricks(count);

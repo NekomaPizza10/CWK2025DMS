@@ -10,6 +10,11 @@ import com.comp2042.ui.render.GameRenderer;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 
+/**
+ * Manages the overall flow of gameplay, including starting the game with a
+ * countdown, restarting rounds, pausing/resuming, and coordinating updates
+ * between game logic, timers, UI displays, and rendering.
+ */
 public class GameFlowManager {
 
     private final GameState gameState;
@@ -26,6 +31,16 @@ public class GameFlowManager {
     private Runnable hideGameOverPanelCallback;
     private Runnable hidePausePanelCallback;
 
+    /**
+     * Creates a GameFlowManager responsible for orchestrating gameplay flow,
+     * coordinating timers, visuals, and logic updates.
+     *
+     * @param gameState   the state of the current game session
+     * @param timerManager handles game timers (game, drop, countdown)
+     * @param renderer     the game renderer used for updating visuals
+     * @param uiUpdater    updates UI components such as stats and previews
+     * @param logicHandler handles movement and game logic operations
+     */
     public GameFlowManager(GameState gameState, TimerManager timerManager,
                            GameRenderer renderer, UIUpdater uiUpdater, GameLogicHandler logicHandler) {
         this.gameState = gameState;
@@ -35,16 +50,47 @@ public class GameFlowManager {
         this.logicHandler = logicHandler;
     }
 
+    /**
+     * Sets the active game controller to be used for accessing board and gameplay data.
+     *
+     * @param gameController the game controller instance
+     */
     public void setGameController(GameController gameController) { this.gameController = gameController; }
+
+    /**
+     * Sets the UI elements used for the countdown sequence.
+     *
+     * @param countdownPanel the root container of the countdown UI
+     * @param countdownLabel the label displaying countdown numbers
+     */
     public void setCountdownComponents(StackPane countdownPanel, Label countdownLabel) {
         this.countdownPanel = countdownPanel;
         this.countdownLabel = countdownLabel;
     }
+
+    /**
+     * Sets callbacks that update the Next and Hold displays when needed.
+     *
+     * @param updateNextDisplay callback to refresh next-piece UI
+     * @param updateHoldDisplay callback to refresh hold-piece UI
+     */
     public void setUpdateCallbacks(Runnable updateNextDisplay, Runnable updateHoldDisplay) {
         this.updateNextDisplayCallback = updateNextDisplay;
         this.updateHoldDisplayCallback = updateHoldDisplay;
     }
+
+    /**
+     * Sets callback used to hide the game-over panel when restarting the game.
+     *
+     * @param callback the runnable to execute
+     */
     public void setHideGameOverPanelCallback(Runnable callback) { this.hideGameOverPanelCallback = callback; }
+
+    /**
+     * Sets callback used to hide the pause panel when unpausing or restarting.
+     *
+     * @param callback the runnable to execute
+     */
     public void setHidePausePanelCallback(Runnable callback) { this.hidePausePanelCallback = callback; }
 
     public void startGameWithCountdown() {
@@ -63,6 +109,11 @@ public class GameFlowManager {
         });
     }
 
+    /**
+     * Displays the countdown UI and runs a callback once it completes.
+     *
+     * @param onComplete the action to run when the countdown finishes
+     */
     public void showCountdown(Runnable onComplete) {
         gameState.setCountdownActive(true);
         countdownPanel.setVisible(true);
@@ -76,6 +127,13 @@ public class GameFlowManager {
         });
     }
 
+    /**
+     * Restarts the game with a countdown sequence.
+     * Resets game state, clears displays, removes completion panels,
+     * and starts a new round after the countdown finishes.
+     *
+     * @param removeCompletionPanelCallback callback that removes any completion UI
+     */
     public void restartWithCountdown(Runnable removeCompletionPanelCallback) {
         timerManager.stopAllTimers();
         timerManager.stopCountdown();
@@ -92,6 +150,11 @@ public class GameFlowManager {
         });
     }
 
+    /**
+     * Restarts the game immediately without showing a countdown.
+     *
+     * @param removeCompletionPanelCallback callback that removes any completion UI
+     */
     public void restartInstantly(Runnable removeCompletionPanelCallback) {
         timerManager.stopAllTimers();
         timerManager.stopCountdown();
@@ -108,6 +171,12 @@ public class GameFlowManager {
                 logicHandler.moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD)));
     }
 
+    /**
+     * Resets all relevant game state variables, UI elements, and timers
+     * in preparation for restarting a game.
+     *
+     * @param removeCompletionPanelCallback removes completion panels if present
+     */
     private void resetGameState(Runnable removeCompletionPanelCallback) {
         gameState.setCountdownActive(false);
         gameState.setChallengeCompleted(false);

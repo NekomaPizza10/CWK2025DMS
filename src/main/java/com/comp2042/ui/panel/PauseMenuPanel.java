@@ -57,14 +57,26 @@ public class PauseMenuPanel extends VBox {
         return btn;
     }
 
+    /**
+     * Sets the resume callback.
+     * @param onResume callback to execute on resume
+     */
     public void setOnResume(Runnable onResume) {
         this.onResume = onResume;
     }
 
+    /**
+     * Sets the retry callback.
+     * @param onRetry callback to execute on retry
+     */
     public void setOnRetry(Runnable onRetry) {
         this.onRetry = onRetry;
     }
 
+    /**
+     * Sets the main menu callback.
+     * @param onMainMenu callback to execute on main menu
+     */
     public void setOnMainMenu(Runnable onMainMenu) {
         this.onMainMenu = onMainMenu;
     }

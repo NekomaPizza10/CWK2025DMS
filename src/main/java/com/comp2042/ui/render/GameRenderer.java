@@ -8,6 +8,8 @@ import javafx.scene.shape.Rectangle;
 
 /**
  * Handles all game rendering operations.
+ *  * @see ViewData
+ *  * @see GameLogicHandler
  */
 public class GameRenderer {
 
@@ -25,11 +27,28 @@ public class GameRenderer {
     private int boardWidth;
     private int boardHeight;
 
+    /**
+     * Constructs a GameRenderer with the specified panels.
+     *
+     * @param gamePanel the main game board panel
+     * @param brickPanel the current brick display panel
+     */
     public GameRenderer(GridPane gamePanel, GridPane brickPanel) {
         this.gamePanel = gamePanel;
         this.brickPanel = brickPanel;
     }
 
+    /**
+     * Initializes the game board grid with rectangles.
+     *
+     * Creates a height × width grid of Rectangle objects, each representing
+     * one cell of the game board. Rectangles are initially transparent with
+     * subtle grid lines.
+     *
+     *
+     * @param height the board height in cells
+     * @param width the board width in cells
+     */
     public void initializeGameBoard(int height, int width) {
         this.boardHeight = height;
         this.boardWidth = width;
@@ -46,6 +65,13 @@ public class GameRenderer {
         }
     }
 
+    /**
+     * Initializes the brick panel for displaying the current piece.
+     * Creates a 4×4 grid of rectangles for showing the active piece.
+     * This panel is layered on top of the game board.
+     *
+     * @param brickData the initial brick shape data
+     */
     public void initializeBrickPanel(int[][] brickData) {
         brickRectangles = new Rectangle[brickData.length][brickData[0].length];
         for (int i = 0; i < brickData.length; i++) {
@@ -59,6 +85,14 @@ public class GameRenderer {
         brickPanel.toFront();
     }
 
+    /**
+     * Initializes a preview panel for next/hold pieces.
+     * Creates a 4×4 grid of smaller rectangles (20px) for preview displays.
+     * Returns the rectangle array for later updates.
+     *
+     * @param panel the GridPane to initialize
+     * @return the 4×4 rectangle array
+     */
     public Rectangle[][] initializePreviewPanel(GridPane panel) {
         Rectangle[][] rects = new Rectangle[PREVIEW_GRID_SIZE][PREVIEW_GRID_SIZE];
         for (int i = 0; i < PREVIEW_GRID_SIZE; i++) {
@@ -72,6 +106,14 @@ public class GameRenderer {
         return rects;
     }
 
+    /**
+     * Refreshes the current brick display.
+     * Removes existing brick rectangles from the game panel, then adds
+     * them back at the current brick position. Only adds rectangles for
+     * filled cells. Handles pieces partially above the visible board.
+     *
+     * @param brick the current brick view data with position and shape
+     */
     public void refreshBrick(ViewData brick) {
         if (brick == null || brickRectangles == null) {return;}
         // Remove existing brick rectangles from game panel
@@ -112,6 +154,13 @@ public class GameRenderer {
 
     }
 
+    /**
+     * Refreshes the game board background.
+     * Updates all board cells to reflect the current board state.
+     * Called after piece placement or line clears.
+     *
+     * @param board the current board matrix
+     */
     public void refreshGameBackground(int[][] board) {
         if (board == null || displayMatrix == null) {
             return;
@@ -123,6 +172,15 @@ public class GameRenderer {
         }
     }
 
+    /**
+     * Updates a preview panel with centered brick display.
+     * Clears the preview panel, calculates the brick's bounding box,
+     * centers it in the 4×4 grid, and renders with proper colors.
+     * Handles all brick shapes and rotations.
+     *
+     * @param rects the preview panel rectangle array
+     * @param brickData the brick shape to display (4×4 matrix)
+     */
     public void updatePreviewPanel(Rectangle[][] rects, int[][] brickData) {
         if (rects == null) {return;}
 
@@ -178,6 +236,16 @@ public class GameRenderer {
         }
     }
 
+    /**
+     * Renders the shadow (ghost) piece at the drop position.
+     * Overlays semi-transparent gray cells on the board to show where
+     * the current piece would land. Only renders on empty cells to avoid
+     * covering placed pieces. Shadow is cleared on next board refresh.
+     *
+     * @param brick the current brick view data
+     * @param shadowY the Y position where brick would land
+     * @param boardMatrix the current board matrix
+     */
     public void renderShadow(ViewData brick, int shadowY, int[][] boardMatrix) {
         if (brick == null || boardMatrix == null || displayMatrix == null) {return;}
         int shadowX = brick.getxPosition();
@@ -226,9 +294,22 @@ public class GameRenderer {
         };
     }
 
-    // Getters and Setters
+    /**
+     * Sets the hold panel rectangle array.
+     *
+     * @param holdRectangles the hold panel rectangles
+     */
     public void setHoldRectangles(Rectangle[][] holdRectangles) {this.holdRectangles = holdRectangles;}
 
+    /**
+     * Sets the next piece panel rectangle arrays.
+     *
+     * @param n1 next piece panel 1 rectangles
+     * @param n2 next piece panel 2 rectangles
+     * @param n3 next piece panel 3 rectangles
+     * @param n4 next piece panel 4 rectangles
+     * @param n5 next piece panel 5 rectangles
+     */
     public void setNextRectangles(Rectangle[][] n1, Rectangle[][] n2, Rectangle[][] n3,
                                   Rectangle[][] n4, Rectangle[][] n5) {
         this.nextRectangles1 = n1;
@@ -238,12 +319,44 @@ public class GameRenderer {
         this.nextRectangles5 = n5;
     }
 
+    /**
+     * Gets the hold panel rectangles.
+     * @return the hold panel rectangle array
+     */
     public Rectangle[][] getHoldRectangles() { return holdRectangles; }
+    /**
+     * Gets the next piece panel 1 rectangles.
+     * @return next panel 1 rectangle array
+     */
     public Rectangle[][] getNextRectangles1() { return nextRectangles1; }
+    /**
+     * Gets the next piece panel 2 rectangles.
+     * @return next panel 2 rectangle array
+     */
     public Rectangle[][] getNextRectangles2() { return nextRectangles2; }
+    /**
+     * Gets the next piece panel 3 rectangles.
+     * @return next panel 3 rectangle array
+     */
     public Rectangle[][] getNextRectangles3() { return nextRectangles3; }
+    /**
+     * Gets the next piece panel 4 rectangles.
+     * @return next panel 4 rectangle array
+     */
     public Rectangle[][] getNextRectangles4() { return nextRectangles4; }
+    /**
+     * Gets the next piece panel 5 rectangles.
+     * @return next panel 5 rectangle array
+     */
     public Rectangle[][] getNextRectangles5() { return nextRectangles5; }
+    /**
+     * Gets the display matrix (board grid rectangles).
+     * @return the board rectangle matrix
+     */
     public Rectangle[][] getDisplayMatrix() { return displayMatrix; }
+    /**
+     * Gets the brick panel.
+     * @return the brick panel GridPane
+     */
     public GridPane getBrickPanel() { return brickPanel; }
 }

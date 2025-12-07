@@ -12,6 +12,13 @@ import java.util.ResourceBundle;
 
 public class Main extends Application {
 
+    /**
+     * Starts the JavaFX application.
+     * Loads main menu FXML and displays window.
+     *
+     * @param primaryStage the primary stage
+     * @throws Exception if FXML loading fails
+     */
     @Override
     public void start(Stage primaryStage) throws Exception {
 
@@ -26,6 +33,10 @@ public class Main extends Application {
         primaryStage.show();
     }
 
+    /**
+     * Main entry point.
+     * @param args command line arguments
+     */
     public static void main(String[] args) {
         launch(args);
     }

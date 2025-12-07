@@ -31,6 +31,18 @@ public class BrickLockHandler {
 
     private boolean isDisposed = false;
 
+    /**
+     * Constructs a {@code BrickLockHandler} with the required game components.
+     *
+     * @param gameState         the current game state containing game mode and timers.
+     * @param timerManager      manages lock delay and drop interval timers.
+     * @param renderer          responsible for drawing the game board and background.
+     * @param uiUpdater         updates score, combo, and other UI elements.
+     * @param scoringManager    handles score calculation and combo tracking.
+     * @param progressHandler   updates difficulty/speed progression.
+     * @param comboHandler      triggers combo and line clear visual effects.
+     * @param shadowCalculator  calculates shadow/ghost piece positions.
+     */
     public BrickLockHandler(GameState gameState, TimerManager timerManager,
                             GameRenderer renderer, UIUpdater uiUpdater,
                             ScoringManager scoringManager, GameProgressHandler progressHandler,
@@ -45,22 +57,47 @@ public class BrickLockHandler {
         this.shadowCalculator = shadowCalculator;
     }
 
+    /**
+     * Assigns the game controller used to retrieve the current board.
+     *
+     * @param gc the game controller instance.
+     */
     public void setGameController(GameController gc) {
         this.gameController = gc;
     }
 
+    /**
+     * Assigns the brick movement handler responsible for moving the active piece.
+     *
+     * @param handler the movement handler.
+     */
     public void setMovementHandler(BrickMovementHandler handler) {
         this.movementHandler = handler;
     }
 
+    /**
+     * Sets a callback to trigger when a game over condition occurs.
+     *
+     * @param r a runnable executed upon game over.
+     */
     public void setOnGameOver(Runnable r) {
         this.onGameOver = r;
     }
 
+    /**
+     * Sets a callback to trigger when the next-brick display should update.
+     *
+     * @param r the runnable to execute for updating the next preview.
+     */
     public void setOnUpdateNextDisplay(Runnable r) {
         this.onUpdateNextDisplay = r;
     }
 
+    /**
+     * Retrieves the current board from the assigned game controller.
+     *
+     * @return the board instance, or {@code null} if no controller is assigned.
+     */
     private Board getBoard() {
         return gameController != null ? gameController.getBoard() : null;
     }
@@ -107,6 +144,12 @@ public class BrickLockHandler {
         movementHandler.setProcessing(false);
     }
 
+    /**
+     * Locks the active brick into the board, processes line clears,
+     * checks for game over, and spawns the next brick if the game continues.
+     *
+     * @param board the game board where the brick will be merged.
+     */
     public void lockAndSpawn(Board board) {
         if (board == null || isDisposed) {
             movementHandler.setProcessing(false);
@@ -134,6 +177,12 @@ public class BrickLockHandler {
         spawnNewBrick(board);
     }
 
+    /**
+     * Handles line clear events by awarding score, updating combo state,
+     * applying visual effects, and adjusting speed progression.
+     *
+     * @param clearRow contains information about removed rows.
+     */
     private void handleLineClears(ClearRow clearRow) {
         if (clearRow == null || clearRow.getLinesRemoved() <= 0) {
             scoringManager.resetCombo();
@@ -151,6 +200,11 @@ public class BrickLockHandler {
         progressHandler.updateSpeed();
     }
 
+    /**
+     * Retrieves the current combo value depending on the active game mode.
+     *
+     * @return the player's current combo count.
+     */
     private int getCurrentCombo() {
         switch (gameState.getCurrentGameMode()) {
             case NORMAL:
@@ -171,6 +225,12 @@ public class BrickLockHandler {
         }
     }
 
+    /**
+     * Spawns a new brick on the board, refreshes the renderer,
+     * updates UI/game statistics, and restarts the drop timer.
+     *
+     * @param board the board on which the new brick will be created.
+     */
     private void spawnNewBrick(Board board) {
         board.createNewBrick();
         movementHandler.setPieceJustSpawned(true);

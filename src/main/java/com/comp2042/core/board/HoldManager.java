@@ -21,6 +21,13 @@ public class HoldManager {
     private Brick holdBrick;
     private boolean canHold;
 
+    /**
+     * Creates a new HoldManager.
+     * @param boardWidth width of the game board
+     * @param brickRotator brick rotator for brick management
+     * @param brickSpawner brick spawner for creating new bricks
+     * @param brickMover brick mover for positioning
+     */
     public HoldManager(int boardWidth, BrickRotator brickRotator,
                        BrickSpawner brickSpawner, BrickMover brickMover) {
         this.boardWidth = boardWidth;
@@ -31,6 +38,12 @@ public class HoldManager {
         this.canHold = true;
     }
 
+    /**
+     * Attempts to hold the current brick.
+     * Only allowed once per piece.
+     *
+     * @return true if hold succeeded, false if not allowed
+     */
     public boolean holdCurrentBrick() {
         if (!canHold) {
             return false;
@@ -68,6 +81,10 @@ public class HoldManager {
         brickMover.setToSpawnPoint(defaultSpawn);
     }
 
+    /**
+     * Gets the shape data of the held brick.
+     * @return 2D array of held brick, or empty 4x4 if none held
+     */
     public int[][] getHoldBrickData() {
         if (holdBrick == null) {
             return createEmptyMatrix();
@@ -79,6 +96,10 @@ public class HoldManager {
         return new int[EMPTY_HOLD_SIZE][EMPTY_HOLD_SIZE];
     }
 
+    /**
+     * Sets whether hold is currently allowed.
+     * @param canHold true to enable hold, false to disable
+     */
     public void setCanHold(boolean canHold) {this.canHold = canHold;}
 
     public void reset() {

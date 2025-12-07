@@ -101,16 +101,28 @@ public class MainMenuController {
         });
     }
 
+    /**
+     * Handles normal mode selection.
+     * @param event button click event
+     */
     @FXML
     private void handleNormalMode(ActionEvent event) {
         startGame(event, GameMode.NORMAL);
     }
 
+    /**
+     * Handles 40 Lines mode selection.
+     * @param event button click event
+     */
     @FXML
     private void handleFortyLinesMode(ActionEvent event) {
         startGame(event, GameMode.FORTY_LINES);
     }
 
+    /**
+     * Handles 2 Minutes mode selection.
+     * @param event button click event
+     */
     @FXML
     private void handleTwoMinutesMode(ActionEvent event) {
         startGame(event, GameMode.TWO_MINUTES);
@@ -136,6 +148,10 @@ public class MainMenuController {
         }
     }
 
+    /**
+     * Shows how to play panel.
+     * @param event button click event
+     */
     @FXML
     private void handleHowToPlay(ActionEvent event) {
         if (howToPlayPanel != null) {
@@ -144,6 +160,10 @@ public class MainMenuController {
         }
     }
 
+    /**
+     * Closes how to play panel.
+     * @param event button click event
+     */
     @FXML
     private void handleCloseHowToPlay(ActionEvent event) {
         if (howToPlayPanel != null) {
@@ -151,6 +171,10 @@ public class MainMenuController {
         }
     }
 
+    /**
+     * Exits the application.
+     * @param event button click event
+     */
     @FXML
     private void handleExit(ActionEvent event) {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();

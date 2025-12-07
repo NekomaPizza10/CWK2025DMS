@@ -13,6 +13,13 @@ public class CompletionPanel extends StackPane {
     private Runnable onRetry;
     private Runnable onMainMenu;
 
+    /**
+     * Creates a new CompletionPanel.
+     *
+     * @param timeString final completion time
+     * @param isNewBest whether this is a new best time
+     * @param previousBest previous best time string (null if none)
+     */
     public CompletionPanel(String timeString, boolean isNewBest, String previousBest) {
         getStylesheets().add(getClass().getResource("/completion.css").toExternalForm());
         getStyleClass().add("completion-overlay");
@@ -72,6 +79,16 @@ public class CompletionPanel extends StackPane {
         container.getChildren().add(box);
     }
 
+    /**
+     * Sets the retry callback.
+     *
+     * @param r callback to execute
+     */
     public void setOnRetry(Runnable r) { this.onRetry = r; }
+    /**
+     * Sets the main menu callback.
+     *
+     * @param r callback to execute
+     */
     public void setOnMainMenu(Runnable r) { this.onMainMenu = r; }
 }

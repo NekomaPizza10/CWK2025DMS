@@ -26,11 +26,20 @@ public class TimerManager {
     private boolean timeUpTriggered = false;
     private boolean gameTimerPaused = false;
 
+    /**
+     * Creates a new TimerManager.
+     * @param gameState the game state to monitor
+     * @param timeValueLabel the label to update with time display
+     */
     public TimerManager(GameState gameState, Label timeValueLabel) {
         this.gameState = gameState;
         this.timeValueLabel = timeValueLabel;
     }
 
+    /**
+     * Sets the callback to invoke when time runs out (2-minute mode).
+     * @param onTimeUp the callback to execute
+     */
     public void setOnTimeUp(Runnable onTimeUp) {
         this.onTimeUp = onTimeUp;
     }
@@ -69,6 +78,11 @@ public class TimerManager {
         gameTimerPaused = false;
     }
 
+    /**
+     * Starts the drop timer that moves pieces down automatically.
+     * @param speed drop interval in milliseconds
+     * @param onTick callback to execute on each drop
+     */
     public void startDropTimer(int speed, Runnable onTick) {
         if (dropTimeline != null) { dropTimeline.stop(); }
         dropTimeline = new Timeline(new KeyFrame(Duration.millis(speed), ae -> onTick.run()));
@@ -88,6 +102,11 @@ public class TimerManager {
         if (dropTimeline != null) { dropTimeline.play(); }
     }
 
+    /**
+     * Starts the lock delay timer.
+     * Gives player time to adjust piece before it locks.
+     * @param onComplete callback when lock delay expires
+     */
     public void startLockDelay(Runnable onComplete) {
         if (lockDelayTimeline != null) { lockDelayTimeline.stop(); }
         lockDelayTimeline = new Timeline(new KeyFrame(Duration.millis(gameState.getLockDelayMs()), ae -> onComplete.run()));
@@ -99,6 +118,11 @@ public class TimerManager {
         if (lockDelayTimeline != null) { lockDelayTimeline.stop(); }
     }
 
+    /**
+     * Starts the pre-game countdown (3, 2, 1, GO!).
+     * @param countdownLabel label to display countdown
+     * @param onComplete callback when countdown finishes
+     */
     public void startCountdown(Label countdownLabel, Runnable onComplete) {
         final int[] count = {3};
         countdownLabel.setText("3");
@@ -149,6 +173,10 @@ public class TimerManager {
         }
     }
 
+    /**
+     * Gets the elapsed time since game start.
+     * @return elapsed time in milliseconds
+     */
     public long getElapsedTime() { return System.currentTimeMillis() - gameStartTime; }
 
     public void resetStartTime() {

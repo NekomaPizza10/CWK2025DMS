@@ -8,11 +8,32 @@ import java.util.Deque;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Utility class providing matrix operations for Tetris game mechanics.
+ * This class contains static methods for collision detection, matrix manipulation,
+ * line clearing, and board state management.
+ *
+ * All methods are static and the class cannot be instantiated.
+ *
+ */
 public class MatrixOperations {
 
+    /**
+     * Private constructor to prevent instantiation.
+     */
     private MatrixOperations() {
     }
 
+    /**
+     * Checks if a brick intersects with the board boundaries or existing blocks.
+     * Uses transposed coordinate system where rows map to Y and columns map to X.
+     *
+     * @param matrix the game board matrix
+     * @param brick the brick shape matrix to check
+     * @param x the horizontal position (column)
+     * @param y the vertical position (row)
+     * @return true if collision detected, false otherwise
+     */
     public static boolean intersect(final int[][] matrix, final int[][] brick, int x, int y) {
         for (int row = 0; row < brick.length; row++) {
             for (int col = 0; col < brick[row].length; col++) {
@@ -40,6 +61,12 @@ public class MatrixOperations {
         return !(targetX >= 0 && targetY >= 0 && targetY < matrix.length && targetX < matrix[targetY].length);
     }
 
+    /**
+     * Creates a deep copy of a 2D integer array.
+     *
+     * @param original the array to copy
+     * @return a new array with copied values, or null if input is null
+     */
     public static int[][] copy(int[][] original) {
         if (original == null) {
             return null;
@@ -54,6 +81,16 @@ public class MatrixOperations {
         return myInt;
     }
 
+    /**
+     * Merges a brick into the board matrix at the specified position.
+     * Only non-zero values from the brick are copied.
+     *
+     * @param filledFields the current board state
+     * @param brick the brick to merge
+     * @param x the horizontal position (column)
+     * @param y the vertical position (row)
+     * @return a new matrix with the brick merged
+     */
     public static int[][] merge(int[][] filledFields, int[][] brick, int x, int y) {
         int[][] copy = copy(filledFields);
         for (int row = 0; row < brick.length; row++) {
@@ -74,6 +111,13 @@ public class MatrixOperations {
         return copy;
     }
 
+    /**
+     * Checks for and removes complete rows from the board.
+     * Complete rows are removed and remaining rows drop down.
+     *
+     * @param matrix the game board to check
+     * @return ClearRow object containing lines removed, new matrix, and score bonus
+     */
     public static ClearRow checkRemoving(final int[][] matrix) {
         int[][] tmp = new int[matrix.length][matrix[0].length];
         Deque<int[]> newRows = new ArrayDeque<>();
@@ -106,6 +150,12 @@ public class MatrixOperations {
         return new ClearRow(clearedRows.size(), tmp, scoreBonus);
     }
 
+    /**
+     * Creates a deep copy of a list of 2D integer arrays.
+     *
+     * @param list the list to copy
+     * @return a new list with deep-copied arrays
+     */
     public static List<int[][]> deepCopyList(List<int[][]> list) {
         return list.stream().map(MatrixOperations::copy).collect(Collectors.toList());
     }

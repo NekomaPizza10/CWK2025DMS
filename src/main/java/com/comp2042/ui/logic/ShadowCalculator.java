@@ -8,6 +8,14 @@ import com.comp2042.model.ViewData;
  */
 public class ShadowCalculator {
 
+    /**
+     * Calculates the final Y-position where the given brick (tetromino)
+     * would land if dropped vertically on the provided board matrix.
+     *
+     * @param brick the active piece, containing position and shape data
+     * @param boardMatrix the game board, represented as a 2D matrix
+     * @return the Y-coordinate where the brick will stop due to collision
+     */
     public int calculateShadowY(ViewData brick, int[][] boardMatrix) {
         // Handle null brick
         if (brick == null) {
@@ -34,6 +42,19 @@ public class ShadowCalculator {
         return y;
     }
 
+    /**
+     * Checks whether placing a brick at the given (x, y) position
+     * would result in a collision with the board boundary or
+     * existing blocks. Uses the same matrix conventions as
+     * MatrixOperations.intersect.
+     *
+     * @param board the game board matrix
+     * @param brick the brick's shape matrix
+     * @param x the proposed X-position on the board
+     * @param y the proposed Y-position on the board
+     * @return {@code true} if the brick would collide at the position,
+     *         otherwise {@code false}
+     */
     public boolean hasCollision(int[][] board, int[][] brick, int x, int y) {
         if (board == null || brick == null || brick.length == 0) {
             return true;

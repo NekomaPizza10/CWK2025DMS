@@ -22,6 +22,14 @@ public class ChallengeCompletionManager {
     private TwoMinutesCompletionPanel currentCompletionPanel;
     private CompletionPanel currentFortyLinesPanel;
 
+    /**
+     * Constructs a new ChallengeCompletionManager responsible for
+     * displaying completion UI and updating best performance records.
+     *
+     * @param gameState    the game state storing mode data and records
+     * @param timerManager the timer manager used for timing challenges
+     * @param uiUpdater    updates UI elements such as best score/time
+     */
     public ChallengeCompletionManager(GameState gameState, TimerManager timerManager,
                                       UIUpdater uiUpdater) {
         this.gameState = gameState;
@@ -29,11 +37,24 @@ public class ChallengeCompletionManager {
         this.uiUpdater = uiUpdater;
     }
 
+    /**
+     * Assigns the active game controller used for retrieving gameplay stats.
+     *
+     * @param gameController the game controller instance
+     */
     public void setGameController(GameController gameController) {
         this.gameController = gameController;
     }
 
-     // Handle 40 Lines challenge completion
+    /**
+     * Handles completion of the 40 Lines challenge. Stops active timers,
+     * evaluates best time records, creates the completion panel, and
+     * displays it on the given root pane.
+     *
+     * @param rootPane   the root UI container where the panel will be shown
+     * @param onRetry    callback invoked when the user chooses to retry
+     * @param onMainMenu callback invoked when returning to the main menu
+     */
     public void completeFortyLinesChallenge(StackPane rootPane, Runnable onRetry, Runnable onMainMenu) {
         timerManager.stopAllTimers();
         gameState.setGameOver(true);
@@ -61,7 +82,15 @@ public class ChallengeCompletionManager {
         }
     }
 
-     // Handle 2 Minutes challenge completion
+    /**
+     * Handles completion of the 2 Minutes challenge. Stops all timers,
+     * evaluates best score records, creates the results panel, and
+     * displays it on the given root pane.
+     *
+     * @param rootPane   the root UI container where the panel will be shown
+     * @param onRetry    callback executed when retrying the challenge
+     * @param onMainMenu callback executed when returning to the main menu
+     */
     public void completeTwoMinutesChallenge(StackPane rootPane, Runnable onRetry, Runnable onMainMenu) {
         timerManager.stopAllTimers();
         gameState.setGameOver(true);
@@ -90,7 +119,11 @@ public class ChallengeCompletionManager {
         }
     }
 
-     // Remove completion panels from display
+    /**
+     * Removes any currently displayed completion panels from the UI.
+     *
+     * @param rootPane the UI container the panels are attached to
+     */
     public void removeCompletionPanels(StackPane rootPane) {
         if (rootPane == null) return;
 
@@ -104,7 +137,13 @@ public class ChallengeCompletionManager {
         }
     }
 
-     // Format time in mm:ss.SSS format
+    /**
+     * Formats a time duration in milliseconds into a readable
+     * {@code mm:ss.SSS} format.
+     *
+     * @param timeMs time in milliseconds
+     * @return the formatted time string
+     */
     private String formatTime(long timeMs) {
         int minutes = (int) (timeMs / 60000);
         int seconds = (int) ((timeMs % 60000) / 1000);

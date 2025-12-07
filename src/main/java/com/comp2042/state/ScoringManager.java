@@ -8,13 +8,19 @@ import com.comp2042.model.GameMode;
 public class ScoringManager {
     private final GameState gameState;
 
+    /**
+     * Creates a new ScoringManager.
+     * @param gameState the game state to manage scoring for
+     */
     public ScoringManager(GameState gameState) {
         this.gameState = gameState;
     }
 
     /**
-     * Calculate score based on official Tetris scoring system
-     * Includes: base line clear points, combo bonus, and back-to-back Tetris bonus
+     * Calculates score for clearing lines based on official Tetris scoring.
+     * Includes combo and back-to-back bonuses.
+     * @param linesCleared number of lines cleared (0-4)
+     * @return total points earned
      */
     public int calculateTetrisScore(int linesCleared) {
         if (linesCleared == 0) return 0;
@@ -61,6 +67,10 @@ public class ScoringManager {
         return baseScore + comboBonus + backToBackBonus;
     }
 
+    /**
+     * Adds bonus points for soft drop (manual downward movement).
+     * @param distance number of cells dropped
+     */
     public void addSoftDropBonus(int distance) {
         GameMode mode = gameState.getCurrentGameMode();
         if (mode == GameMode.NORMAL) {
@@ -70,6 +80,10 @@ public class ScoringManager {
         }
     }
 
+    /**
+     * Adds bonus points for hard drop (instant drop to bottom).
+     * @param distance number of cells dropped
+     */
     public void addHardDropBonus(int distance) {
         GameMode mode = gameState.getCurrentGameMode();
         int bonus = distance * 5; // 5 points per cell for hard drop
@@ -92,6 +106,10 @@ public class ScoringManager {
         }
     }
 
+    /**
+     * Gets the current score for the active game mode.
+     * @return current score
+     */
     public int getCurrentScore() {
         GameMode mode = gameState.getCurrentGameMode();
         if (mode == GameMode.NORMAL) {

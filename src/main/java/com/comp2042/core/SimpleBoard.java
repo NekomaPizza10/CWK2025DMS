@@ -11,8 +11,20 @@ import java.util.List;
 
 /**
  * Main board implementation that coordinates all board-related operations.
- * Delegates specific functionality to specialized managers.
+ * This class serves as the central coordinator for the Tetris game board,
+ * delegating specific functionality to specialized manager classes.
+ *
+ * The board manages:
+ *
+ *   Brick movement (left, right, down)
+ *   Brick rotation with wall kicks
+ *   Line clearing and scoring
+ *   Game state (board matrix, pieces placed, lines cleared)
+ *   Hold functionality
+ *   Next brick preview
+ *
  */
+
 public class SimpleBoard implements Board {
 
     private final int width;
